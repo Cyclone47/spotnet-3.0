@@ -458,7 +458,7 @@
                 <Button Content="🔑 Wachtwoord..."
                         Command="{Binding SetPasswordCommand}"
                         CommandParameter="{Binding Selected}"
-                        IsVisible="{Binding Selected.NeedsPassword, FallbackValue=False}"
+                        IsEnabled="{Binding Selected, Converter={x:Static ObjectConverters.IsNotNull}}"
                         ToolTip.Tip="Voer het uitpakwachtwoord in en pak opnieuw uit"/>
               </StackPanel>
 

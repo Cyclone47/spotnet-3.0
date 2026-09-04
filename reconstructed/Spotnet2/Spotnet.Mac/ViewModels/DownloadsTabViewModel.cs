@@ -469,10 +469,12 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
             }
         }
 
+        bool isPostProcessing = true;
         var progress = new Progress<PostProcessProgress>(p =>
         {
             Dispatcher.UIThread.Post(() =>
             {
+                if (!isPostProcessing) return;
                 item.PostProcessPercent = p.Percent;
                 string detail = p.Detail ?? (p.Percent >= 0 && DownloadStageText.IsPostProcessing(p.Stage)
                     ? $"{(int)p.Percent}%"
@@ -493,6 +495,10 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
         {
             Log.Warn(ex, "Post-process failed for {0}", item.MsgId);
             outcome = PostProcessOutcome.Failed;
+        }
+        finally
+        {
+            isPostProcessing = false;
         }
 
         await Dispatcher.UIThread.InvokeAsync(() =>

@@ -153,6 +153,11 @@ public sealed class ManagedArchiveExtractor
         }
         catch (InvalidFormatException ex)
         {
+            if (password.Length > 0 && ArchivePasswordProbe.Inspect(archivePath) is ArchiveEncryption.Encrypted or ArchiveEncryption.EncryptedHeaders)
+            {
+                _log("Wachtwoord onjuist voor " + name + ": " + ex.Message);
+                return new ExtractResult(ExtractOutcome.WrongPassword, consumed);
+            }
             // "Unknown Rar Header" and friends: the bytes on disk are not a valid
             // archive. Almost always a download that par2 could not put right.
             _log("Archief " + name + " is beschadigd of niet leesbaar: " + ex.Message);
@@ -160,6 +165,11 @@ public sealed class ManagedArchiveExtractor
         }
         catch (ArchiveException ex)
         {
+            if (password.Length > 0 && ArchivePasswordProbe.Inspect(archivePath) is ArchiveEncryption.Encrypted or ArchiveEncryption.EncryptedHeaders)
+            {
+                _log("Wachtwoord onjuist voor " + name + ": " + ex.Message);
+                return new ExtractResult(ExtractOutcome.WrongPassword, consumed);
+            }
             // SharpCompress raises this for malformed data — "Failed to locate the
             // Zip Header", "Cannot determine compressed stream type" and friends.
             // That is damage, not an unsupported feature, and an external unpacker

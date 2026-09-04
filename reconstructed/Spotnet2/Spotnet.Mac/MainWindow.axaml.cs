@@ -248,9 +248,17 @@ public partial class MainWindow : Window
 
     private void OnDownloadDoubleTapped(object? sender, TappedEventArgs e)
     {
-        if (_viewModel.DownloadsTab.Selected != null)
+        var selected = _viewModel.DownloadsTab.Selected;
+        if (selected != null)
         {
-            _viewModel.DownloadsTab.OpenCommand.Execute(_viewModel.DownloadsTab.Selected);
+            if (selected.NeedsPassword)
+            {
+                ShowSetPasswordDialog(selected);
+            }
+            else
+            {
+                _viewModel.DownloadsTab.OpenCommand.Execute(selected);
+            }
         }
     }
 
@@ -333,13 +341,8 @@ public partial class MainWindow : Window
             item.UnpackPassword = textBox.Text?.Trim() ?? "";
             _viewModel.DownloadsTab.SaveHistory();
 
-            // Windows resumes the item straight after the dialog closes
-            // (DownloadsGrid.StatusLinkRequestNavigate -> SetUnpackPassword +
-            // DownloadResume). Do the same: retry the unpack with the new password.
-            if (item.NeedsPassword && item.UnpackPassword.Length > 0)
-            {
-                await _viewModel.DownloadsTab.RunPostProcessAsync(item);
-            }
+            // Retry unpacking with the entered password
+            await _viewModel.DownloadsTab.RunPostProcessAsync(item);
         }
     }
 
