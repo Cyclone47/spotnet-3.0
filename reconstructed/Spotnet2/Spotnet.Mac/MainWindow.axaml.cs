@@ -21,6 +21,7 @@ public partial class MainWindow : Window
     private readonly MainWindowViewModel _viewModel;
     private readonly IAppPaths _appPaths;
     private readonly ISecretStore _secretStore;
+    private readonly SpotDatabaseService _dbService;
 
     public MainWindow()
     {
@@ -31,11 +32,12 @@ public partial class MainWindow : Window
 
         string dbPath = _appPaths.GetDatabasePath("spots");
         var sqliteDb = new MacSqliteDb(dbPath);
-        var dbService = new SpotDatabaseService(sqliteDb);
+        _dbService = new SpotDatabaseService(sqliteDb);
 
-        _viewModel = new MainWindowViewModel(_appPaths, _secretStore, dbService);
+        _viewModel = new MainWindowViewModel(_appPaths, _secretStore, _dbService);
         _viewModel.RequestOpenSettings += ShowSettingsWindow;
         _viewModel.RequestOpenOnboarding += ShowOnboardingWindow;
+        _viewModel.RequestOpenReleaseNotes += ShowReleaseNotesWindow;
         _viewModel.RequestAddCustomFilter += ShowAddCustomFilterDialog;
         _viewModel.RequestOpenSpotWindow += detail => new SpotDetailWindow(detail).Show(this);
         _viewModel.RequestPickDownloadFolder += ShowPickDownloadFolderDialog;
@@ -72,8 +74,14 @@ public partial class MainWindow : Window
 
     private async void ShowSettingsWindow()
     {
-        var settingsVm = new SettingsViewModel(_secretStore, _appPaths);
+        var settingsVm = new SettingsViewModel(_secretStore, _appPaths, new UserPreferencesService(_appPaths), _dbService);
         var window = new SettingsWindow(settingsVm);
+        await window.ShowDialog(this);
+    }
+
+    private async void ShowReleaseNotesWindow()
+    {
+        var window = new ReleaseNotesWindow();
         await window.ShowDialog(this);
     }
 

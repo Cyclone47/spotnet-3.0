@@ -89,10 +89,34 @@
               <TextBlock Grid.Column="0" Text="Website"
                          HorizontalAlignment="Right" Margin="0,0,10,0"
                          Foreground="{DynamicResource AppMutedTextBrush}"/>
-              <TextBlock Grid.Column="1" Text="{Binding WebsiteUrl}"
-                         TextWrapping="Wrap"
-                         Foreground="{DynamicResource AppAccentBrush}"/>
+              <Button Grid.Column="1" Classes="LinkButton"
+                      Command="{Binding OpenWebsiteCommand}"
+                      Content="Zoeken op Google"
+                      ToolTip.Tip="{Binding WebsiteUrl}"/>
             </Grid>
+          </StackPanel>
+        </Border>
+
+        <!-- Weblinks in spot description -->
+        <Border Background="{DynamicResource AppGridBackground}"
+                BorderBrush="{DynamicResource AppBorderBrush}"
+                BorderThickness="1"
+                Padding="12"
+                IsVisible="{Binding HasDetectedWebLinks}">
+          <StackPanel Spacing="6">
+            <TextBlock Text="Links in deze spot:" FontWeight="SemiBold"
+                       Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11"/>
+            <ItemsControl ItemsSource="{Binding DetectedWebLinks}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Button Classes="LinkButton"
+                          Command="{Binding $parent[UserControl].((vm:SpotDetailViewModel)DataContext).OpenWebLinkCommand}"
+                          CommandParameter="{Binding}"
+                          Content="{Binding}"
+                          Margin="0,2"/>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
           </StackPanel>
         </Border>
 

@@ -4,7 +4,7 @@
         x:Class="Spotnet.Mac.Views.SettingsWindow"
         x:DataType="vm:SettingsViewModel"
         Title="Spotnet - Instellingen"
-        Width="520" Height="580"
+        Width="520" Height="660"
         WindowStartupLocation="CenterOwner"
         CanResize="False">
 
@@ -68,6 +68,33 @@
 
                 <TextBlock Text="Aantal downloadverbindingen:" FontWeight="Medium"/>
                 <NumericUpDown Value="{Binding MaxDownloadConnections}" Minimum="1" Maximum="32" FormatString="0"/>
+
+                <Separator Margin="0,4"/>
+                <TextBlock Text="Database &amp; Synchronisatie" FontSize="14" FontWeight="SemiBold"/>
+
+                <TextBlock Text="Eerste synchronisatie bereik:" FontWeight="Medium"/>
+                <ComboBox ItemsSource="{Binding InitialFetchRangeList}"
+                          SelectedItem="{Binding SelectedInitialFetchRange}"
+                          HorizontalAlignment="Stretch"/>
+
+                <TextBlock Text="Database onderhoud &amp; optimalisatie:" FontWeight="Medium"/>
+                <Button Content="Database controleren &amp; repareren"
+                        Command="{Binding QuickRepairCommand}"
+                        HorizontalAlignment="Left"/>
+
+                <Separator Margin="0,4"/>
+                <TextBlock Text="Systeem &amp; Meldingen" FontSize="14" FontWeight="SemiBold"/>
+
+                <Grid ColumnDefinitions="*,Auto">
+                    <CheckBox Grid.Column="0" IsChecked="{Binding ShowDesktopNotifications}"
+                              Content="Bureaubladmeldingen tonen bij voltooide downloads"/>
+                    <Button Grid.Column="1" Content="Test melding"
+                            Command="{Binding TestNotificationCommand}"
+                            Classes="LinkButton"/>
+                </Grid>
+
+                <CheckBox IsChecked="{Binding ExternalBrowser}"
+                          Content="Weblinks in spots openen in standaardbrowser"/>
 
                 <!-- Status message -->
                 <TextBlock Text="{Binding StatusMessage}"

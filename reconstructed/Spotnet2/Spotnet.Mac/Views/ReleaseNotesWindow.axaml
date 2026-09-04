@@ -1,0 +1,99 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Spotnet.Mac.Views.ReleaseNotesWindow"
+        Title="Spotnet 3.0 - Wat is er nieuw"
+        Width="640" Height="580"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource AppWindowBackground}">
+
+  <Grid RowDefinitions="Auto,*,Auto" Margin="24">
+    <!-- Header -->
+    <StackPanel Grid.Row="0" Spacing="6" Margin="0,0,0,16">
+      <TextBlock Text="Wat is er nieuw in Spotnet 3.0" FontSize="20" FontWeight="Bold"
+                 Foreground="{DynamicResource AppTextBrush}"/>
+      <TextBlock Text="Overzicht van recente updates, verbeteringen en nieuwe functies."
+                 FontSize="13" Foreground="{DynamicResource AppMutedTextBrush}"/>
+    </StackPanel>
+
+    <!-- Content -->
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+      <StackPanel Spacing="16">
+
+        <!-- 3.0.6.8 -->
+        <Border Background="{DynamicResource AppGridBackground}"
+                BorderBrush="{DynamicResource AppBorderBrush}"
+                BorderThickness="1" CornerRadius="6" Padding="14">
+          <StackPanel Spacing="8">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="Versie 3.0.6.8" FontWeight="Bold" FontSize="15"
+                         Foreground="{DynamicResource AppAccentBrush}"/>
+              <Border Background="{DynamicResource AppFormatBadgeBackground}" CornerRadius="3" Padding="5,1">
+                <TextBlock Text="Recent" FontSize="11" Foreground="{DynamicResource AppAccentBrush}"/>
+              </Border>
+            </StackPanel>
+            <TextBlock Text="• Release Notes worden nu direct binnen Spotnet getoond via het Help menu."
+                       TextWrapping="Wrap" Foreground="{DynamicResource AppTextBrush}"/>
+          </StackPanel>
+        </Border>
+
+        <!-- 3.0.6.7 -->
+        <Border Background="{DynamicResource AppGridBackground}"
+                BorderBrush="{DynamicResource AppBorderBrush}"
+                BorderThickness="1" CornerRadius="6" Padding="14">
+          <StackPanel Spacing="8">
+            <TextBlock Text="Versie 3.0.6.7 (Grote Feature Update)" FontWeight="Bold" FontSize="15"
+                       Foreground="{DynamicResource AppAccentBrush}"/>
+            <TextBlock Text="• Automatische wachtwoordherkenning: Spotnet leest archiefwachtwoorden automatisch uit NZB metadata en spotbeschrijvingen (bijv. 'Wachtwoord: ...'). Handmatig invoeren is alleen nog nodig als fallback."
+                       TextWrapping="Wrap" Foreground="{DynamicResource AppTextBrush}"/>
+            <TextBlock Text="• Slimme eerste synchronisatie: Bepaal zelf hoe ver Spotnet terugzoekt (30, 90, 365 dagen of alles) met snelle NNTP watermerkbepaling, waardoor een nieuwe installatie binnen enkele minuten up-to-date is."
+                       TextWrapping="Wrap" Foreground="{DynamicResource AppTextBrush}"/>
+            <TextBlock Text="• Desktopmeldingen: Berichtencentrum meldingen op macOS wanneer downloads zijn voltooid of wanneer databaseonderhoud is afgerond."
+                       TextWrapping="Wrap" Foreground="{DynamicResource AppTextBrush}"/>
+            <TextBlock Text="• Klikbare weblinks: Links in spotbeschrijvingen en websites openen veilig in uw standaardbrowser."
+                       TextWrapping="Wrap" Foreground="{DynamicResource AppTextBrush}"/>
+            <TextBlock Text="• FIPS-veilige cryptografie: Modernisering naar veilige hashing-standaarden voor Par2 verificatie."
+                       TextWrapping="Wrap" Foreground="{DynamicResource AppTextBrush}"/>
+          </StackPanel>
+        </Border>
+
+        <!-- 3.0.6.6 -->
+        <Border Background="{DynamicResource AppGridBackground}"
+                BorderBrush="{DynamicResource AppBorderBrush}"
+                BorderThickness="1" CornerRadius="6" Padding="14">
+          <StackPanel Spacing="8">
+            <TextBlock Text="Versie 3.0.6.6" FontWeight="Bold" FontSize="15"
+                       Foreground="{DynamicResource AppAccentBrush}"/>
+            <TextBlock Text="• Correcte yEnc decodering: Oplossing voor dot-unstuffing (RFC 3977 §3.1.1) op regelovergangen, waardoor beschadigde bestanden en CRC-fouten worden voorkomen."
+                       TextWrapping="Wrap" Foreground="{DynamicResource AppTextBrush}"/>
+          </StackPanel>
+        </Border>
+
+        <!-- macOS Alpha -->
+        <Border Background="{DynamicResource AppGridBackground}"
+                BorderBrush="{DynamicResource AppBorderBrush}"
+                BorderThickness="1" CornerRadius="6" Padding="14">
+          <StackPanel Spacing="8">
+            <TextBlock Text="Spotnet voor macOS (Native Alpha)" FontWeight="Bold" FontSize="15"
+                       Foreground="{DynamicResource AppAccentBrush}"/>
+            <TextBlock Text="• Volledig native Avalonia UI applicatie geoptimaliseerd voor Apple Silicon en Intel."
+                       TextWrapping="Wrap" Foreground="{DynamicResource AppTextBrush}"/>
+            <TextBlock Text="• Veilige opslag van wachtwoorden in de macOS Sleutelhanger (Keychain)."
+                       TextWrapping="Wrap" Foreground="{DynamicResource AppTextBrush}"/>
+            <TextBlock Text="• Ingebouwde Usenet downloader, multi-connection segment fetcher en post-processing pijplijn (Par2 verificatie &amp; reparatie, UnRAR, 7-Zip, split join)."
+                       TextWrapping="Wrap" Foreground="{DynamicResource AppTextBrush}"/>
+            <TextBlock Text="• Snelle SQLite FTS5 zoekmachine en themakeuze (Modern Licht, Modern Donker, Klassiek)."
+                       TextWrapping="Wrap" Foreground="{DynamicResource AppTextBrush}"/>
+          </StackPanel>
+        </Border>
+
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- Footer -->
+    <Button Grid.Row="2" Classes="accent"
+            Content="Sluiten"
+            HorizontalAlignment="Right"
+            Margin="0,16,0,0"
+            Click="OnCloseClick"/>
+  </Grid>
+</Window>

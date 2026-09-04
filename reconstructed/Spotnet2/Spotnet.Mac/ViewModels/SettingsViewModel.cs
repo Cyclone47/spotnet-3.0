@@ -136,16 +136,90 @@ public sealed class SettingsViewModel : ViewModelBase
         }
     }
 
-    public SettingsViewModel(ISecretStore secretStore, IAppPaths appPaths, UserPreferencesService? prefsService = null)
+    // ── Synchronisation & Database Settings ────────────────────────────────────
+    private int _initialFetchDays = 90;
+    public List<string> InitialFetchRangeList { get; } = new()
+    {
+        "30 dagen",
+        "90 dagen (aanbevolen)",
+        "365 dagen (1 jaar)",
+        "Alles (volledig archief)"
+    };
+
+    public string SelectedInitialFetchRange
+    {
+        get => _initialFetchDays switch
+        {
+            30 => "30 dagen",
+            90 => "90 dagen (aanbevolen)",
+            365 => "365 dagen (1 jaar)",
+            0 => "Alles (volledig archief)",
+            _ => "90 dagen (aanbevolen)"
+        };
+        set
+        {
+            _initialFetchDays = value switch
+            {
+                "30 dagen" => 30,
+                "365 dagen (1 jaar)" => 365,
+                "Alles (volledig archief)" => 0,
+                _ => 90
+            };
+            OnPropertyChanged();
+        }
+    }
+
+    private bool _showDesktopNotifications = true;
+    public bool ShowDesktopNotifications
+    {
+        get => _showDesktopNotifications;
+        set => SetProperty(ref _showDesktopNotifications, value);
+    }
+
+    private bool _externalBrowser = true;
+    public bool ExternalBrowser
+    {
+        get => _externalBrowser;
+        set => SetProperty(ref _externalBrowser, value);
+    }
+
+    private readonly DAL.SpotDatabaseService? _dbService;
+
+    public ICommand QuickRepairCommand { get; }
+    public ICommand TestNotificationCommand { get; }
+
+    public SettingsViewModel(ISecretStore secretStore, IAppPaths appPaths, UserPreferencesService? prefsService = null, DAL.SpotDatabaseService? dbService = null)
     {
         _secretStore = secretStore;
         _appPaths = appPaths;
         _prefsService = prefsService ?? new UserPreferencesService(_appPaths);
+        _dbService = dbService;
         _selectedTheme = _prefsService.Current.ThemeStyle;
 
         TestConnectionCommand = new RelayCommand(async () => await TestConnectionAsync());
         SaveCommand = new RelayCommand(SaveSettings);
         PickDownloadFolderCommand = new RelayCommand(() => RequestPickFolder?.Invoke());
+
+        QuickRepairCommand = new RelayCommand(async () =>
+        {
+            if (_dbService == null)
+            {
+                StatusMessage = "Geen actieve database service beschikbaar.";
+                return;
+            }
+            StatusMessage = "Database herstellen en optimaliseren...";
+            var (success, msg) = await _dbService.QuickRepairAsync();
+            StatusMessage = msg;
+            var notifier = new Platform.MacNotificationService(_prefsService);
+            notifier.NotifyDatabaseRepairFinished(success, msg);
+        });
+
+        TestNotificationCommand = new RelayCommand(() =>
+        {
+            var notifier = new Platform.MacNotificationService(_prefsService);
+            notifier.ShowNotification("Dit is een testmelding van Spotnet.", title: "Spotnet", subtitle: "Test geslaagd", force: true);
+            StatusMessage = "Testmelding verzonden naar macOS Berichtencentrum.";
+        });
 
         LoadSettings();
     }
@@ -261,7 +335,11 @@ public sealed class SettingsViewModel : ViewModelBase
         _downloadMode = prefs.DownloadMode;
         DownloadFolder = string.IsNullOrWhiteSpace(prefs.DownloadFolder) ? _appPaths.DownloadsFolder : prefs.DownloadFolder;
         MaxDownloadConnections = prefs.MaxDownloadConnections > 0 ? prefs.MaxDownloadConnections : 4;
+        _initialFetchDays = prefs.InitialFetchDays;
+        ShowDesktopNotifications = prefs.ShowDesktopNotifications;
+        ExternalBrowser = prefs.ExternalBrowser;
         OnPropertyChanged(nameof(SelectedDownloadMode));
+        OnPropertyChanged(nameof(SelectedInitialFetchRange));
 
         if (string.IsNullOrEmpty(Server))
         {
@@ -301,6 +379,9 @@ public sealed class SettingsViewModel : ViewModelBase
             prefs.DownloadMode = _downloadMode;
             prefs.DownloadFolder = DownloadFolder;
             prefs.MaxDownloadConnections = MaxDownloadConnections;
+            prefs.InitialFetchDays = _initialFetchDays;
+            prefs.ShowDesktopNotifications = ShowDesktopNotifications;
+            prefs.ExternalBrowser = ExternalBrowser;
             _prefsService.Save(prefs);
 
             StatusMessage = "Instellingen opgeslagen in Sleutelhanger (Keychain)!";

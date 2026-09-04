@@ -7,6 +7,7 @@ using System.Xml.Linq;
 using NLog;
 using Spotnet.Mac.DAL;
 using Spotnet.Mac.Models;
+using Spotnet.Mac.Services;
 using Spotnet.Model;
 using Spotnet.Platform;
 
@@ -19,16 +20,18 @@ public sealed class SpotSyncService
     private readonly IAppPaths _appPaths;
     private readonly ISecretStore _secretStore;
     private readonly SpotDatabaseService _dbService;
+    private readonly UserPreferencesService? _preferences;
 
     public bool IsSyncing { get; private set; }
 
     public event Action<int, int, string>? ProgressChanged;
 
-    public SpotSyncService(IAppPaths appPaths, ISecretStore secretStore, SpotDatabaseService dbService)
+    public SpotSyncService(IAppPaths appPaths, ISecretStore secretStore, SpotDatabaseService dbService, UserPreferencesService? preferences = null)
     {
         _appPaths = appPaths;
         _secretStore = secretStore;
         _dbService = dbService;
+        _preferences = preferences;
     }
 
     public async Task<int> SyncSpotsAsync(CancellationToken cancellationToken = default)
@@ -75,8 +78,43 @@ public sealed class SpotSyncService
 
             if (lastArticle <= 0)
             {
-                // Initial sync: fetch the latest 2500 spots to keep it responsive
-                start = Math.Max(low, high - 2500);
+                int initialDays = _preferences?.Current.InitialFetchDays ?? 90;
+                if (initialDays > 0)
+                {
+                    ProgressChanged?.Invoke(12, 100, $"Startpunt zoeken voor laatste {initialDays} dagen...");
+                    DateTime cutoffUtc = DateTime.UtcNow.AddDays(-initialDays);
+
+                    long watermark = ArticleWatermark.FindFirstArticleOnOrAfter(low, high, cutoffUtc, (from, to) =>
+                    {
+                        try
+                        {
+                            var lines = client.GetOverviewAsync(from, to, cancellationToken).GetAwaiter().GetResult();
+                            if (lines.Count == 0) return null;
+                            string joined = string.Join("\n", lines);
+                            return ArticleWatermark.FirstStampIn(joined);
+                        }
+                        catch
+                        {
+                            return null;
+                        }
+                    });
+
+                    if (watermark > 0)
+                    {
+                        start = Math.Clamp(watermark, low, high);
+                        Log.Info("Initial fetch watermark found: article {0} for cutoff {1}", start, cutoffUtc);
+                    }
+                    else
+                    {
+                        start = Math.Max(low, high - 10000);
+                        Log.Info("Watermark undetermined; using fallback start {0}", start);
+                    }
+                }
+                else
+                {
+                    start = low;
+                    Log.Info("Initial fetch configured for all articles; starting at {0}", start);
+                }
             }
             else
             {

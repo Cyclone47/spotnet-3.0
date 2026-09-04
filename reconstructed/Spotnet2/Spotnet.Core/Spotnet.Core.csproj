@@ -14,6 +14,7 @@
     <TargetFramework>$(PortableTargetFramework)</TargetFramework>
     <LangVersion>11.0</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
     <AssemblyName>Spotnet.Core</AssemblyName>
     <RootNamespace>Spotnet</RootNamespace>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>

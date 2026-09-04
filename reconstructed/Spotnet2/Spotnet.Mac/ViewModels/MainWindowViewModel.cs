@@ -205,12 +205,15 @@ public sealed class MainWindowViewModel : ViewModelBase
     public ICommand SetDownloadModeCommand { get; }
     public ICommand PickDownloadFolderCommand { get; }
     public ICommand DeleteSelectedCommand { get; }
+    public ICommand OpenReleaseNotesCommand { get; }
+    public ICommand QuickRepairDbCommand { get; }
 
     /// <summary>Raised when a spot should open in its own window rather than a tab.</summary>
     public event Action<SpotDetailViewModel>? RequestOpenSpotWindow;
 
     public event Action? RequestOpenSettings;
     public event Action? RequestOpenOnboarding;
+    public event Action? RequestOpenReleaseNotes;
     public event Action? RequestAddCustomFilter;
     public event Action? RequestPickDownloadFolder;
     public event Action<DownloadItem>? RequestSetDownloadPassword;
@@ -227,7 +230,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         _customFilterService = new CustomFilterService(_appPaths);
 
         _nzbService = new NzbService(_appPaths, _secretStore, _prefsService);
-        _syncService = new SpotSyncService(_appPaths, _secretStore, _dbService);
+        _syncService = new SpotSyncService(_appPaths, _secretStore, _dbService, _prefsService);
         _commentService = new CommentService(_appPaths, _secretStore, _dbService);
         _bodyService = new SpotBodyService(_appPaths, _secretStore);
 
@@ -240,9 +243,20 @@ public sealed class MainWindowViewModel : ViewModelBase
 
         SpotDetail = new SpotDetailViewModel(_dbService, _nzbService, _commentService, _bodyService);
 
-        DownloadsTab = new DownloadsTabViewModel(new DownloadHistoryService(_appPaths));
+        DownloadsTab = new DownloadsTabViewModel(new DownloadHistoryService(_appPaths), _prefsService);
         SpotDetail.NzbFetched += OnNzbFetched;
         SpotDetail.RequestClose += () => SelectedSpot = null;
+
+        OpenReleaseNotesCommand = new RelayCommand(() => RequestOpenReleaseNotes?.Invoke());
+        QuickRepairDbCommand = new RelayCommand(async () =>
+        {
+            StatusText = "Database herstellen en optimaliseren...";
+            var (success, msg) = await _dbService.QuickRepairAsync();
+            StatusText = msg;
+            var notifier = new Platform.MacNotificationService(_prefsService);
+            notifier.NotifyDatabaseRepairFinished(success, msg);
+            await RefreshSpotsAsync();
+        });
 
         // Commands
         SearchCommand = new RelayCommand(async () => await RefreshSpotsAsync());
@@ -402,9 +416,9 @@ public sealed class MainWindowViewModel : ViewModelBase
     }
 
     /// <summary>Records an NZB fetch in the Downloads tab and brings that tab forward.</summary>
-    private void OnNzbFetched(SpotItem spot, bool success, string? path, string message, Network.NzbDownloadJob? job)
+    private void OnNzbFetched(SpotItem spot, bool success, string? path, string message, Network.NzbDownloadJob? job, string? description = null)
     {
-        DownloadsTab.Add(spot, success, path, message, job);
+        DownloadsTab.Add(spot, success, path, message, job, description: description);
         SelectedTab = DownloadsTab;
     }
 

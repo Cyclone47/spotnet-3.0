@@ -60,6 +60,21 @@ public sealed class UserPreferences
     /// 0 means use the server's Connections setting from servers.xml.
     /// </summary>
     public int MaxDownloadConnections { get; set; }
+
+    /// <summary>
+    /// Days back to fetch on an initial sync (0 = everything). Defaults to 90.
+    /// </summary>
+    public int InitialFetchDays { get; set; } = 90;
+
+    /// <summary>
+    /// Whether web links in spot descriptions open in the macOS default browser.
+    /// </summary>
+    public bool ExternalBrowser { get; set; } = true;
+
+    /// <summary>
+    /// Whether desktop notifications are shown when downloads complete or db repairs finish.
+    /// </summary>
+    public bool ShowDesktopNotifications { get; set; } = true;
 }
 
 public sealed class UserPreferencesService

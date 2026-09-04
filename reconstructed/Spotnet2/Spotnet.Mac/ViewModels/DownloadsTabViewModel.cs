@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Threading;
 using NLog;
+using Spotnet.Helpers;
 using Spotnet.Mac.Models;
 using Spotnet.Mac.Network;
+using Spotnet.Mac.Platform;
 using Spotnet.Mac.PostProcessing;
 using Spotnet.Mac.Services;
 
@@ -25,6 +27,7 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
     private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
     private readonly DownloadHistoryService _history;
+    private readonly MacNotificationService _notificationService;
 
     /// <summary>
     /// Optional external unpackers. Verification, repair and unpacking are all built
@@ -66,9 +69,10 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
     public Func<int, long, Task<(bool confirmed, bool deleteFiles)>>? RequestConfirmClear;
 
 
-    public DownloadsTabViewModel(DownloadHistoryService history)
+    public DownloadsTabViewModel(DownloadHistoryService history, UserPreferencesService? preferences = null, MacNotificationService? notificationService = null)
     {
         _history = history;
+        _notificationService = notificationService ?? new MacNotificationService(preferences);
 
         foreach (var item in _history.Load())
         {
@@ -296,6 +300,7 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
     /// </summary>
     public void Add(SpotItem spot, bool success, string? nzbPath, string message,
                     NzbDownloadJob? job = null,
+                    string? description = null,
                     CancellationToken cancellationToken = default)
     {
         var existing = Downloads.FirstOrDefault(d => d.MsgId == spot.MsgId);
@@ -319,6 +324,13 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
             DownloadDir = job?.OutputDir ?? "",
             IsDownloading = job != null && success
         };
+
+        string? autoPassword = UnpackPasswordDetector.Detect(nzbPath, description, spot.Subject);
+        if (!string.IsNullOrEmpty(autoPassword))
+        {
+            item.UnpackPassword = autoPassword;
+            Log.Info("[{0}] Auto-detected archive password at queue time", spot.Subject);
+        }
 
         if (!success)
             item.SetStage(DownloadStage.Failure, message);
@@ -434,8 +446,27 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
             {
                 item.SetStage(DownloadStage.Success);
                 Persist();
+                _notificationService.NotifyDownloadFinished(item.Title, success: true);
             });
             return;
+        }
+
+        // 1. Auto-detect archive password from NZB if not already provided
+        if (string.IsNullOrEmpty(item.UnpackPassword))
+        {
+            string? nzbPath = item.HasFile && File.Exists(item.NzbPath) ? item.NzbPath : null;
+            if (string.IsNullOrEmpty(nzbPath) && Directory.Exists(dir))
+            {
+                var candidates = Directory.GetFiles(dir, "*.nzb");
+                if (candidates.Length > 0) nzbPath = candidates[0];
+            }
+
+            string? detectedPassword = UnpackPasswordDetector.FromNzbFile(nzbPath);
+            if (!string.IsNullOrEmpty(detectedPassword))
+            {
+                item.UnpackPassword = detectedPassword;
+                Log.Info("[{0}] Auto-detected archive password from NZB metadata", item.Title);
+            }
         }
 
         var progress = new Progress<PostProcessProgress>(p =>
@@ -471,29 +502,33 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
             {
                 case PostProcessOutcome.Success:
                     item.SetStage(DownloadStage.Success);
+                    _notificationService.NotifyDownloadFinished(item.Title, success: true);
                     break;
                 case PostProcessOutcome.Warning:
                     item.SetStage(DownloadStage.Warning, "nabewerking gaf problemen, zie log");
+                    _notificationService.NotifyDownloadFinished(item.Title, success: false, detail: "problemen tijdens nabewerking");
                     break;
                 case PostProcessOutcome.ArchiveDamaged:
                     item.SetStage(DownloadStage.Warning, "archief beschadigd, reparatie niet gelukt");
+                    _notificationService.NotifyDownloadFinished(item.Title, success: false, detail: "archief beschadigd");
                     break;
                 case PostProcessOutcome.ArchiveDamagedNoPar2:
                     item.SetStage(DownloadStage.Warning, "archief beschadigd, geen par2 om te herstellen");
+                    _notificationService.NotifyDownloadFinished(item.Title, success: false, detail: "geen par2 herstelbestanden");
                     break;
                 case PostProcessOutcome.PasswordRequired:
-                    // Windows shows "Wachtwoord?" as a link here; the grid turns the
-                    // cell into a button that opens the same dialog.
                     item.SetStage(DownloadStage.WrongPassword,
                         string.IsNullOrEmpty(item.UnpackPassword)
                             ? "wachtwoord vereist"
                             : "wachtwoord onjuist");
+                    _notificationService.NotifyDownloadFinished(item.Title, success: false, detail: "wachtwoord vereist");
                     break;
                 case PostProcessOutcome.Cancelled:
                     item.SetStage(DownloadStage.Cancelled);
                     break;
                 default:
                     item.SetStage(DownloadStage.Failure, "nabewerking mislukt, zie log");
+                    _notificationService.NotifyDownloadFinished(item.Title, success: false, detail: "nabewerking mislukt");
                     break;
             }
             Persist();

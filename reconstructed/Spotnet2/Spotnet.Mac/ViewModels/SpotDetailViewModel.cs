@@ -122,7 +122,42 @@ public sealed class SpotDetailViewModel : ViewModelBase
 
     public bool HasPoster => PosterImage != null;
 
-    public string Description { get => _description; set => SetProperty(ref _description, value); }
+    public string Description
+    {
+        get => _description;
+        set
+        {
+            if (SetProperty(ref _description, value))
+            {
+                RebuildWebLinks();
+            }
+        }
+    }
+
+    public ObservableCollection<string> DetectedWebLinks { get; } = new();
+    public bool HasDetectedWebLinks => DetectedWebLinks.Count > 0;
+
+    private void RebuildWebLinks()
+    {
+        DetectedWebLinks.Clear();
+        if (!string.IsNullOrWhiteSpace(_description))
+        {
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var matches = System.Text.RegularExpressions.Regex.Matches(_description, @"https?://[^\s<>'""\)\]]+", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            foreach (System.Text.RegularExpressions.Match match in matches)
+            {
+                if (Spotnet.Helpers.WebLinkHelper.TryResolveWebLink(match.Value, out string? valid) && !string.IsNullOrEmpty(valid))
+                {
+                    if (seen.Add(valid))
+                    {
+                        DetectedWebLinks.Add(valid);
+                    }
+                }
+            }
+        }
+        OnPropertyChanged(nameof(HasDetectedWebLinks));
+    }
+
     public bool IsLoading { get => _isLoading; set => SetProperty(ref _isLoading, value); }
     public string StatusMessage { get => _statusMessage; set => SetProperty(ref _statusMessage, value); }
 
@@ -204,18 +239,21 @@ public sealed class SpotDetailViewModel : ViewModelBase
     public ICommand DownloadNzbCommand { get; }
     public ICommand CloseCommand { get; }
     public ICommand PostCommentCommand { get; }
+    public ICommand OpenWebsiteCommand { get; }
+    public ICommand OpenWebLinkCommand { get; }
 
     public event Action<string>? RequestNzbDownload;
     public event Action? RequestClose;
 
     /// <summary>
     /// Raised after every NZB fetch so the Downloads tab can record it.
-    /// Parameters: spot, success, nzbPath, message, downloadJob (null when not integrated).
+    /// Parameters: spot, success, nzbPath, message, downloadJob (null when not integrated), spotDescription.
     /// </summary>
-    public event Action<SpotItem, bool, string?, string, Network.NzbDownloadJob?>? NzbFetched;
+    public event Action<SpotItem, bool, string?, string, Network.NzbDownloadJob?, string?>? NzbFetched;
 
     private readonly CommentService? _commentService;
     private readonly SpotBodyService? _bodyService;
+    private readonly Spotnet.Platform.IExternalLauncher _launcher = new Spotnet.Mac.Platform.MacExternalLauncher();
 
     public SpotDetailViewModel(SpotDatabaseService dbService, NzbService? nzbService = null,
                                CommentService? commentService = null, SpotBodyService? bodyService = null)
@@ -226,6 +264,22 @@ public sealed class SpotDetailViewModel : ViewModelBase
         _bodyService = bodyService;
 
         CloseCommand = new RelayCommand(() => RequestClose?.Invoke());
+
+        OpenWebsiteCommand = new RelayCommand(() =>
+        {
+            if (!string.IsNullOrEmpty(WebsiteUrl))
+            {
+                _launcher.OpenUrl(WebsiteUrl);
+            }
+        });
+
+        OpenWebLinkCommand = new RelayCommand(param =>
+        {
+            if (param is string url && !string.IsNullOrEmpty(url))
+            {
+                _launcher.OpenUrl(url);
+            }
+        });
 
         CopyMsgIdCommand = new RelayCommand(() =>
         {
@@ -244,7 +298,7 @@ public sealed class SpotDetailViewModel : ViewModelBase
                 StatusMessage = "NZB ophalen van Usenet...";
                 var (success, path, msg, job) = await _nzbService.DownloadAsync(_spot);
                 StatusMessage = msg;
-                NzbFetched?.Invoke(_spot, success, path, msg, job);
+                NzbFetched?.Invoke(_spot, success, path, msg, job, Description);
             }
             else
             {

@@ -612,4 +612,57 @@ public sealed class SpotDatabaseService
         }
         return terms.Count > 0 ? string.Join(" ", terms) : "\"\"";
     }
+
+    /// <summary>
+    /// Performs database maintenance: checkpoints WAL, reindexes, validates integrity,
+    /// rebuilds FTS5 search index, and vacuums.
+    /// </summary>
+    public async Task<(bool success, string message)> QuickRepairAsync()
+    {
+        try
+        {
+            using var conn = _db.OpenConnection(readOnly: false);
+
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA wal_checkpoint(TRUNCATE);";
+                await cmd.ExecuteNonQueryAsync();
+            }
+
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "REINDEX;";
+                await cmd.ExecuteNonQueryAsync();
+            }
+
+            string checkResult = "ok";
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA quick_check(1);";
+                var result = await cmd.ExecuteScalarAsync();
+                checkResult = Convert.ToString(result) ?? "ok";
+            }
+
+            // Rebuild FTS5 search table
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "INSERT INTO search(search) VALUES('rebuild');";
+                await cmd.ExecuteNonQueryAsync();
+            }
+
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "VACUUM;";
+                await cmd.ExecuteNonQueryAsync();
+            }
+
+            Log.Info("Database quick repair completed with status: {0}", checkResult);
+            return (true, $"Database succesvol geoptimaliseerd en hersteld. Status: {checkResult}");
+        }
+        catch (Exception ex)
+        {
+            Log.Warn(ex, "Database quick repair failed");
+            return (false, $"Fout tijdens databaseherstel: {ex.Message}");
+        }
+    }
 }
