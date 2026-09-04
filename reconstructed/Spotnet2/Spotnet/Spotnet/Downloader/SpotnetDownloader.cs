@@ -97,6 +97,48 @@ public class SpotnetDownloader : IDownloader, INotifyPropertyChanged, IDisposabl
 		DbUpdater.OnDbUpdateStart += DbUpdaterOnDbUpdateStart;
 		DbUpdater.OnDbUpdateEnd += DbUpdaterOnDbUpdateEnd;
 		ItemsOrderChanged += OnItemsOrderChanged;
+		WatchItemsForCompletion();
+	}
+
+	/// <summary>
+	/// Listens for the finished-download notification on every item, whatever route it
+	/// arrived by.
+	/// </summary>
+	/// <remarks>
+	/// The subscription used to live in <see cref="AddToDownloadQueue"/> alone, so it only
+	/// ever reached items queued during this run. A download restored from the queue file
+	/// after a restart - the normal case for anything still in progress when Spotnet closed -
+	/// reached history with nothing listening, and finished completely silently. Items is an
+	/// ObservableCollection, so following it covers the restore path, the queue path and any
+	/// route added later.
+	/// </remarks>
+	private void WatchItemsForCompletion()
+	{
+		Items.CollectionChanged += delegate(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		{
+			if (e.NewItems == null)
+			{
+				return;
+			}
+			foreach (object added in e.NewItems)
+			{
+				SubscribeToCompletion(added as DownloaderItemViewModel);
+			}
+		};
+		foreach (DownloaderItemViewModel existing in Items.ToList())
+		{
+			SubscribeToCompletion(existing);
+		}
+	}
+
+	/// <summary>Idempotent: an item can reach this by more than one route.</summary>
+	private void SubscribeToCompletion(DownloaderItemViewModel item)
+	{
+		if (item != null)
+		{
+			item.IsHistoryChanged -= OnIsHistoryChanged;
+			item.IsHistoryChanged += OnIsHistoryChanged;
+		}
 	}
 
 	public bool IsDownloadInQueueAlready(string messageId, out DownloaderItemViewModel item)
@@ -143,7 +185,7 @@ public class SpotnetDownloader : IDownloader, INotifyPropertyChanged, IDisposabl
 		{
 			item.PathToNzb = pathToNzb;
 			item.RawStatus = DownloadStatus.Queued;
-			item.IsHistoryChanged += OnIsHistoryChanged;
+			SubscribeToCompletion(item);
 		});
 		return true;
 	}
@@ -482,11 +524,25 @@ public class SpotnetDownloader : IDownloader, INotifyPropertyChanged, IDisposabl
 		{
 			return;
 		}
+		Log.Info("Download reached history with status {0}; reporting it: {1}", sender.RawStatus, sender.Titel);
 		DispatcherHelper.CheckBeginInvokeOnUI(async delegate
 		{
 			try
 			{
-				((MainWindow)Application.Current.MainWindow).DisplayTooltip(sender.Titel + " " + Words.isComplete);
+				// Sys.MainWindow, not Application.Current.MainWindow. Nothing ever assigns the
+				// latter - Spotnet drives its own startup and shows a splash first - so it was
+				// null here, the cast quietly produced null, and the call threw a
+				// NullReferenceException that this catch swallowed. Every finished download has
+				// been reported into that catch block rather than to the user.
+				MainWindow main = Sys.MainWindow;
+				if (main == null)
+				{
+					Log.Warn("No main window, so the finished download cannot be reported: " + sender.Titel);
+				}
+				else
+				{
+					main.DisplayTooltip(sender.Titel + " " + Words.isComplete, sender.RawStatus == DownloadStatus.Success);
+				}
 				await ProcessShutdownPcAfterDownloads();
 			}
 			catch (Exception ex)

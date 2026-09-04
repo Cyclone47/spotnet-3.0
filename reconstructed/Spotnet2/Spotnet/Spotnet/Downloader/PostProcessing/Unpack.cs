@@ -36,6 +36,7 @@ public class Unpack
 	{
 		_downloaderItem.RawStatus = DownloadStatus.Unpacking;
 		_filesUnpackedSuccessfully = new List<string>();
+		DetectPasswordIfNotSetYet();
 		bool flag = ExecuteUnrar(withPath: true, out passwordProblem);
 		if (passwordProblem)
 		{
@@ -59,6 +60,42 @@ public class Unpack
 		}
 		CleanUpArchiveFiles();
 		return flag;
+	}
+
+	/// <summary>
+	/// Fills in the archive password from what the download itself carries, when nothing
+	/// has set one yet.
+	/// </summary>
+	/// <remarks>
+	/// A password the user typed into ChangeUnpackPasswordWindow, or one the spot body
+	/// already supplied when the download was queued, is left exactly as it is - this only
+	/// ever fills an empty value. The NZB stays on disk in the queue directory, so this
+	/// still works for a download resumed in a later session, where the spot body is long
+	/// gone. When it finds nothing, or finds the wrong thing, unrar reports the password
+	/// problem and the manual dialog takes over as before.
+	///
+	/// The password is never written to the log; only the fact that one was found is.
+	/// </remarks>
+	private void DetectPasswordIfNotSetYet()
+	{
+		if (!_downloaderItem.UnpackPassword.IsNullOrEmpty())
+		{
+			return;
+		}
+		try
+		{
+			string detected = UnpackPasswordDetector.Detect(_downloaderItem.PathToNzb, _downloaderItem.Titel);
+			if (detected.IsNullOrEmpty())
+			{
+				return;
+			}
+			_downloaderItem.UnpackPassword = detected;
+			_logQueue.Debug("Unpack password taken from the NZB metadata or the spot text.");
+		}
+		catch (Exception ex)
+		{
+			_logQueue.Debug("Failed to look for an unpack password: " + ex.Message);
+		}
 	}
 
 	private void CleanUpArchiveFiles()

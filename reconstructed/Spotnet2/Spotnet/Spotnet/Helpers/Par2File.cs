@@ -89,11 +89,18 @@ internal static class Par2File
 		{
 			throw new Exception("Failed to read par2 data");
 		}
-		MD5 mD = new MD5CryptoServiceProvider();
-		mD.TransformFinalBlock(array2, 0, array2.Length);
-		if (!text.Equals(AppHelper.MakeMd5(mD.Hash)))
+		// MD5.Create() resolves to the platform's managed/CNG implementation. The
+		// CryptoServiceProvider types wrap a CAPI provider that a Windows 11 machine
+		// with the FIPS policy enabled refuses to hand out, which threw an
+		// InvalidOperationException here and failed every par2 validation.
+		// The digest itself is unchanged, so par2 packet hashes still match.
+		using (MD5 mD = MD5.Create())
 		{
-			throw new Exception("Par2 data is malformed");
+			mD.TransformFinalBlock(array2, 0, array2.Length);
+			if (!text.Equals(AppHelper.MakeMd5(mD.Hash)))
+			{
+				throw new Exception("Par2 data is malformed");
+			}
 		}
 		num = array2.Length;
 		for (int i = 0; i < num - 72; i += 8)

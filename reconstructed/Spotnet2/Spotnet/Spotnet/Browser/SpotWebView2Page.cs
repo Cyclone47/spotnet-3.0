@@ -362,18 +362,16 @@ internal class SpotWebView2Page : WebView2Page, ISpotPage
 			}
 			if (lower.StartsWith("link:") && !lower.StartsWith("link:spotnet://"))
 			{
-				string url = text.Substring("link:".Length);
-				if (!url.Equals("undefined"))
-				{
-					if (Settings.Default.ExternalBrowser)
-					{
-						AppHelper.LaunchInExternalProgram(url);
-					}
-					else
-					{
-						Sys.MainWindow.OpenPage(PageTypeEnum.WebPage, url, saveParrentTab: true).Forget();
-					}
-				}
+				OpenWebLink(text.Substring("link:".Length));
+			}
+			else if (lower.StartsWith("http://") || lower.StartsWith("https://"))
+			{
+				// A plain web link in a spot body or a comment - IMDb, YouTube, an
+				// uploader's site. The theme does not rewrite these into link:, so they
+				// arrive here as themselves, either from the cancelled navigation or from
+				// the bridge. Before this branch existed every one of them fell through
+				// the chain and the click did nothing at all.
+				OpenWebLink(text);
 			}
 			else if (lower.StartsWith("query:"))
 			{
@@ -448,6 +446,76 @@ internal class SpotWebView2Page : WebView2Page, ISpotPage
 		{
 			Log.Exception(ex, showToClient: true);
 		}
+	}
+
+	/// <summary>
+	/// Sends a web link where <see cref="Settings.ExternalBrowser"/> says it should go.
+	/// </summary>
+	/// <remarks>
+	/// The link text comes out of a Usenet posting, so only http and https are ever
+	/// launched. A javascript:, data: or file: href reaching
+	/// <see cref="AppHelper.LaunchInExternalProgram"/> would be handed to the shell.
+	/// </remarks>
+	private static void OpenWebLink(string url)
+	{
+		if (!TryResolveWebLink(url, out string target))
+		{
+			Log.Debug("Not opening a link from a spot page that is not http or https: " + url);
+			return;
+		}
+		if (Settings.Default.ExternalBrowser)
+		{
+			AppHelper.LaunchInExternalProgram(target);
+		}
+		else
+		{
+			Sys.MainWindow.OpenPage(PageTypeEnum.WebPage, target, saveParrentTab: true).Forget();
+		}
+	}
+
+	/// <summary>
+	/// Decides whether a link out of a spot page may leave the application, and what should
+	/// be opened if so.
+	/// </summary>
+	/// <remarks>
+	/// Kept separate from the opening itself so the rule can be tested. "undefined" is what
+	/// the themes' own script produces for an anchor with no usable href, and it used to be
+	/// checked only on the link: branch.
+	/// </remarks>
+	internal static bool TryResolveWebLink(string url, out string target)
+	{
+		target = null;
+		if (url.IsNullOrWhiteSpace())
+		{
+			return false;
+		}
+		string candidate = url.Trim();
+		if (candidate.EqualsIgnoreCase("undefined"))
+		{
+			return false;
+		}
+		if (!System.Uri.TryCreate(candidate, UriKind.Absolute, out System.Uri parsed)
+			|| (!parsed.Scheme.EqualsIgnoreCase(System.Uri.UriSchemeHttp)
+				&& !parsed.Scheme.EqualsIgnoreCase(System.Uri.UriSchemeHttps)))
+		{
+			return false;
+		}
+		target = candidate;
+		return true;
+	}
+
+	/// <summary>
+	/// A target="_blank" link on a spot page follows the same setting as any other web
+	/// link, instead of always opening an internal tab the way the plain browser does.
+	/// </summary>
+	protected override void OnNewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs e)
+	{
+		e.Handled = true;
+		string url = e.Uri;
+		DispatcherHelper.CheckBeginInvokeOnUI(delegate
+		{
+			OpenWebLink(url);
+		});
 	}
 
 	private void TogglePanel(string panel)

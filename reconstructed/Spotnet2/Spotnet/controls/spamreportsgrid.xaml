@@ -10,8 +10,8 @@
       <ItemsControl.ItemTemplate>
         <DataTemplate>
           <TextBlock FontFamily="Tahoma" FontSize="{DynamicResource ContentFontSize}" Background="#00FFFFFF">
-            <Run Foreground="#FF4682B4" Text="@" />
-            <Run Foreground="#FF4682B4" Text="{Binding Username}" /> <Run Foreground="#FF4682B4" Text=":" /> <Run Text="{Binding Text}" /></TextBlock>
+            <Run Foreground="{DynamicResource NoticeLinkBrush}" Text="@" />
+            <Run Foreground="{DynamicResource NoticeLinkBrush}" Text="{Binding Username}" /> <Run Foreground="{DynamicResource NoticeLinkBrush}" Text=":" /> <Run Text="{Binding Text}" /></TextBlock>
         </DataTemplate>
       </ItemsControl.ItemTemplate>
       <ItemsControl.ItemContainerStyle>

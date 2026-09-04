@@ -1,6 +1,50 @@
 ﻿<section class="notes-section" id="new-features">
 <h3>What’s New</h3>
 
+<br><h5>3.0.6.8</h5>
+    <ul class="section-items tagged">
+        <li>
+            <b class="tag tag-fixed">[Fixed]</b>
+            The <i>What&rsquo;s new in this version</i> link in the update prompt now opens the Release Notes tab inside Spotnet, just like Help &gt; Release Notes, instead of opening an external browser.
+        </li>
+    </ul>
+
+<br><h5>3.0.6.7</h5>
+    <ul class="section-items tagged">
+        <li>
+            <b class="tag tag-new">[New]</b>
+            Archive passwords are found on their own. Spotnet reads the password from the NZB&rsquo;s own metadata, and failing that from the spot description, and hands it straight to UnRAR or 7-Zip. You are asked for a password only when none can be found or the one found turns out to be wrong.
+        </li>
+        <li>
+            <b class="tag tag-new">[New]</b>
+            A first synchronisation no longer has to reach back fifteen years. Choose how far back to fetch &mdash; the last 30 days, 90 days, a year, or everything &mdash; and a new installation is ready in minutes rather than hours.
+        </li>
+        <li>
+            <b class="tag tag-new">[New]</b>
+            Windows desktop notifications when a download has finished and unpacked, and when a database repair or rebuild is done. They appear only while Spotnet is not the window in front. Settings &gt; Common has a switch and a button that shows one on the spot.
+        </li>
+        <li>
+            <b class="tag tag-fixed">[Fixed]</b>
+            Links in a spot description opened an empty tab or did nothing at all. Web links now open in your own browser, or in a Spotnet tab if you prefer. Spotnet&rsquo;s own links stay inside the application either way.
+        </li>
+        <li>
+            <b class="tag tag-fixed">[Fixed]</b>
+            Dialogs and pop-ups kept fixed grey tones and could leave grey text on a grey background. Every window now follows the chosen theme, in Modern Dark, Modern Light and Classic alike.
+        </li>
+        <li>
+            <b class="tag tag-fixed">[Fixed]</b>
+            Spotnet failed to verify par2 files on Windows installations running in FIPS mode. It now uses hashing Windows accepts there; par2 verification itself is unchanged.
+        </li>
+    </ul>
+
+<br><h5>3.0.6.6</h5>
+    <ul class="section-items tagged">
+        <li>
+            <b class="tag tag-fixed">[Fixed]</b>
+            Downloads could finish with a warning and unpack with a checksum error. The decoder kept the doubled leading dot the news server adds to a line, which inserted a stray byte into the file. Files already downloaded cannot be repaired &mdash; delete and download them again.
+        </li>
+    </ul>
+
 <br><h5>3.0.6.0</h5>
     <ul class="section-items tagged">
         <li>

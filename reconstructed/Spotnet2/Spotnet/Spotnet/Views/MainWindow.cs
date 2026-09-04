@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.CodeDom.Compiler;
 using System.Collections;
 using System.Collections.Generic;
@@ -132,6 +132,9 @@ public partial class MainWindow : MetroWindow
                 base.Closing += MainWindow_Closing;
                 _trayNotify.DoubleClick += TrayNotify_DoubleClick;
                 _trayNotify.Click += TrayNotify_Click;
+                // One notification icon for both jobs: minimise-to-tray and desktop
+                // notifications. A second one would show up as a second tray entry.
+                NotificationHelper.AttachTrayIcon(_trayNotify);
                 base.Activated += MainWindow_OnActivated;
                 InitializeDownloader();
                 SpotProvider = new SpotProvider();
@@ -187,6 +190,7 @@ public partial class MainWindow : MetroWindow
             task2 = Sys.Downloader.ShutdownProcessAsync();
         }
 
+        NotificationHelper.Shutdown();
         SpotRowViewModel.DisposeTaskScheduler();
         DbUpdater.DbUpdateTimerStop();
         DbUpdater.Stop();
@@ -2390,26 +2394,39 @@ public partial class MainWindow : MetroWindow
         return nntpSettings;
     }
 
-    internal void DisplayTooltip(string sTooltip)
+    /// <summary>
+    /// Reports a finished download: in the window while the user is in it, on the desktop
+    /// while they are not.
+    /// </summary>
+    /// <remarks>
+    /// The balloon used to be raised and the tray icon hidden again in the same statement.
+    /// Hiding a notification icon takes its balloon with it, so on Windows 10 and 11 the
+    /// notification usually never reached the screen at all. NotificationHelper keeps the
+    /// icon alive for the life of the notification and restores its visibility afterwards.
+    /// </remarks>
+    internal void DisplayTooltip(string sTooltip, bool success = true)
     {
         if (!WindowActivatedHelper.ApplicationIsActivated())
         {
             if (Settings.Default.NotifyAboutDownloadComplete)
             {
-                bool visible = _trayNotify.Visible;
-                try
-                {
-                    _trayNotify.Visible = true;
-                    _trayNotify.ShowBalloonTip(3000, "", sTooltip, ToolTipIcon.Info);
-                }
-                finally
-                {
-                    _trayNotify.Visible = visible;
-                }
+                // The notification says which of the two happened. It used to announce
+                // every finished item as complete, including the ones that failed to
+                // unpack or repair.
+                NotificationHelper.Show(
+                    success ? Words.NotificationDownloadFinished : Words.NotificationDownloadProblem,
+                    sTooltip);
+            }
+            else
+            {
+                Log.Info("Download notification suppressed by the NotifyAboutDownloadComplete setting.");
             }
         }
         else
         {
+            // Spotnet is the window in front, so this belongs in the window rather than on
+            // the desktop.
+            Log.Debug("Spotnet is in the foreground; reporting the finished download in-app.");
             AppHelper.ShowPopupMessage(sTooltip, inTheCenter: false, TimeSpan.FromSeconds(3.0));
         }
     }

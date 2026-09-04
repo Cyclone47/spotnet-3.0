@@ -340,7 +340,11 @@ public partial class WebView2Page : System.Windows.Controls.UserControl, IPage, 
 	/// <summary>
 	/// Opens target="_blank" links as Spotnet tabs instead of detached popup windows.
 	/// </summary>
-	private void OnNewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs e)
+	/// <remarks>
+	/// Virtual because a spot page routes web links by the ExternalBrowser setting rather
+	/// than always into a tab; see <see cref="SpotWebView2Page"/>.
+	/// </remarks>
+	protected virtual void OnNewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs e)
 	{
 		e.Handled = true;
 		string url = e.Uri;

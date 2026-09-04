@@ -27,7 +27,10 @@ namespace SpotnetEnc
                 byte* dst = pDst;
                 byte* dstEnd = pDst + maxOut;
 
-                // Decoding starts immediately after the =ypart / =ybegin header line (which is a line start)
+                // The body arrives straight off the wire, so it is still dot-stuffed:
+                // the server doubles a leading '.' on every line (RFC 3977 3.1.1).
+                // Decoding starts at the first byte after the =ypart/=ybegin line,
+                // which is a line boundary.
                 bool atLineStart = true;
 
                 while (src < srcEnd && dst < dstEnd)
@@ -46,9 +49,9 @@ namespace SpotnetEnc
                     if (atLineStart)
                     {
                         atLineStart = false;
-                        // If the line starts with "..", drop the first dot (NNTP stuffing)
                         if (b == (byte)'.' && src < srcEnd && *src == (byte)'.')
                         {
+                            // Drop the stuffing dot; the second one is payload.
                             src++;
                         }
                     }

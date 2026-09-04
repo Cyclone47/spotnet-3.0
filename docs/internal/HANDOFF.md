@@ -3,8 +3,171 @@
 Single self-contained document: the prompt to start a new AI session, the current state,
 the sequenced plan for what remains, and the full record of what changed and why.
 
-**Build:** 0 errors. **Tests:** 179/179 passing under the x64 test host.
-Target: `net472`, `x64` only.
+**Build:** 0 errors. **Tests:** 395/395 passing under the x64 test host.
+Target: `net8.0-windows`, `x64` only.
+
+## Usability and hardening pass: unreleased
+
+Six changes on top of 3.0.6.6. Build is 0 errors; the suite is 395/395, with three new test
+files. No cryptographic hash, signature scheme or wire format was touched.
+
+### 1. The archive password is taken from the download itself
+
+`Helpers/UnpackPasswordDetector.cs` reads the password an NZB declares in its head section -
+both `<meta type="password">secret</meta>` and the `value="secret"` attribute form several
+posting tools emit - and, failing that, the conventional labels in a spot title or body
+(`[b]Wachtwoord:[/b] x`, `Password: x`, `pwd = x`, quoted values, label on its own line).
+
+- `SpotHelper.DownloadNzbAndStartDownloadItem` applies it from the spot body at queue time,
+  which is the only moment the body exists.
+- `Unpack.Run` re-reads the NZB kept in the queue directory, so a download resumed in a later
+  session still finds it.
+- Neither ever overwrites a non-empty `UnpackPassword`, so a password the user typed into
+  `ChangeUnpackPasswordWindow` wins. When nothing is found, or the found value turns out to be
+  wrong, unrar reports the password problem and the manual dialog opens exactly as before.
+- The detector refuses to guess: `Wachtwoord: geen`, `Password: none`, `n/a` and bare
+  punctuation return nothing, because inventing a password breaks an unpack that would
+  otherwise have worked. The password is never written to the log.
+
+### 2. A first synchronisation no longer starts fifteen years back
+
+New setting `InitialFetchDays` (default 90; 30 / 90 / 365 / everything, in Settings ->
+Database). It applies only while the spots database is still empty - `Position.First == -1`.
+
+`Model/ArticleWatermark.cs` binary-searches the group for the first article at or after the
+cutoff, using XOVER probes of 200 articles and a budget of 32 of them. Article numbers rise
+with posting time, so a few round trips replace hours of header downloading.
+
+`DbUpdater.RetentionStartDate` is the floor even when the user asks for everything: headers
+older than it were already discarded on save in `Headers.OnWorkDone`, so fetching them was
+pure waiting. Anything undeterminable - a provider that will not answer a probe, dates that
+will not parse - falls back to the full range, which is the previous behaviour.
+
+### 3. Web links in a spot description work again
+
+`SpotWebView2Page.HandleHostLink` handled only the theme's `link:` pseudo-scheme. A plain
+`http://` or `https://` anchor was cancelled by `OnSpotNavigationStarting` and then fell
+through every branch, so the click did nothing; a `target="_blank"` one went to the base
+class and always opened an internal tab regardless of the setting.
+
+- An `http`/`https` branch was added, and `OnNewWindowRequested` is now `protected virtual`
+  and overridden on the spot page.
+- Both route through one opener that honours `Settings.Default.ExternalBrowser`:
+  `AppHelper.LaunchInExternalProgram` when on, an internal WebView2 tab when off.
+- `ExternalBrowser` now **defaults to True**. It was False; an IMDb or YouTube link out of a
+  spot belongs in the user's own browser, with their sessions and extensions. Existing
+  profiles keep their saved value - only fresh ones see the new default.
+- `TryResolveWebLink` is the scheme filter and is separately tested: only absolute http and
+  https ever leave the application. `javascript:`, `data:`, `file:` and `ftp:` hrefs out of a
+  Usenet posting are dropped rather than handed to the shell. `spotnet://`, `query:`, `menu:`
+  and the rest stay strictly internal.
+
+### 4. Dialogs follow the theme
+
+`Views/DbRecoveryWindow.xaml` hardcoded a complete light palette (`#333333`, `#666666`,
+`#F2F2F2`, tinted button faces) and rendered dark-grey-on-dark under Modern Dark. Every colour
+is now a `DynamicResource` into the active palette. The palette vocabulary inverts between the
+light and dark dictionaries - `BlackBrush` is the primary text colour and `GrayBrush9`/`10` the
+quietest surface in both - so one set of keys serves all three themes. The colour coding
+survives: the recommended action uses the notice palette, the destructive one the error colour.
+
+Four other genuine contrast failures were fixed the same way: the system-status bubble (near
+black text on a hardcoded white gradient), the spam-report author colour, the encrypted-NZB
+hint on the post dialog, and the speed-limit arrow on the downloads status bar.
+
+Deliberately left alone: the splash window, the SOCKS proxy tooltip, the video player overlay
+and the filter panel. Those commit to a single fixed-contrast look by design rather than
+following the theme, and the remaining `#00FFFFFF` values are transparency, not colour.
+
+### 5. FIPS-safe crypto construction
+
+`new MD5CryptoServiceProvider()` in `Helpers/Par2File.cs:92` threw `InvalidOperationException`
+on a Windows 11 machine with the FIPS policy enabled, failing every par2 validation. It is now
+`MD5.Create()`. The same migration was applied to the other FIPS-fragile constructions in the
+solution:
+
+| Was | Now | Where |
+| --- | --- | --- |
+| `new MD5CryptoServiceProvider()` | `MD5.Create()` | `Par2File` |
+| `new SHA1CryptoServiceProvider()` | `SHA1.Create()` | `AppHelper`, `SpotHelper` |
+| `new SHA1Managed().ComputeHash(x)` | `SHA1.HashData(x)` | `AppHelper`, `SpotHelper` |
+| `new SHA1Managed()` | `SHA1.Create()` | `Worker` |
+| `new TripleDESCryptoServiceProvider()` | `TripleDES.Create()` | `EncPass` |
+
+Every one produces an identical digest or ciphertext, so par2 validation, spot hashes and
+stored passwords are unaffected. `RSACryptoServiceProvider` was **left alone on purpose**: it
+is the FIPS-approved CAPI provider, the spot signature path depends on its
+`SignHash`/`VerifyHash(hash, null, sig)` shape, and `UserKeyHelper` stores keys as CSP blobs in
+a named key container. Migrating it would change both the signature API and the on-disk key
+format - exactly the wire-protocol change this work is not allowed to make.
+
+### 6. Desktop notifications
+
+`Helpers/NotificationHelper.cs` is the single implementation. It borrows the main window's
+existing tray `NotifyIcon` through `AttachTrayIcon`, so there is never a second entry in the
+tray, and falls back to one of its own if called before the window exists.
+
+Four separate defects stood between a finished download and a notification. All three were
+found by instrumenting the path and reading the installed profile's log
+(`%LOCALAPPDATA%\Spotnet3\Data\Logs\spotnet.log`), not by reasoning about it - the first two
+guesses were wrong, and the log is what settled it.
+
+1. **The finished-download report threw a NullReferenceException on every download, and its
+   own catch block swallowed it.** Both downloaders called
+   `((MainWindow)Application.Current.MainWindow).DisplayTooltip(...)`. Nothing in Spotnet ever
+   assigns `Application.Current.MainWindow` - it drives its own startup and shows a splash
+   first - so that property was null, the cast quietly produced null, and the call threw. The
+   surrounding `catch` logged it at Error and moved on, so the only trace was one
+   `MoveNext [System.NullReferenceException]` line in the log with no context. `Sys.MainWindow`
+   is the reference the rest of the codebase uses, and is what both call sites use now, with a
+   null guard that says so in the log. This predates all of this work: the download-complete
+   notification has never functioned.
+2. **The subscription only covered half the items.** `IsHistoryChanged` was wired in
+   `SpotnetDownloader.AddToDownloadQueue` alone, so it reached items queued during the current
+   run and nothing else. A download restored from the queue file after a restart - the normal
+   case for anything still in progress when Spotnet last closed - reached history with no
+   handler attached and finished in total silence. This was the actual reason nothing appeared
+   on screen: the notification code was never called at all. `Items` is an
+   `ObservableCollection`, so the downloader now follows it from its constructor and subscribes
+   every item, by whatever route it arrives, idempotently.
+3. **The balloon was raised before the shell had the icon.** `Visible = true` sends NIM_ADD;
+   asking for a balloon in the same statement gets it dropped, because the icon it belongs to
+   is not registered yet. Minimise-to-tray defaults to off, so the icon was hidden - and this
+   fired - essentially every time. The helper now shows the icon, gives the shell 750 ms of
+   message pump, then raises the balloon.
+4. **The icon was hidden again in the same breath.** The original `DisplayTooltip` restored
+   the icon's visibility immediately after `ShowBalloonTip`, and a hidden notification icon
+   takes its balloon with it. The helper keeps it alive on a 12-second timer measured from the
+   balloon, then restores whatever visibility it had, so a window sitting minimised in the tray
+   keeps its icon.
+
+Every gate now logs at Info - reached history, raised, suppressed by which setting, or in the
+foreground - so the log answers "how far did it get?" without another round of guessing. There
+is also a **Test notification** button next to the setting in Settings -> Common, which raises
+one immediately and deliberately ignores the master switch, so the delivery path can be checked
+without waiting for a download and without a setting hiding the answer.
+
+None of this is covered by the test suite: a toast needs a real shell and a message pump. The
+log and that button are the verification mechanism instead.
+
+- Fires when a download reaches history, carrying the spot title, and now says which of
+  "finished" or "finished with problems" happened - it previously announced failures as
+  complete. Success is `RawStatus == DownloadStatus.Success`, which
+  `SpotnetDownloaderItemViewModel` sets from `PostProcessCoordinator.Run()`, so it genuinely
+  means downloaded, repaired, unpacked and moved.
+- Fires when a Quick Repair or a Rebuild finishes in `DbRecoveryWindow`.
+- New master switch `ShowDesktopNotifications` (default True, Settings -> General). The
+  existing per-event `NotifyAboutDownloadComplete` still applies on top of it.
+
+### Notes for the next session
+
+- New user strings were added to `Spotnet.Properties.Words.resx` and `.nl.resx` with matching
+  Dutch text.
+- Warning count moved 1467 -> 1485. All of it is `CA1416` platform noise on the Windows-only
+  `NotifyIcon` API; 27 files including `MainWindow.cs` already carry that category. No new
+  warning category was introduced.
+- Nothing was pushed. Verify with `dotnet build reconstructed/Spotnet2/Spotnet.sln -c Release`
+  and `dotnet test reconstructed/Spotnet2/Spotnet.Tests/Spotnet.Tests.csproj -c Release`.
 
 ## Provider-dialog hotfix: 3.0.4
 

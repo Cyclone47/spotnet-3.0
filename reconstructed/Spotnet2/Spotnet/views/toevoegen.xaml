@@ -33,7 +33,7 @@
         <CheckBox Name="EncryptedNzbCheckBox" Grid.Column="1" Grid.Row="3" Margin="0,5,0,0" Checked="EncryptedNzbCheckBox_OnChecked" Unchecked="EncryptedNzbCheckBox_OnUnchecked" />
         <TextBox Name="EncryptedNzbTextBox" TabIndex="13" Grid.Column="2" Grid.Row="3" VerticalContentAlignment="Center" IsEnabled="False" Margin="0,5,10,0" ToolTip="{x:Static p:Words.NZBFileSelect}" />
         <Button Name="EncryptedNzbBrowseButton" Grid.Column="3" Grid.Row="3" IsEnabled="False" Content="{x:Static p:Words.Browse}" IsDefault="False" Margin="10,5,0,0" TabIndex="14" Click="EncryptedNzbBrowseButton_Click" />
-        <Label Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="3" HorizontalAlignment="Center" Content="{x:Static p:Words.EncryptedNZBTooltip}" Margin="0,-3,10,0" Foreground="#FFA52A2A" FontStyle="Italic" FontSize="{DynamicResource ContentFontSize}" />
+        <Label Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="3" HorizontalAlignment="Center" Content="{x:Static p:Words.EncryptedNZBTooltip}" Margin="0,-3,10,0" Foreground="{DynamicResource ErrorForegroundBrush}" FontStyle="Italic" FontSize="{DynamicResource ContentFontSize}" />
         <Grid Column="2" Row="5" Margin="0,5,10,0">
           <Grid.ColumnDefinitions>
             <ColumnDefinition />

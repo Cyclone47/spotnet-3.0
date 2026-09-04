@@ -52,6 +52,9 @@ namespace Spotnet.Views
             if (success)
             {
                 SelectedAction = DbRecoveryAction.Repaired;
+                // A repair runs unattended for long enough that the user has usually gone
+                // to do something else by the time it finishes.
+                NotificationHelper.NotifyDatabaseRecovered("Quick repair completed. Spotnet is starting normally.");
                 DialogResult = true;
                 Close();
             }
@@ -73,6 +76,7 @@ namespace Spotnet.Views
             {
                 ClearConfigurationFlags();
                 StatusTextBlock.Text = $"Recovered {result.SpotsRecovered} spots.";
+                NotificationHelper.NotifyDatabaseRecovered($"Rebuild completed. {result.SpotsRecovered} spots recovered.");
                 SelectedAction = DbRecoveryAction.Rebuilt;
                 DialogResult = true;
                 Close();

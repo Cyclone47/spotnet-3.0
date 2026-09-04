@@ -8,8 +8,18 @@
                       ResizeMode="NoResize"
                       ShowInTaskbar="True"
                       Topmost="True"
-                      BorderBrush="#007ACC"
+                      Background="{DynamicResource DialogBackgroundBrush}"
+                      GlowBrush="{DynamicResource HighlightBrush}"
+                      BorderBrush="{DynamicResource AccentColorBrush}"
                       BorderThickness="1">
+    <!--
+        Every colour here is a DynamicResource into the active palette, so the window
+        follows Modern Dark, Modern Light and Classic without a second set of values.
+        The palette vocabulary inverts between the light and dark dictionaries -
+        BlackBrush is the primary text colour and GrayBrush9/10 the quietest surface in
+        both - which is why the same key works for either. The hardcoded light-mode hexes
+        this replaced turned the whole dialog into dark grey text on a dark background.
+    -->
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -22,58 +32,64 @@
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
             <TextBlock Text="⚠️" FontSize="32" VerticalAlignment="Center" Margin="0,0,12,0"/>
             <StackPanel VerticalAlignment="Center">
-                <TextBlock Text="Database Startup Issue Detected" FontSize="18" FontWeight="Bold" Foreground="#333333"/>
-                <TextBlock x:Name="ReasonTextBlock" Text="Database startup took longer than 20 seconds or reported a connection issue." 
-                           FontSize="12" Foreground="#666666" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                <TextBlock Text="Database Startup Issue Detected" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource BlackBrush}"/>
+                <TextBlock x:Name="ReasonTextBlock" Text="Database startup took longer than 20 seconds or reported a connection issue."
+                           FontSize="12" Foreground="{DynamicResource GrayBrush2}" TextWrapping="Wrap" Margin="0,3,0,0"/>
             </StackPanel>
         </StackPanel>
 
         <!-- Description -->
-        <TextBlock Grid.Row="1" Text="Choose how you would like Spotnet to handle your database:" 
-                   FontSize="13" Foreground="#444444" Margin="0,0,0,15"/>
+        <TextBlock Grid.Row="1" Text="Choose how you would like Spotnet to handle your database:"
+                   FontSize="13" Foreground="{DynamicResource GrayBrush1}" Margin="0,0,0,15"/>
 
         <!-- Action Buttons Grid -->
         <StackPanel Grid.Row="2" VerticalAlignment="Top">
-            <!-- 1. Quick Repair Button -->
+            <!-- 1. Quick Repair Button. The notice palette carries the "read this one
+                 first" emphasis that the blue tint used to. -->
             <Button x:Name="RepairButton" Click="RepairButton_Click" Height="54" Margin="0,0,0,10"
-                    HorizontalContentAlignment="Left" Padding="12,6" Background="#E6F2FB" BorderBrush="#007ACC">
+                    HorizontalContentAlignment="Left" Padding="12,6"
+                    Background="{DynamicResource NoticeBackgroundBrush}" BorderBrush="{DynamicResource NoticeBorderBrush}">
                 <StackPanel>
-                    <TextBlock Text="🔧 Quick Repair (Recommended ~2-5s)" FontWeight="Bold" FontSize="13" Foreground="#005A9E"/>
-                    <TextBlock Text="Fixes journal locks &amp; sync watermarks without losing spots or comments." FontSize="11" Foreground="#555555"/>
+                    <TextBlock Text="🔧 Quick Repair (Recommended ~2-5s)" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource NoticeForegroundBrush}"/>
+                    <TextBlock Text="Fixes journal locks &amp; sync watermarks without losing spots or comments." FontSize="11" Foreground="{DynamicResource NoticeForegroundBrush}"/>
                 </StackPanel>
             </Button>
 
             <!-- 2. Rebuild Button -->
             <Button x:Name="RebuildButton" Click="RebuildButton_Click" Height="54" Margin="0,0,0,10"
-                    HorizontalContentAlignment="Left" Padding="12,6" Background="#EAF6EE" BorderBrush="#2E8B57">
+                    HorizontalContentAlignment="Left" Padding="12,6"
+                    Background="{DynamicResource GrayBrush9}" BorderBrush="{DynamicResource GrayBrush5}">
                 <StackPanel>
-                    <TextBlock Text="🛠 Rebuild Database (keeps your spots)" FontWeight="Bold" FontSize="13" Foreground="#1E6A4C"/>
-                    <TextBlock Text="Copies every readable spot into a fresh file and regenerates the search index." FontSize="11" Foreground="#555555"/>
+                    <TextBlock Text="🛠 Rebuild Database (keeps your spots)" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource BlackBrush}"/>
+                    <TextBlock Text="Copies every readable spot into a fresh file and regenerates the search index." FontSize="11" Foreground="{DynamicResource GrayBrush2}"/>
                 </StackPanel>
             </Button>
 
-            <!-- 3. Clean Reset Button -->
+            <!-- 3. Clean Reset Button. This is the destructive one, so it borrows the
+                 error colour rather than a tint that only reads as "warning" in light. -->
             <Button x:Name="ResetButton" Click="ResetButton_Click" Height="54" Margin="0,0,0,10"
-                    HorizontalContentAlignment="Left" Padding="12,6" Background="#FFF5E6" BorderBrush="#FF9900">
+                    HorizontalContentAlignment="Left" Padding="12,6"
+                    Background="{DynamicResource GrayBrush9}" BorderBrush="{DynamicResource ErrorForegroundBrush}">
                 <StackPanel>
-                    <TextBlock Text="🧹 Clean Reset (Instant - Creates .bak backup)" FontWeight="Bold" FontSize="13" Foreground="#B35900"/>
-                    <TextBlock Text="Safely backs up current database and starts fresh from your provider." FontSize="11" Foreground="#555555"/>
+                    <TextBlock Text="🧹 Clean Reset (Instant - Creates .bak backup)" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource ErrorForegroundBrush}"/>
+                    <TextBlock Text="Safely backs up current database and starts fresh from your provider." FontSize="11" Foreground="{DynamicResource GrayBrush2}"/>
                 </StackPanel>
             </Button>
 
             <!-- 4. Close Button -->
             <Button x:Name="CloseButton" Click="CloseButton_Click" Height="42" Margin="0,0,0,5"
-                    HorizontalContentAlignment="Left" Padding="12,6" Background="#F2F2F2" BorderBrush="#CCCCCC">
+                    HorizontalContentAlignment="Left" Padding="12,6"
+                    Background="{DynamicResource GrayBrush10}" BorderBrush="{DynamicResource GrayBrush6}">
                 <StackPanel>
-                    <TextBlock Text="❌ Close Spotnet" FontWeight="Bold" FontSize="12" Foreground="#333333"/>
-                    <TextBlock Text="Exit Spotnet without making any database changes." FontSize="10" Foreground="#777777"/>
+                    <TextBlock Text="❌ Close Spotnet" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource GrayBrush1}"/>
+                    <TextBlock Text="Exit Spotnet without making any database changes." FontSize="10" Foreground="{DynamicResource GrayBrush2}"/>
                 </StackPanel>
             </Button>
         </StackPanel>
 
         <!-- Status / Progress Info -->
         <Grid Grid.Row="3" Margin="0,10,0,0">
-            <TextBlock x:Name="StatusTextBlock" Text="" FontSize="11" Foreground="#007ACC" VerticalAlignment="Center"/>
+            <TextBlock x:Name="StatusTextBlock" Text="" FontSize="11" Foreground="{DynamicResource BlackBrush}" VerticalAlignment="Center" TextWrapping="Wrap"/>
             <ProgressBar x:Name="ProgressBarControl" IsIndeterminate="True" Height="4" Visibility="Collapsed" VerticalAlignment="Bottom"/>
         </Grid>
     </Grid>

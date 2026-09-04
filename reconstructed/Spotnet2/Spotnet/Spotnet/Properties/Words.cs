@@ -1,4 +1,4 @@
-﻿using System.CodeDom.Compiler;
+using System.CodeDom.Compiler;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -563,6 +563,20 @@ public class Words
 
 	public static string MenuNotifyAboutDownloadComplete => ResourceManager.GetString("MenuNotifyAboutDownloadComplete", resourceCulture);
 
+	public static string MenuShowDesktopNotifications => ResourceManager.GetString("MenuShowDesktopNotifications", resourceCulture);
+
+	public static string MenuTestNotification => ResourceManager.GetString("MenuTestNotification", resourceCulture);
+
+	public static string NotificationTestTitle => ResourceManager.GetString("NotificationTestTitle", resourceCulture);
+
+	public static string NotificationTestBody => ResourceManager.GetString("NotificationTestBody", resourceCulture);
+
+	public static string NotificationDownloadFinished => ResourceManager.GetString("NotificationDownloadFinished", resourceCulture);
+
+	public static string NotificationDownloadProblem => ResourceManager.GetString("NotificationDownloadProblem", resourceCulture);
+
+	public static string NotificationDatabaseReady => ResourceManager.GetString("NotificationDatabaseReady", resourceCulture);
+
 	public static string MenuNzbFilesAssociate => ResourceManager.GetString("MenuNzbFilesAssociate", resourceCulture);
 
 	public static string MenuOpenNZB => ResourceManager.GetString("MenuOpenNZB", resourceCulture);
@@ -875,6 +889,16 @@ public class Words
 	public static string ResumeText => ResourceManager.GetString("ResumeText", resourceCulture);
 
 	public static string Retention => ResourceManager.GetString("Retention", resourceCulture);
+
+	public static string InitialFetchRange => ResourceManager.GetString("InitialFetchRange", resourceCulture);
+
+	public static string InitialFetchRange30 => ResourceManager.GetString("InitialFetchRange30", resourceCulture);
+
+	public static string InitialFetchRange90 => ResourceManager.GetString("InitialFetchRange90", resourceCulture);
+
+	public static string InitialFetchRange365 => ResourceManager.GetString("InitialFetchRange365", resourceCulture);
+
+	public static string InitialFetchRangeAll => ResourceManager.GetString("InitialFetchRangeAll", resourceCulture);
 
 	public static string RSAKeyIsWrong => ResourceManager.GetString("RSAKeyIsWrong", resourceCulture);
 

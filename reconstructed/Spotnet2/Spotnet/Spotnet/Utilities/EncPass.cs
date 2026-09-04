@@ -38,7 +38,8 @@ internal class EncPass
 			try
 			{
 				new UTF8Encoding();
-				TripleDESCryptoServiceProvider tripleDESCryptoServiceProvider = new TripleDESCryptoServiceProvider();
+				// TripleDES.Create() keeps CBC/PKCS7, so stored passwords still decrypt.
+				using TripleDES tripleDESCryptoServiceProvider = TripleDES.Create();
 				byte[] array = Convert.FromBase64String(inputInByts);
 				ICryptoTransform transform = tripleDESCryptoServiceProvider.CreateDecryptor(key, iv);
 				MemoryStream memoryStream = new MemoryStream();
@@ -66,7 +67,8 @@ internal class EncPass
 			return null;
 		}
 		byte[] bytes = new UTF8Encoding().GetBytes(plainText);
-		ICryptoTransform transform = new TripleDESCryptoServiceProvider().CreateEncryptor(key, iv);
+		using TripleDES tripleDes = TripleDES.Create();
+		ICryptoTransform transform = tripleDes.CreateEncryptor(key, iv);
 		MemoryStream memoryStream = new MemoryStream();
 		CryptoStream cryptoStream = new CryptoStream(memoryStream, transform, CryptoStreamMode.Write);
 		cryptoStream.Write(bytes, 0, bytes.Length);

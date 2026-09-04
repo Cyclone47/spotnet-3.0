@@ -70,7 +70,7 @@ internal sealed class SpotHelper
 
 	internal static bool CheckHash(string sMsg)
 	{
-		byte[] array = new SHA1Managed().ComputeHash(MakeLatin(sMsg));
+		byte[] array = SHA1.HashData(MakeLatin(sMsg));
 		if (array[0] == 0)
 		{
 			return array[1] == 0;
@@ -82,7 +82,7 @@ internal sealed class SpotHelper
 	{
 		try
 		{
-			return MakeRsa(sUserKey)?.VerifyHash(new SHA1Managed().ComputeHash(MakeLatin(sOrg)), null, Convert.FromBase64String(FixPadding(sSignature))) ?? false;
+			return MakeRsa(sUserKey)?.VerifyHash(SHA1.HashData(MakeLatin(sOrg)), null, Convert.FromBase64String(FixPadding(sSignature))) ?? false;
 		}
 		catch (Exception ex)
 		{
@@ -112,7 +112,9 @@ internal sealed class SpotHelper
 
 	private static string CreateHash(string sLeft, string sRight)
 	{
-		SHA1CryptoServiceProvider sHA1CryptoServiceProvider = new SHA1CryptoServiceProvider();
+		// SHA1.Create() picks the platform implementation instead of the CAPI provider,
+		// which a FIPS-policy machine will not create. Same digest, same wire format.
+		using SHA1 sHA1CryptoServiceProvider = SHA1.Create();
 		byte[] array = MakeLatin(sLeft);
 		byte[] array2 = MakeLatin(sRight);
 		int num = Information.UBound(array) + 1;
@@ -271,7 +273,7 @@ internal sealed class SpotHelper
 
 	internal static string CreateUserSignature(string sDataIn, RSACryptoServiceProvider cRsa)
 	{
-		return SpecialString(Convert.ToBase64String(cRsa.SignHash(new SHA1Managed().ComputeHash(MakeLatin(sDataIn)), null)));
+		return SpecialString(Convert.ToBase64String(cRsa.SignHash(SHA1.HashData(MakeLatin(sDataIn)), null)));
 	}
 
 	internal static List<NNTPWork> CreateWork(long sFirst, long sLast, int maxDesiredWorkLen)
@@ -1512,6 +1514,10 @@ internal sealed class SpotHelper
 				{
 					item = DownloaderItemFactory.New(spot.Title);
 				}
+				// The spot body only exists here. Unpack re-reads the NZB later for the
+				// same purpose, but by then the description is gone, so whatever the
+				// poster wrote there has to be picked up now.
+				ApplyDetectedUnpackPassword(item, spot);
 				DoDownload(text, item);
 			}
 			else if (item != null)
@@ -1522,6 +1528,36 @@ internal sealed class SpotHelper
 		catch (Exception ex)
 		{
 			Log.Exception(ex, showToClient: true);
+		}
+	}
+
+	/// <summary>
+	/// Carries the archive password out of the spot text onto the queued download.
+	/// </summary>
+	/// <remarks>
+	/// Only fills an empty value, so a password the user set on a re-queued item survives.
+	/// The body is checked before the title: a title mentioning a password is usually
+	/// repeating what the body states in full.
+	/// </remarks>
+	private static void ApplyDetectedUnpackPassword(DownloaderItemViewModel item, SpotEx spot)
+	{
+		if (item == null || spot == null || !item.UnpackPassword.IsNullOrEmpty())
+		{
+			return;
+		}
+		try
+		{
+			string detected = UnpackPasswordDetector.FromDescription(spot.Body)
+				?? UnpackPasswordDetector.FromDescription(spot.Title);
+			if (!detected.IsNullOrEmpty())
+			{
+				item.UnpackPassword = detected;
+				Log.Debug("Unpack password taken from the spot text for " + spot.MessageId);
+			}
+		}
+		catch (Exception ex)
+		{
+			Log.Debug("Failed to look for an unpack password in the spot text: " + ex.Message);
 		}
 	}
 

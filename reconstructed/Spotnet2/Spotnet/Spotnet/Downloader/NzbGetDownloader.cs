@@ -157,7 +157,20 @@ public class NzbGetDownloader : IDownloader, INotifyPropertyChanged, IDisposable
 		{
 			try
 			{
-				((MainWindow)Application.Current.MainWindow).DisplayTooltip(sender.Titel + " " + Words.isComplete);
+				// Sys.MainWindow, not Application.Current.MainWindow. Nothing ever assigns the
+				// latter - Spotnet drives its own startup and shows a splash first - so it was
+				// null here, the cast quietly produced null, and the call threw a
+				// NullReferenceException that this catch swallowed. Every finished download has
+				// been reported into that catch block rather than to the user.
+				MainWindow main = Sys.MainWindow;
+				if (main == null)
+				{
+					Log.Warn("No main window, so the finished download cannot be reported: " + sender.Titel);
+				}
+				else
+				{
+					main.DisplayTooltip(sender.Titel + " " + Words.isComplete, sender.RawStatus == DownloadStatus.Success);
+				}
 				await ProcessShutdownPcAfterDownloads();
 			}
 			catch (Exception ex)

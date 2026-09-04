@@ -43,7 +43,7 @@
     <Border.Background>
       <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
         <GradientStop Offset="0" Color="{Binding Path=TooltipColor, ElementName=MeControl, Mode=Default}" />
-        <GradientStop Color="#FFFFFFFF" Offset="1" />
+        <GradientStop Color="{DynamicResource WhiteColor}" Offset="1" />
       </LinearGradientBrush>
     </Border.Background>
     <DockPanel>
@@ -58,10 +58,10 @@
         </UIElement.RenderTransform>
       </Image>
       <Image Name="ImgClose" Margin="0,10,10,10" DockPanel.Dock="Right" VerticalAlignment="Top" Width="16" Height="16" Source="/Resources\ImagesInternal\close.png" Stretch="Fill" Opacity="0.4" ToolTip="{x:Static p:Words.Close}" Visibility="{Binding Path=TooltipCloseButtonShow, UpdateSourceTrigger=PropertyChanged, ElementName=MeControl, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" MouseDown="ImgClose_MouseDown" />
-      <TextBlock Margin="10,10,30,10" TextWrapping="Wrap" DockPanel.Dock="Top" HorizontalAlignment="Left" FontSize="16" FontWeight="Bold" Foreground="#FF474747">
+      <TextBlock Margin="10,10,30,10" TextWrapping="Wrap" DockPanel.Dock="Top" HorizontalAlignment="Left" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource BlackBrush}">
         <Run Text="{Binding Path=TooltipTitle, ElementName=MeControl, Mode=Default}" />
       </TextBlock>
-      <TextBlock Margin="10,0,30,20" DockPanel.Dock="Top" HorizontalAlignment="Left" FontSize="12" FontWeight="Normal" Foreground="#FF141414" TextWrapping="Wrap">
+      <TextBlock Margin="10,0,30,20" DockPanel.Dock="Top" HorizontalAlignment="Left" FontSize="12" FontWeight="Normal" Foreground="{DynamicResource GrayBrush1}" TextWrapping="Wrap">
         <Run Text="{Binding Path=TooltipText, ElementName=MeControl, Mode=Default}" />
       </TextBlock>
     </DockPanel>

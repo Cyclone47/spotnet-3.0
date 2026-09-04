@@ -307,7 +307,7 @@ public static class DownloaderDataDecoder
 						}
 						else if (num2 != 46)
 						{
-							// Fix: put the byte back AND keep num2 = 46 as data
+							// Not dot-stuffed: put the byte back and keep the single '.' as data.
 							streamToDecode.Position--;
 							num2 = 46;
 						}
@@ -325,7 +325,7 @@ public static class DownloaderDataDecoder
 						}
 						else if (num2 != 46)
 						{
-							// Fix: put the byte back AND keep num2 = 46 as data
+							// Not dot-stuffed: put the byte back and keep the single '.' as data.
 							streamToDecode.Position--;
 							num2 = 46;
 						}

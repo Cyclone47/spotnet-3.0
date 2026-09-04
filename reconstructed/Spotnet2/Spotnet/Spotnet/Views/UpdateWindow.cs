@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +8,7 @@ using System.Windows.Navigation;
 using MahApps.Metro.Controls;
 using NLog;
 using Spotnet.Deployment;
+using Spotnet.Extensions;
 using Spotnet.Helpers;
 using Spotnet.Properties;
 
@@ -51,16 +51,24 @@ public partial class UpdateWindow : MetroWindow
 
     private void NotesLink_RequestNavigate(object sender, RequestNavigateEventArgs e)
     {
+        e.Handled = true;
         try
         {
-            // UseShellExecute so the user's own browser opens it.
-            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+            if (Owner is not MainWindow mainWindow)
+            {
+                Log.Warn("The update release-notes link has no Spotnet main window owner.");
+                return;
+            }
+
+            // A modal update prompt keeps its owner disabled, so dismiss it before
+            // selecting (or creating) the same tab as Help > Release Notes.
+            Close();
+            mainWindow.OpenPage(PageTypeEnum.ReleaseNotes).Forget();
         }
         catch (Exception ex)
         {
             Log.Exception(ex, showToClient: true);
         }
-        e.Handled = true;
     }
 
     private void LaterButton_Click(object sender, RoutedEventArgs e)

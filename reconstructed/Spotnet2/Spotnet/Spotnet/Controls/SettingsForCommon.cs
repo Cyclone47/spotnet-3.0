@@ -30,6 +30,7 @@ public partial class SettingsForCommon : UserControl, IAdvancedSettingsControl
             }
 
             Settings.Default.SystemTray = SystemTray.IsChecked.GetValueOrDefault();
+            Settings.Default.ShowDesktopNotifications = ShowDesktopNotifications.IsChecked.GetValueOrDefault();
             Settings.Default.GoogleSuggest = ShowSug.IsChecked.GetValueOrDefault();
             if (Settings.Default.UseSocksProxy != UseSocks5Proxy.IsChecked.GetValueOrDefault())
             {
@@ -57,6 +58,7 @@ public partial class SettingsForCommon : UserControl, IAdvancedSettingsControl
     {
         ShowSug.IsChecked = Settings.Default.GoogleSuggest;
         SystemTray.IsChecked = Settings.Default.SystemTray;
+        ShowDesktopNotifications.IsChecked = Settings.Default.ShowDesktopNotifications;
         DownloadExternalLists.IsChecked = Settings.Default.DownloadExternalLists;
         UseSocks5Proxy.IsChecked = Settings.Default.UseSocksProxy;
         UseSocks5Proxy.Visibility = ((!SocksProxy.GlobalyEnabled) ? Visibility.Collapsed : Visibility.Visible);
@@ -65,5 +67,14 @@ public partial class SettingsForCommon : UserControl, IAdvancedSettingsControl
     public bool VerifyFields()
     {
         return true;
+    }
+
+    /// <summary>
+    /// Raises one notification now, so the delivery path can be checked without waiting for
+    /// a download to finish.
+    /// </summary>
+    private void TestNotificationButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        NotificationHelper.ShowTest();
     }
 }

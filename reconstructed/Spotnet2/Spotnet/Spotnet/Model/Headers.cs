@@ -199,7 +199,9 @@ internal static class Headers
 		}
 		if (nntpSettings.Position.First == -1)
 		{
-			beginFirstId = first;
+			// Nothing in the database yet. Rather than walking the whole group from its
+			// oldest surviving article, start where the user's chosen range begins.
+			beginFirstId = ApplyInitialFetchRange(nNTP, nntpSettings, first, last);
 			beginLastId = last;
 		}
 		else
@@ -229,6 +231,76 @@ internal static class Headers
 			num++;
 		}
 		return num;
+	}
+
+	/// <summary>
+	/// The article number a first synchronisation should start from, given
+	/// <see cref="Settings.InitialFetchDays"/> and the retention already in force.
+	/// </summary>
+	/// <remarks>
+	/// Headers older than <see cref="DbUpdater.RetentionStartDate"/> are dropped on save
+	/// anyway (see <see cref="OnWorkDone"/>), so that date is the floor even when the user
+	/// asked for everything - downloading headers only to discard them is pure waiting.
+	/// Anything that cannot be determined leaves <paramref name="first"/> untouched, which
+	/// is the behaviour this replaced.
+	/// </remarks>
+	private static long ApplyInitialFetchRange(NNTP nntp, NntpSettings nntpSettings, long first, long last)
+	{
+		try
+		{
+			DateTime cutoff = DbUpdater.RetentionStartDate;
+			int days = Settings.Default.InitialFetchDays;
+			if (days > 0)
+			{
+				DateTime requested = DateTime.Now.AddDays(-days);
+				if (requested > cutoff)
+				{
+					cutoff = requested;
+				}
+			}
+			DateTime cutoffUtc = cutoff.ToUniversalTime();
+			if (cutoffUtc <= SpotHelper.Epoch)
+			{
+				return first;
+			}
+			long found = ArticleWatermark.FindFirstArticleOnOrAfter(first, last, cutoffUtc, (long from, long to) => ProbeFirstArticle(nntp, nntpSettings.GroupName, from, to));
+			if (found == ArticleWatermark.Undetermined)
+			{
+				Log.Debug("Could not date the articles in {0}; syncing the whole group.", nntpSettings.GroupName);
+				return first;
+			}
+			long start = Math.Min(Math.Max(found, first), last);
+			Log.Debug("First sync of {0} starts at article {1} instead of {2} ({3} skipped, cutoff {4:yyyy-MM-dd}).", nntpSettings.GroupName, start, first, start - first, cutoff);
+			return start;
+		}
+		catch (Exception ex)
+		{
+			// A provider that will not answer a probe must not stop the sync; fall back to
+			// the full range.
+			Log.Debug("Failed to narrow the first sync range: " + ex.Message);
+			return first;
+		}
+	}
+
+	/// <summary>One XOVER probe, reduced to the first dated article it returned.</summary>
+	private static ArticleWatermark.ArticleStamp? ProbeFirstArticle(NNTP nntp, string group, long from, long to)
+	{
+		if (_cancelToken.IsCancellationRequested)
+		{
+			return null;
+		}
+		string headers = nntp.GetHeaders(group, from, to, delegate
+		{
+		}, out int _, out string errorMsg);
+		if (headers.IsNullOrEmpty())
+		{
+			if (!errorMsg.IsNullOrEmpty())
+			{
+				Log.Debug("Probe XOVER {0}-{1} failed: {2}", from, to, errorMsg);
+			}
+			return null;
+		}
+		return ArticleWatermark.FirstStampIn(headers);
 	}
 
 	private static void FindHeaders(Engine hPhuse, NntpSettings nntpSettings)

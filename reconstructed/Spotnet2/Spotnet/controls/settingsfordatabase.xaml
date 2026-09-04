@@ -13,6 +13,15 @@
         <TextBox Name="RetentionTextBox" TabIndex="2" ToolTip="{x:Static p:Words.Retention}" Width="50" GotFocus="Retention_GotFocus" TextChanged="RetentionTextBox_OnTextChanged" />
       </Border>
     </StackPanel>
+    <StackPanel Orientation="Vertical" Margin="0,7,0,0">
+      <TextBlock Text="{x:Static p:Words.InitialFetchRange}" />
+      <ComboBox Name="InitialFetchRangeCombo" HorizontalAlignment="Left" Width="220" Margin="25,3,0,0" ToolTip="{x:Static p:Words.InitialFetchRange}">
+        <ComboBoxItem Tag="30" Content="{x:Static p:Words.InitialFetchRange30}" />
+        <ComboBoxItem Tag="90" Content="{x:Static p:Words.InitialFetchRange90}" />
+        <ComboBoxItem Tag="365" Content="{x:Static p:Words.InitialFetchRange365}" />
+        <ComboBoxItem Tag="0" Content="{x:Static p:Words.InitialFetchRangeAll}" />
+      </ComboBox>
+    </StackPanel>
     <CheckBox Name="DbUpdateCompression" Content="{x:Static p:Words.MenuDbUpdateUseCompression}" Margin="0,7,0,0" />
     <CheckBox Name="DbAutoUpdates" Content="{x:Static p:Words.MenuDatabaseAutoUpdate}" Margin="0,7,0,0" />
     <CheckBox Name="LoadComments" Content="{x:Static p:Words.MenuLoadComments}" Margin="0,7,0,0" />

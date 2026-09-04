@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -623,7 +623,7 @@ public static class AppHelper
 		{
 			return "Unknown";
 		}
-		return StripNonAlphaNumericCharacters(Convert.ToBase64String(new SHA1Managed().ComputeHash(MakeLatin(sVal))));
+		return StripNonAlphaNumericCharacters(Convert.ToBase64String(SHA1.HashData(MakeLatin(sVal))));
 	}
 
 	public static void SwitchSpotnetToUseLocalSettingsFolder()
@@ -672,7 +672,9 @@ public static class AppHelper
 
 	private static string CreateHash(string sLeft, string sRight)
 	{
-		SHA1CryptoServiceProvider sHA1CryptoServiceProvider = new SHA1CryptoServiceProvider();
+		// SHA1.Create() picks the platform implementation instead of the CAPI provider,
+		// which a FIPS-policy machine will not create. Same digest, same wire format.
+		using SHA1 sHA1CryptoServiceProvider = SHA1.Create();
 		byte[] array = MakeLatin(sLeft);
 		byte[] array2 = MakeLatin(sRight);
 		int num = array.Length;

@@ -23,7 +23,7 @@
     <TextBlock Text=":  " />
     <TextBlock Text="{Binding SpeedLimitValue}" />
     <Canvas Margin="0,0,12,0">
-      <Polygon Stroke="#FF000000" StrokeThickness="0" Fill="#FF000000" Points="4,5 8,11 12,5" />
+      <Polygon Stroke="{DynamicResource BlackBrush}" StrokeThickness="0" Fill="{DynamicResource BlackBrush}" Points="4,5 8,11 12,5" />
     </Canvas>
     <Separator Margin="8,0" Style="{StaticResource SeparatorStyle}" />
     <StackPanel Orientation="Horizontal" ToolTip="{Binding SpaceTooltip}">

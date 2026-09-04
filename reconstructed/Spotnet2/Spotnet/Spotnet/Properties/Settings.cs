@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.CodeDom.Compiler;
 using System.Configuration;
 using System.Diagnostics;
@@ -451,9 +451,61 @@ internal sealed class Settings : ApplicationSettingsBase
 		}
 	}
 
+	/// <summary>Open web links from a spot in the Windows default browser.</summary>
+	/// <remarks>
+	/// Defaults on: an IMDb or YouTube link out of a spot body belongs in the user's own
+	/// browser, with their sessions and extensions, not in an embedded WebView2 tab.
+	/// Turning it off keeps those links inside Spotnet.
+	/// </remarks>
+	/// <summary>
+	/// How far back the very first synchronisation reaches, in days. Zero means the whole
+	/// group.
+	/// </summary>
+	/// <remarks>
+	/// Only consulted when the spots database is empty. A fresh install used to start at
+	/// the group's oldest article - fifteen years of headers, hours of syncing, and nearly
+	/// all of it discarded again on save for being out of retention. Ninety days is enough
+	/// to fill the list with everything still downloadable, and the normal incremental sync
+	/// keeps reaching further back on its own afterwards.
+	/// </remarks>
 	[UserScopedSetting]
 	[DebuggerNonUserCode]
-	[DefaultSettingValue("False")]
+	[DefaultSettingValue("90")]
+	public int InitialFetchDays
+	{
+		get
+		{
+			return (int)this["InitialFetchDays"];
+		}
+		set
+		{
+			this["InitialFetchDays"] = value;
+		}
+	}
+
+	/// <summary>Master switch for Windows desktop notifications.</summary>
+	/// <remarks>
+	/// On by default. Off silences every notification regardless of the per-event settings
+	/// such as <see cref="NotifyAboutDownloadComplete"/>.
+	/// </remarks>
+	[UserScopedSetting]
+	[DebuggerNonUserCode]
+	[DefaultSettingValue("True")]
+	public bool ShowDesktopNotifications
+	{
+		get
+		{
+			return (bool)this["ShowDesktopNotifications"];
+		}
+		set
+		{
+			this["ShowDesktopNotifications"] = value;
+		}
+	}
+
+	[UserScopedSetting]
+	[DebuggerNonUserCode]
+	[DefaultSettingValue("True")]
 	public bool ExternalBrowser
 	{
 		get

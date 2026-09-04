@@ -45,7 +45,20 @@ CloseApplications=yes
 CloseApplicationsFilter=Spotnet.exe
 RestartApplications=no
 SetupMutex=Spotnet3Setup
+; Complete file provenance. Inno leaves copyright and original file name empty by
+; default, and a packer-produced binary with blank provenance fields is one of the
+; things generic "bundler" heuristics weigh.
 VersionInfoVersion={#AppVersion}
+VersionInfoProductVersion={#AppVersion}
+VersionInfoCompany=Spotnet 3.0 contributors
+VersionInfoProductName=Spotnet 3.0 (64-bit)
+VersionInfoDescription=Spotnet 3.0 (64-bit) Setup
+VersionInfoCopyright=Copyright (C) 2014-2026 Spotnet 3.0 contributors
+#ifdef SmokeTestRoot
+VersionInfoOriginalFileName=Spotnet-3.0-x64-Setup-smoke.exe
+#else
+VersionInfoOriginalFileName=Spotnet-3.0-x64-Setup.exe
+#endif
 UninstallDisplayName=Spotnet 3.0 (64-bit)
 ; Authenticode signing is opt-in: build-installer.ps1 defines SignSetup and supplies the
 ; named "spotnet" tool only when a certificate was given. Without it the compiler must

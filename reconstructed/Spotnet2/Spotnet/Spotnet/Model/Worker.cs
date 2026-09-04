@@ -53,7 +53,10 @@ internal class Worker
 		{
 			return true;
 		}
-		SHA1Managed managed = new SHA1Managed();
+		// SHA1.Create() over the platform implementation. SHA1Managed is the .NET Framework
+		// managed hash that a FIPS-policy machine refused to construct; the digest is identical,
+		// so spot signature verification is unchanged.
+		using SHA1 managed = SHA1.Create();
 		List<string> list = new List<string>();
 		int num = (int)Math.Round((DateTime.UtcNow - SpotHelper.Epoch).TotalSeconds) + 25000;
 		_xOutputData = new List<Spot>();
@@ -316,7 +319,7 @@ internal class Worker
 		return true;
 	}
 
-	private bool VerifySignOfSpotnetSpot(Spot spot, string modulus, string userSignature, string posterAfterTheDog, string posterAfterTheDogLastPart, string msgId, SHA1Managed managed)
+	private bool VerifySignOfSpotnetSpot(Spot spot, string modulus, string userSignature, string posterAfterTheDog, string posterAfterTheDogLastPart, string msgId, SHA1 managed)
 	{
 		byte[] array = managed.ComputeHash(SpotHelper.MakeLatin(msgId));
 		if (array[0] != 0 || array[1] != 0)
@@ -354,7 +357,7 @@ internal class Worker
 		return true;
 	}
 
-	private bool VerifySignOfSpotFromKeysFile(Spot spot, string modulus, string userSignature, string posterAfterTheDog, string posterAfterTheDogLastPart, string msgId, SHA1Managed managed)
+	private bool VerifySignOfSpotFromKeysFile(Spot spot, string modulus, string userSignature, string posterAfterTheDog, string posterAfterTheDogLastPart, string msgId, SHA1 managed)
 	{
 		byte[] array = null;
 		if (userSignature.Length > 0)

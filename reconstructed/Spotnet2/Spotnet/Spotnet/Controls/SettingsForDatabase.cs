@@ -38,6 +38,7 @@ public partial class SettingsForDatabase : UserControl, IAdvancedSettingsControl
             Settings.Default.DbUpdateCompressionEnabled = DbUpdateCompression.IsChecked.GetValueOrDefault();
             AppHelper.ClearHeaderPhuse();
             Settings.Default.LoadComments = LoadComments.IsChecked.GetValueOrDefault();
+            Settings.Default.InitialFetchDays = SelectedInitialFetchDays();
             int retention = Settings.Default.Retention;
             Settings.Default.Retention = ((!RetentionCheckBox.IsChecked.GetValueOrDefault()) ? (-1) : int.Parse(RetentionTextBox.Text));
             bool num = retention != Settings.Default.Retention;
@@ -61,12 +62,59 @@ public partial class SettingsForDatabase : UserControl, IAdvancedSettingsControl
         DbAutoUpdates.IsChecked = Settings.Default.DbAutoUpdateEnabled;
         DbUpdateCompression.IsChecked = Settings.Default.DbUpdateCompressionEnabled;
         LoadComments.IsChecked = Settings.Default.LoadComments;
+        SelectInitialFetchDays(Settings.Default.InitialFetchDays);
         RetentionCheckBox.IsChecked = Settings.Default.Retention > 0;
         RetentionTextBox.IsEnabled = RetentionCheckBox.IsChecked.GetValueOrDefault();
         if (RetentionTextBox.IsEnabled)
         {
             RetentionTextBox.Text = Settings.Default.Retention.ToString();
         }
+    }
+
+    /// <summary>
+    /// How far back the first synchronisation reaches, in days, with 0 meaning the whole
+    /// group. Only applies while the spots database is still empty.
+    /// </summary>
+    private int SelectedInitialFetchDays()
+    {
+        if (InitialFetchRangeCombo.SelectedItem is ComboBoxItem selected
+            && int.TryParse(Convert.ToString(selected.Tag), out int days)
+            && days >= 0)
+        {
+            return days;
+        }
+        return Settings.Default.InitialFetchDays;
+    }
+
+    /// <remarks>
+    /// A value saved by an older build, or one edited by hand, need not be one of the
+    /// offered ranges; the nearest offered range is selected rather than leaving the box
+    /// blank.
+    /// </remarks>
+    private void SelectInitialFetchDays(int days)
+    {
+        ComboBoxItem nearest = null;
+        int smallestDistance = int.MaxValue;
+        foreach (object entry in InitialFetchRangeCombo.Items)
+        {
+            if (!(entry is ComboBoxItem item) || !int.TryParse(Convert.ToString(item.Tag), out int value))
+            {
+                continue;
+            }
+            if (value == days)
+            {
+                InitialFetchRangeCombo.SelectedItem = item;
+                return;
+            }
+            // "Everything" is not near anything; it is only chosen by an exact match.
+            int distance = (value == 0) ? int.MaxValue : Math.Abs(value - days);
+            if (distance < smallestDistance)
+            {
+                smallestDistance = distance;
+                nearest = item;
+            }
+        }
+        InitialFetchRangeCombo.SelectedItem = nearest;
     }
 
     private void RetentionCheckBox_OnClick(object sender, RoutedEventArgs e)

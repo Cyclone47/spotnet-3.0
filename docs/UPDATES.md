@@ -34,7 +34,7 @@ matching GitHub release.
 | `url` | The installer. Must be `https` on GitHub; anything else is refused. |
 | `size` | Exact byte count of the installer. |
 | `sha256` | Its SHA-256. A download that does not match is deleted, never run. |
-| `releaseNotesUrl` | Optional. Shown as a link in the prompt. |
+| `releaseNotesUrl` | Optional. Makes the release-notes link available in the prompt; the link opens Spotnet's Release Notes tab. |
 
 ## Publishing a release
 
@@ -62,7 +62,8 @@ has not taken it yet.
   request header or query parameter shortens it. A freshly pushed release can therefore
   take up to five minutes to become visible to clients. Nothing is wrong when that
   happens; wait for the next check.
-- The prompt shows the new version, the download size and a link to the release notes.
+- The prompt shows the new version, the download size and a link that opens Spotnet's
+  Release Notes tab. The update prompt closes first so the tab can be used immediately.
   *Update now* downloads, *Later* asks again next time, *Skip this version* suppresses that
   exact version until a newer one appears. A `forced` release has no Skip.
 - The download shows progress and can be cancelled. A partial file is resumed on the next

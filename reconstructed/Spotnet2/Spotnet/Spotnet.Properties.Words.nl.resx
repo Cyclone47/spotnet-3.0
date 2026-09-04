@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:element name="root" msdata:IsDataSet="true">
@@ -635,4 +635,16 @@ Schrijf de reden waarom u deze wilt verwijderen:</value></data>
   <data name="UpdateUpToDate" xml:space="preserve"><value>Spotnet is up-to-date.</value></data>
   <data name="UpdateCheckFailed" xml:space="preserve"><value>Kan niet controleren op updates: {0}</value></data>
   <data name="MenuCheckForUpdates" xml:space="preserve"><value>Controleren op updates</value></data>
+  <data name="InitialFetchRange" xml:space="preserve"><value>Eerste synchronisatie: spots ophalen vanaf</value></data>
+  <data name="InitialFetchRange30" xml:space="preserve"><value>Laatste 30 dagen</value></data>
+  <data name="InitialFetchRange90" xml:space="preserve"><value>Laatste 90 dagen (aanbevolen)</value></data>
+  <data name="InitialFetchRange365" xml:space="preserve"><value>Laatste jaar</value></data>
+  <data name="InitialFetchRangeAll" xml:space="preserve"><value>Alles</value></data>
+  <data name="MenuShowDesktopNotifications" xml:space="preserve"><value>Windows bureaubladmeldingen tonen</value></data>
+  <data name="NotificationDownloadFinished" xml:space="preserve"><value>Download voltooid</value></data>
+  <data name="NotificationDatabaseReady" xml:space="preserve"><value>Spotnet-database is gereed</value></data>
+  <data name="NotificationDownloadProblem" xml:space="preserve"><value>Download voltooid met problemen</value></data>
+  <data name="MenuTestNotification" xml:space="preserve"><value>Melding testen</value></data>
+  <data name="NotificationTestTitle" xml:space="preserve"><value>Spotnet testmelding</value></data>
+  <data name="NotificationTestBody" xml:space="preserve"><value>Als u dit ziet, levert Windows meldingen van Spotnet af.</value></data>
 </root>
