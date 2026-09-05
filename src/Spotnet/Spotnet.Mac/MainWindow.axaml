@@ -423,7 +423,25 @@
                     </DataTemplate>
                   </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn Header="Titel"    Binding="{Binding Subject}"       Width="*" MinWidth="200" SortMemberPath="Subject"/>
+                <DataGridTemplateColumn Header="Titel" Width="*" MinWidth="200" SortMemberPath="Subject">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate DataType="models:SpotItem">
+                      <DockPanel Margin="4,0" VerticalAlignment="Center">
+                        <Border DockPanel.Dock="Right"
+                                Margin="6,0,0,0" Padding="4,1" CornerRadius="2"
+                                Background="#FFF0F0" BorderBrush="#FFCCCC" BorderThickness="1"
+                                IsVisible="{Binding HasSpamReports}"
+                                ToolTip.Tip="{Binding SpamReportsTooltip}">
+                          <StackPanel Orientation="Horizontal" Spacing="2">
+                            <TextBlock Text="⚠️" FontSize="9" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding NumberOfSpamReports}" FontSize="10" FontWeight="Bold" Foreground="#D9534F" VerticalAlignment="Center"/>
+                          </StackPanel>
+                        </Border>
+                        <TextBlock Text="{Binding Subject}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                      </DockPanel>
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Genre"    Binding="{Binding GenreLabel}"    Width="90"  SortMemberPath="GenreLabel"/>
                 <DataGridTemplateColumn Header="Afzender" Width="160" SortMemberPath="SenderName">
                   <DataGridTemplateColumn.CellTemplate>

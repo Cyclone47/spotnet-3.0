@@ -153,6 +153,32 @@
           </ScrollViewer>
         </Border>
 
+        <!-- Spam reports list, if any -->
+        <Border Background="{DynamicResource AppGridBackground}"
+                BorderBrush="#FFAAAA"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="14"
+                IsVisible="{Binding HasSpamReports}">
+          <StackPanel Spacing="8">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock Text="⚠️" FontSize="14" VerticalAlignment="Center"/>
+              <TextBlock Text="Spam Meldingen" FontWeight="Bold" Foreground="#D9534F" VerticalAlignment="Center"/>
+              <TextBlock Text="{Binding SpamReportCount, StringFormat='({0})'}" Foreground="{DynamicResource AppMutedTextBrush}" VerticalAlignment="Center"/>
+            </StackPanel>
+            <ItemsControl ItemsSource="{Binding SpamReports}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="models:SpamReportItem">
+                  <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,2">
+                    <TextBlock Grid.Column="0" Text="{Binding FormattedDate}" Foreground="{DynamicResource AppMutedTextBrush}" Margin="0,0,10,0"/>
+                    <TextBlock Grid.Column="1" Text="{Binding Sender}" FontWeight="Medium" Foreground="{DynamicResource AppTextBrush}"/>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+
         <!-- Comments, fetched from the reply group -->
         <ItemsControl ItemsSource="{Binding Comments}">
           <ItemsControl.ItemTemplate>

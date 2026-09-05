@@ -140,6 +140,13 @@
                           Content="Handtekeningen controleren (RSA)"
                           ToolTip.Tip="Controleer cryptografische handtekeningen van spots (vertrouwensmodel)"/>
 
+                <Grid ColumnDefinitions="Auto,8,120,*" Margin="0,4,0,0">
+                    <TextBlock Grid.Column="0" Text="Spot verbergen bij aantal spam meldingen:" VerticalAlignment="Center"/>
+                    <ComboBox Grid.Column="2" ItemsSource="{Binding SpamReportsThresholdList}"
+                              SelectedItem="{Binding SelectedSpamReportsThreshold}"
+                              HorizontalAlignment="Stretch"/>
+                </Grid>
+
                 <TextBlock Text="Database onderhoud &amp; optimalisatie:" FontWeight="Medium"/>
                 <Button Content="Database controleren &amp; repareren"
                         Command="{Binding QuickRepairCommand}"

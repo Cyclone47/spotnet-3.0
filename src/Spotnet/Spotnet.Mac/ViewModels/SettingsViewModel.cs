@@ -246,6 +246,43 @@ public sealed class SettingsViewModel : ViewModelBase
         set => SetProperty(ref _checkSignatures, value);
     }
 
+    public List<string> SpamReportsThresholdList { get; } = new()
+    {
+        ">=1",
+        ">=2",
+        ">=3",
+        ">=5",
+        ">=7",
+        "Nooit"
+    };
+
+    private int _numOfSpamReportsToSpotHide = 5;
+    public string SelectedSpamReportsThreshold
+    {
+        get => _numOfSpamReportsToSpotHide switch
+        {
+            1 => ">=1",
+            2 => ">=2",
+            3 => ">=3",
+            5 => ">=5",
+            7 => ">=7",
+            _ => "Nooit"
+        };
+        set
+        {
+            _numOfSpamReportsToSpotHide = value switch
+            {
+                ">=1" => 1,
+                ">=2" => 2,
+                ">=3" => 3,
+                ">=5" => 5,
+                ">=7" => 7,
+                _ => -1
+            };
+            OnPropertyChanged();
+        }
+    }
+
     /// <summary>
     /// Accept a TLS certificate that fails validation. Off by default, as on Windows.
     /// Without this escape hatch a provider with a self-signed certificate would be
@@ -502,6 +539,7 @@ public sealed class SettingsViewModel : ViewModelBase
         _retentionEnabled = prefs.Retention >= 1;
         _retention = prefs.Retention >= 1 ? prefs.Retention : 30;
         _checkSignatures = prefs.CheckSignatures;
+        _numOfSpamReportsToSpotHide = prefs.NumOfSpamReportsToSpotHide;
 
         OnPropertyChanged(nameof(SelectedDownloadMode));
         OnPropertyChanged(nameof(SelectedInitialFetchRange));
@@ -511,6 +549,7 @@ public sealed class SettingsViewModel : ViewModelBase
         OnPropertyChanged(nameof(Retention));
         OnPropertyChanged(nameof(IsRetentionInputEnabled));
         OnPropertyChanged(nameof(CheckSignatures));
+        OnPropertyChanged(nameof(SelectedSpamReportsThreshold));
 
         if (string.IsNullOrEmpty(Server))
         {
@@ -585,6 +624,7 @@ public sealed class SettingsViewModel : ViewModelBase
             prefs.SelectedProvider = SelectedProvider;
             prefs.Retention = newRetention;
             prefs.CheckSignatures = CheckSignatures;
+            prefs.NumOfSpamReportsToSpotHide = _numOfSpamReportsToSpotHide;
             _prefsService.Save(prefs);
 
             if (newRetention >= 1 && (oldRetention < 1 || newRetention < oldRetention) && _dbService != null)

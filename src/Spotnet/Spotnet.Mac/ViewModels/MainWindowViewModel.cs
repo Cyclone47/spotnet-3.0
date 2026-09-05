@@ -77,7 +77,8 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 sortColumn: sortColumn,
                 hideBlacklisted: prefs.HideBlacklistedSpots,
                 showTrustedOnly: prefs.ShowTrustedOnlyMode,
-                showErotica: prefs.ShowEroticaInSearchResults);
+                showErotica: prefs.ShowEroticaInSearchResults,
+                spamReportsThreshold: prefs.NumOfSpamReportsToSpotHide);
         }
         catch (Exception ex)
         {
@@ -815,7 +816,8 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 keyword,
                 hideBlacklisted: prefs.HideBlacklistedSpots,
                 showTrustedOnly: prefs.ShowTrustedOnlyMode,
-                showErotica: prefs.ShowEroticaInSearchResults);
+                showErotica: prefs.ShowEroticaInSearchResults,
+                spamReportsThreshold: prefs.NumOfSpamReportsToSpotHide);
 
             var previous = Spots;
             Spots = new VirtualSpotCollection(
@@ -1010,7 +1012,8 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 group.Query,
                 hideBlacklisted: prefs.HideBlacklistedSpots,
                 showTrustedOnly: prefs.ShowTrustedOnlyMode,
-                showErotica: prefs.ShowEroticaInSearchResults);
+                showErotica: prefs.ShowEroticaInSearchResults,
+                spamReportsThreshold: prefs.NumOfSpamReportsToSpotHide);
         }
 
         foreach (var child in group.Children)

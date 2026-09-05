@@ -206,6 +206,7 @@ public sealed class SpotSyncService
             await _dbService.UpdateDatabaseStatsAsync(_preferences);
 
             await IndexCommentsAsync(client, cancellationToken);
+            await IndexSpamReportsAsync(client, cancellationToken);
 
             ProgressChanged?.Invoke(100, 100, $"Klaar! {totalInserted} nieuwe spots binnengehaald.");
             return totalInserted;
@@ -281,6 +282,79 @@ public sealed class SpotSyncService
         {
             // A missing reply group must not fail the spot sync.
             Log.Warn(ex, "Could not index the reply group: {0}", ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Indexes spam reports from the report newsgroup (e.g. free.willey or free.usenet).
+    /// Mirrors Windows SpotSaver.SaveSpamReportsAsync and SpamReports.FindSpamReports.
+    /// </summary>
+    private async Task IndexSpamReportsAsync(NntpClient client, CancellationToken cancellationToken)
+    {
+        try
+        {
+            string groupName = _preferences?.Current.ReportGroup ?? "free.willey";
+            if (string.IsNullOrWhiteSpace(groupName))
+            {
+                groupName = "free.willey";
+            }
+
+            var (code, _, low, high, _) = await client.SelectGroupAsync(groupName, cancellationToken);
+            if (code != 211 || high <= 0 || high < low)
+            {
+                if (groupName != "free.usenet")
+                {
+                    var fallback = await client.SelectGroupAsync("free.usenet", cancellationToken);
+                    if (fallback.code != 211 || fallback.high <= 0 || fallback.high < fallback.low) return;
+                    low = fallback.low;
+                    high = fallback.high;
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            long last = await _dbService.GetLastIndexedSpamReportAsync();
+            long start = last <= 0 ? Math.Max(low, high - 2500) : last + 1;
+            if (start > high) return;
+
+            long highest = last;
+            for (long from = start; from <= high; from += 500)
+            {
+                if (cancellationToken.IsCancellationRequested) break;
+
+                long to = Math.Min(from + 499, high);
+                ProgressChanged?.Invoke(100, 100, "Spam meldingen ophalen...");
+
+                var lines = await client.GetOverviewAsync(from, to, cancellationToken);
+                var reports = new List<SpamReportItem>();
+                foreach (string line in lines)
+                {
+                    var report = SpamReportParser.ParseOverviewLine(line);
+                    if (report != null)
+                    {
+                        reports.Add(report);
+                        if (report.RowId > highest) highest = report.RowId;
+                    }
+                }
+
+                if (reports.Count > 0)
+                {
+                    await _dbService.InsertSpamReportsAsync(reports);
+                }
+                if (to > highest) highest = to;
+            }
+
+            if (highest > last)
+            {
+                await _dbService.SetLastIndexedSpamReportAsync(highest);
+            }
+        }
+        catch (Exception ex)
+        {
+            // A missing or unreadable spam reports group must not fail the spot sync.
+            Log.Warn(ex, "Could not index the spam reports group: {0}", ex.Message);
         }
     }
 }

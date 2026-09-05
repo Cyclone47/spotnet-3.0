@@ -189,17 +189,18 @@ public sealed class SpotDatabaseService
         string sortColumn = SpotSort.DefaultColumn,
         bool hideBlacklisted = false,
         bool showTrustedOnly = false,
-        bool showErotica = false)
+        bool showErotica = false,
+        int spamReportsThreshold = 0)
     {
         var spots = new List<SpotItem>();
         using var conn = _db.OpenConnection(readOnly: true);
         using var cmd = conn.CreateCommand();
 
         string order = sortDirection.Equals("ASC", StringComparison.OrdinalIgnoreCase) ? "ASC" : "DESC";
-        string where = BuildFilterWhere(filterQuery, searchText, cmd, hideBlacklisted, showTrustedOnly, showErotica);
+        string where = BuildFilterWhere(filterQuery, searchText, cmd, hideBlacklisted, showTrustedOnly, showErotica, spamReportsThreshold);
 
         cmd.CommandText =
-            $"SELECT {FilterQueryBuilder.SpotColumns} FROM spots{where} ORDER BY {SpotSort.ToSqlColumn(sortColumn)} {order}, rowid {order} LIMIT @take OFFSET @skip;";
+            $"SELECT {FilterQueryBuilder.SpotColumns} FROM spots LEFT JOIN spamgroup s USING (msgid){where} ORDER BY {SpotSort.ToSqlColumn(sortColumn)} {order}, spots.rowid {order} LIMIT @take OFFSET @skip;";
         cmd.Parameters.AddWithValue("@take", take);
         cmd.Parameters.AddWithValue("@skip", skip);
 
@@ -217,13 +218,14 @@ public sealed class SpotDatabaseService
         string? searchText = null,
         bool hideBlacklisted = false,
         bool showTrustedOnly = false,
-        bool showErotica = false)
+        bool showErotica = false,
+        int spamReportsThreshold = 0)
     {
         using var conn = _db.OpenConnection(readOnly: true);
         using var cmd = conn.CreateCommand();
 
-        string where = BuildFilterWhere(filterQuery, searchText, cmd, hideBlacklisted, showTrustedOnly, showErotica);
-        cmd.CommandText = $"SELECT COUNT(1) FROM spots{where};";
+        string where = BuildFilterWhere(filterQuery, searchText, cmd, hideBlacklisted, showTrustedOnly, showErotica, spamReportsThreshold);
+        cmd.CommandText = $"SELECT COUNT(1) FROM spots LEFT JOIN spamgroup s USING (msgid){where};";
 
         var result = await cmd.ExecuteScalarAsync();
         return Convert.ToInt32(result);
@@ -240,13 +242,14 @@ public sealed class SpotDatabaseService
         string? filterQuery,
         bool hideBlacklisted = false,
         bool showTrustedOnly = false,
-        bool showErotica = false)
+        bool showErotica = false,
+        int spamReportsThreshold = 0)
     {
         using var conn = _db.OpenConnection(readOnly: true);
         using var cmd = conn.CreateCommand();
 
-        string where = BuildFilterWhere(filterQuery, null, cmd, hideBlacklisted, showTrustedOnly, showErotica);
-        cmd.CommandText = $"SELECT COUNT(1) FROM spots{where} AND rowid > @rowNew;";
+        string where = BuildFilterWhere(filterQuery, null, cmd, hideBlacklisted, showTrustedOnly, showErotica, spamReportsThreshold);
+        cmd.CommandText = $"SELECT COUNT(1) FROM spots LEFT JOIN spamgroup s USING (msgid){where} AND spots.rowid > @rowNew;";
         cmd.Parameters.AddWithValue("@rowNew", RowNew);
 
         var result = await cmd.ExecuteScalarAsync();
@@ -345,20 +348,27 @@ public sealed class SpotDatabaseService
         SqliteCommand cmd,
         bool hideBlacklisted = false,
         bool showTrustedOnly = false,
-        bool showErotica = false)
+        bool showErotica = false,
+        int spamReportsThreshold = 0)
     {
         var clauses = new List<string>();
         var values = new List<SqlValue>();
         long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
+        if (spamReportsThreshold > 0)
+        {
+            clauses.Add("spots.msgid NOT IN (SELECT msgid FROM spamgroup WHERE cnt >= @spamThreshold)");
+            cmd.Parameters.AddWithValue("@spamThreshold", spamReportsThreshold);
+        }
+
         if (hideBlacklisted)
         {
-            clauses.Add("(modulus NOT IN (SELECT key FROM blacklist WHERE type = 1) AND msgid NOT IN (SELECT key FROM blacklist WHERE type = 2))");
+            clauses.Add("(spots.modulus NOT IN (SELECT key FROM blacklist WHERE type = 1) AND spots.msgid NOT IN (SELECT key FROM blacklist WHERE type = 2))");
         }
 
         if (showTrustedOnly)
         {
-            clauses.Add("(modulus IN (SELECT key FROM whitelist WHERE type = 1) OR msgid IN (SELECT key FROM whitelist WHERE type = 2) OR date < 1356998400)");
+            clauses.Add("(spots.modulus IN (SELECT key FROM whitelist WHERE type = 1) OR spots.msgid IN (SELECT key FROM whitelist WHERE type = 2) OR spots.date < 1356998400)");
         }
 
         if (!string.IsNullOrWhiteSpace(filterQuery))
@@ -382,7 +392,7 @@ public sealed class SpotDatabaseService
 
         if (!string.IsNullOrWhiteSpace(searchText))
         {
-            clauses.Add("rowid IN (SELECT rowid FROM search WHERE search MATCH @fts)");
+            clauses.Add("spots.rowid IN (SELECT rowid FROM search WHERE search MATCH @fts)");
             cmd.Parameters.AddWithValue("@fts", SanitizeFtsQuery(searchText));
         }
 
@@ -428,9 +438,10 @@ public sealed class SpotDatabaseService
         using var conn = _db.OpenConnection(readOnly: true);
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            SELECT rowid, key, cat, subcat, extcat, date, filesize, cats, sender, tag, subject, msgid, modulus
+            SELECT spots.rowid, spots.key, spots.cat, spots.subcat, spots.extcat, spots.date, spots.filesize, spots.cats, spots.sender, spots.tag, spots.subject, spots.msgid, spots.modulus, IFNULL(s.cnt, 0)
             FROM spots
-            WHERE msgid = @msgid
+            LEFT JOIN spamgroup s USING (msgid)
+            WHERE spots.msgid = @msgid
             LIMIT 1;";
         cmd.Parameters.AddWithValue("@msgid", msgId);
 
@@ -548,6 +559,140 @@ public sealed class SpotDatabaseService
         await cmd.ExecuteNonQueryAsync();
     }
 
+    /// <summary>Highest report-group article already indexed.</summary>
+    public async Task<long> GetLastIndexedSpamReportAsync()
+    {
+        using var conn = _db.OpenConnection(readOnly: true);
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT value FROM userinfo WHERE field='last_spamreports' LIMIT 1;";
+        var result = await cmd.ExecuteScalarAsync();
+        return result != null && long.TryParse(result.ToString(), out var val) ? val : 0;
+    }
+
+    public async Task SetLastIndexedSpamReportAsync(long articleId)
+    {
+        using var conn = _db.OpenConnection(readOnly: false);
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            DELETE FROM userinfo WHERE field='last_spamreports';
+            INSERT INTO userinfo (field, value) VALUES ('last_spamreports', @val);";
+        cmd.Parameters.AddWithValue("@val", articleId.ToString());
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    /// <summary>
+    /// Inserts spam reports into the database, ignoring duplicate reports from the same modulus,
+    /// and updates the aggregated report count in the spamgroup table.
+    /// Matches Windows SpotSaver.UpdateSpamReportsDb.
+    /// </summary>
+    public async Task<int> InsertSpamReportsAsync(IEnumerable<SpamReportItem> reports)
+    {
+        int count = 0;
+        using var conn = _db.OpenConnection(readOnly: false);
+        using var tx = conn.BeginTransaction();
+
+        try
+        {
+            using var checkCmd = conn.CreateCommand();
+            checkCmd.Transaction = tx;
+            checkCmd.CommandText = "SELECT 1 FROM spamreports WHERE msgid = @msgid AND modulus = @modulus LIMIT 1;";
+            var pCheckMsgId = checkCmd.Parameters.Add("@msgid", SqliteType.Text);
+            var pCheckMod = checkCmd.Parameters.Add("@modulus", SqliteType.Text);
+
+            using var insertCmd = conn.CreateCommand();
+            insertCmd.Transaction = tx;
+            insertCmd.CommandText = "INSERT OR IGNORE INTO spamreports (rowid, msgid, modulus, date, reportmsgid, sender) VALUES (@rowid, @msgid, @modulus, @date, @reportmsgid, @sender);";
+            var pRowId = insertCmd.Parameters.Add("@rowid", SqliteType.Integer);
+            var pMsgId = insertCmd.Parameters.Add("@msgid", SqliteType.Text);
+            var pMod = insertCmd.Parameters.Add("@modulus", SqliteType.Text);
+            var pDate = insertCmd.Parameters.Add("@date", SqliteType.Integer);
+            var pReportMsgId = insertCmd.Parameters.Add("@reportmsgid", SqliteType.Text);
+            var pSender = insertCmd.Parameters.Add("@sender", SqliteType.Text);
+
+            using var groupCmd = conn.CreateCommand();
+            groupCmd.Transaction = tx;
+            groupCmd.CommandText = @"
+                INSERT INTO spamgroup (msgid, cnt) VALUES (@msgid, 1)
+                ON CONFLICT(msgid) DO UPDATE SET cnt = cnt + 1;";
+            var pGroupMsgId = groupCmd.Parameters.Add("@msgid", SqliteType.Text);
+
+            foreach (var report in reports)
+            {
+                if (string.IsNullOrWhiteSpace(report.MsgId)) continue;
+
+                pCheckMsgId.Value = report.MsgId;
+                pCheckMod.Value = report.Modulus ?? "";
+                var exists = await checkCmd.ExecuteScalarAsync();
+                if (exists != null && Convert.ToInt64(exists) >= 1)
+                {
+                    continue;
+                }
+
+                pRowId.Value = report.RowId;
+                pMsgId.Value = report.MsgId;
+                pMod.Value = report.Modulus ?? "";
+                pDate.Value = report.Date;
+                pReportMsgId.Value = report.ReportMsgId ?? "";
+                pSender.Value = report.Sender ?? "";
+                await insertCmd.ExecuteNonQueryAsync();
+
+                pGroupMsgId.Value = report.MsgId;
+                await groupCmd.ExecuteNonQueryAsync();
+
+                count++;
+            }
+
+            tx.Commit();
+            return count;
+        }
+        catch (Exception ex)
+        {
+            tx.Rollback();
+            Log.Error(ex, "Failed to insert spam reports");
+            throw;
+        }
+    }
+
+    /// <summary>Returns the aggregated spam report count for a spot from the spamgroup table.</summary>
+    public async Task<int> GetSpamReportCountAsync(string msgId)
+    {
+        if (string.IsNullOrWhiteSpace(msgId)) return 0;
+
+        using var conn = _db.OpenConnection(readOnly: true);
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT cnt FROM spamgroup WHERE msgid = @msgid LIMIT 1;";
+        cmd.Parameters.AddWithValue("@msgid", msgId);
+        var result = await cmd.ExecuteScalarAsync();
+        return result != null && int.TryParse(result.ToString(), out int c) ? c : 0;
+    }
+
+    /// <summary>Returns all individual spam reports recorded against a spot.</summary>
+    public async Task<List<SpamReportItem>> GetSpamReportsAsync(string msgId)
+    {
+        var list = new List<SpamReportItem>();
+        if (string.IsNullOrWhiteSpace(msgId)) return list;
+
+        using var conn = _db.OpenConnection(readOnly: true);
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT rowid, msgid, modulus, date, reportmsgid, sender FROM spamreports WHERE msgid = @msgid ORDER BY date DESC;";
+        cmd.Parameters.AddWithValue("@msgid", msgId);
+
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            list.Add(new SpamReportItem
+            {
+                RowId = reader.GetInt64(0),
+                MsgId = reader.GetString(1),
+                Modulus = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                Date = reader.GetInt64(3),
+                ReportMsgId = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                Sender = reader.IsDBNull(5) ? "" : reader.GetString(5)
+            });
+        }
+        return list;
+    }
+
     public async Task<int> InsertSpotsAsync(IEnumerable<SpotItem> spots)
     {
         using var conn = _db.OpenConnection(readOnly: false);
@@ -661,7 +806,8 @@ public sealed class SpotDatabaseService
             Tag = reader.IsDBNull(9) ? "" : reader.GetString(9),
             Subject = reader.IsDBNull(10) ? "" : reader.GetString(10),
             MsgId = reader.IsDBNull(11) ? "" : reader.GetString(11),
-            Modulus = reader.IsDBNull(12) ? "" : reader.GetString(12)
+            Modulus = reader.IsDBNull(12) ? "" : reader.GetString(12),
+            NumberOfSpamReports = reader.FieldCount > 13 ? reader.GetInt32(13) : 0
         };
     }
 

@@ -44,6 +44,7 @@ public sealed class SpotItem : INotifyPropertyChanged
         MsgId = source.MsgId;
         Modulus = source.Modulus;
         PosterIdent = source.PosterIdent;
+        NumberOfSpamReports = source.NumberOfSpamReports;
         IsPlaceholder = false;
 
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
@@ -62,6 +63,25 @@ public sealed class SpotItem : INotifyPropertyChanged
     public string Subject { get; set; } = string.Empty;
     public string MsgId { get; set; } = string.Empty;
     public string Modulus { get; set; } = string.Empty;
+
+    private int _numberOfSpamReports;
+    public int NumberOfSpamReports
+    {
+        get => _numberOfSpamReports;
+        set
+        {
+            if (_numberOfSpamReports != value)
+            {
+                _numberOfSpamReports = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NumberOfSpamReports)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasSpamReports)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SpamReportsTooltip)));
+            }
+        }
+    }
+
+    public bool HasSpamReports => NumberOfSpamReports > 0;
+    public string SpamReportsTooltip => $"{NumberOfSpamReports} spam melding{(NumberOfSpamReports == 1 ? "" : "en")}";
 
     public static Func<string?, string?, string?, long, PosterIdentType>? GlobalPosterIdentResolver { get; set; }
 

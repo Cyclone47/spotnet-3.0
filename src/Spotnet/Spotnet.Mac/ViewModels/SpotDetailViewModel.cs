@@ -53,6 +53,9 @@ public sealed class SpotDetailViewModel : ViewModelBase
                 {
                     Description = "";
                     Comments.Clear();
+                    SpamReports.Clear();
+                    SpamReportCount = 0;
+                    OnPropertyChanged(nameof(HasSpamReports));
                 }
             }
         }
@@ -80,7 +83,16 @@ public sealed class SpotDetailViewModel : ViewModelBase
         : "http://www.google.nl/search?q=" + Uri.EscapeDataString(_spot.Subject);
 
     /// <summary>The "Meldingen" row: how many spam reports this spot has.</summary>
-    public int SpamReportCount => 0;
+    private int _spamReportCount;
+    public int SpamReportCount
+    {
+        get => _spamReportCount;
+        private set => SetProperty(ref _spamReportCount, value);
+    }
+
+    /// <summary>Individual spam reports recorded against this spot.</summary>
+    public ObservableCollection<SpamReportItem> SpamReports { get; } = new();
+    public bool HasSpamReports => SpamReports.Count > 0;
 
     private void RebuildFields()
     {
@@ -375,6 +387,17 @@ public sealed class SpotDetailViewModel : ViewModelBase
             {
                 Comments.Add(c);
             }
+
+            // Load spam reports
+            SpamReports.Clear();
+            var reports = await _dbService.GetSpamReportsAsync(spot.MsgId);
+            foreach (var r in reports)
+            {
+                SpamReports.Add(r);
+            }
+            SpamReportCount = reports.Count;
+            OnPropertyChanged(nameof(HasSpamReports));
+            RebuildFields();
 
             Description = "";
             StatusMessage = "Spot ophalen van Usenet...";

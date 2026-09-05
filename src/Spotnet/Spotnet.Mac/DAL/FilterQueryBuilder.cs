@@ -18,10 +18,10 @@ public static class FilterQueryBuilder
 {
     /// <summary>Columns selected by every spot query, in the order <c>MapSpotRow</c> expects.</summary>
     public const string SpotColumns =
-        "rowid, key, cat, subcat, extcat, date, filesize, cats, sender, tag, subject, msgid, modulus";
+        "spots.rowid, spots.key, spots.cat, spots.subcat, spots.extcat, spots.date, spots.filesize, spots.cats, spots.sender, spots.tag, spots.subject, spots.msgid, spots.modulus, IFNULL(s.cnt, 0)";
 
     /// <summary>Windows hides its own placeholder rows (key 2 and 5) from every filter.</summary>
-    public const string KeyGuard = "key != 2 AND key != 5";
+    public const string KeyGuard = "spots.key != 2 AND spots.key != 5";
 
     public static bool IsSearchFilter(string? filter)
         => filter != null && filter.Contains(" match ", StringComparison.OrdinalIgnoreCase);
@@ -121,7 +121,7 @@ public static class FilterQueryBuilder
             string guard = showErotica || filter.Contains("cats match ", StringComparison.OrdinalIgnoreCase)
                 ? ""
                 : "cats NOT LIKE '9 %' AND ";
-            string searchPredicate = $"rowid IN (SELECT rowid FROM search WHERE ({guard}{compiled.CommandText}))";
+            string searchPredicate = $"spots.rowid IN (SELECT rowid FROM search WHERE ({guard}{compiled.CommandText}))";
             return posterIdentSql != null ? $"({posterIdentSql} AND {searchPredicate})" : searchPredicate;
         }
 

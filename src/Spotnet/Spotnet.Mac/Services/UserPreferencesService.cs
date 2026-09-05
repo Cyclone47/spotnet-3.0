@@ -186,6 +186,19 @@ public sealed class UserPreferences
     /// Optional URL for external keys.xml. Matches Windows Settings.Default.KeysURL.
     /// </summary>
     public string KeysUrl { get; set; } = "";
+
+    /// <summary>
+    /// The newsgroup where spam reports are fetched and posted.
+    /// Matches Windows Settings.Default.ReportGroup (default free.willey).
+    /// </summary>
+    public string ReportGroup { get; set; } = "free.willey";
+
+    /// <summary>
+    /// Number of spam reports at which a spot is hidden from the spot list.
+    /// Matches Windows Settings.Default.NumOfSpamReportsToSpotHide (default 5).
+    /// 0 or negative means never hide based on spam reports.
+    /// </summary>
+    public int NumOfSpamReportsToSpotHide { get; set; } = 5;
 }
 
 public sealed class UserPreferencesService
