@@ -136,6 +136,10 @@
                     <NumericUpDown Grid.Column="2" Value="{Binding Retention}" Minimum="1" Maximum="9999" FormatString="0"/>
                 </Grid>
 
+                <CheckBox IsChecked="{Binding CheckSignatures}"
+                          Content="Handtekeningen controleren (RSA)"
+                          ToolTip.Tip="Controleer cryptografische handtekeningen van spots (vertrouwensmodel)"/>
+
                 <TextBlock Text="Database onderhoud &amp; optimalisatie:" FontWeight="Medium"/>
                 <Button Content="Database controleren &amp; repareren"
                         Command="{Binding QuickRepairCommand}"

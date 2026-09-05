@@ -175,6 +175,17 @@ public sealed class UserPreferences
 
     /// <summary>URL for spot whitelist CSV.</summary>
     public string SpotWhitelistUrl { get; set; } = "http://spotcloud.spotnet.wf/spotnet/lists.new/spot_whitelist.csv";
+
+    /// <summary>
+    /// Whether cryptographic RSA signatures on spots are verified before storing them.
+    /// Matches Windows Settings.Default.CheckSignatures (default true).
+    /// </summary>
+    public bool CheckSignatures { get; set; } = true;
+
+    /// <summary>
+    /// Optional URL for external keys.xml. Matches Windows Settings.Default.KeysURL.
+    /// </summary>
+    public string KeysUrl { get; set; } = "";
 }
 
 public sealed class UserPreferencesService

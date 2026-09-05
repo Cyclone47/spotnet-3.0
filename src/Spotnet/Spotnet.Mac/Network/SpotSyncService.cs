@@ -21,17 +21,19 @@ public sealed class SpotSyncService
     private readonly ISecretStore _secretStore;
     private readonly SpotDatabaseService _dbService;
     private readonly UserPreferencesService? _preferences;
+    private readonly TrustService? _trustService;
 
     public bool IsSyncing { get; private set; }
 
     public event Action<int, int, string>? ProgressChanged;
 
-    public SpotSyncService(IAppPaths appPaths, ISecretStore secretStore, SpotDatabaseService dbService, UserPreferencesService? preferences = null)
+    public SpotSyncService(IAppPaths appPaths, ISecretStore secretStore, SpotDatabaseService dbService, UserPreferencesService? preferences = null, TrustService? trustService = null)
     {
         _appPaths = appPaths;
         _secretStore = secretStore;
         _dbService = dbService;
         _preferences = preferences;
+        _trustService = trustService;
     }
 
     public async Task<int> SyncSpotsAsync(CancellationToken cancellationToken = default)
@@ -148,17 +150,31 @@ public sealed class SpotSyncService
                 var lines = await client.GetOverviewAsync(currentStart, currentEnd, cancellationToken);
                 var spotsToAdd = new List<SpotItem>();
 
+                bool checkSignatures = _preferences?.Current.CheckSignatures ?? true;
+                var trustedKeys = _trustService?.TrustedKeys ?? TrustService.Instance?.TrustedKeys;
+
                 foreach (var line in lines)
                 {
-                    var spot = SpotnetHeaderParser.ParseOverviewLine(line, out long articleNum);
+                    var spot = SpotnetHeaderParser.ParseOverviewLine(
+                        line,
+                        out long articleNum,
+                        checkSignatures: checkSignatures,
+                        trustedKeys: trustedKeys);
+
                     if (spot != null)
                     {
                         spotsToAdd.Add(spot);
-                        if (articleNum > highestProcessedArticle)
-                        {
-                            highestProcessedArticle = articleNum;
-                        }
                     }
+
+                    if (articleNum > highestProcessedArticle)
+                    {
+                        highestProcessedArticle = articleNum;
+                    }
+                }
+
+                if (currentEnd > highestProcessedArticle)
+                {
+                    highestProcessedArticle = currentEnd;
                 }
 
                 if (spotsToAdd.Count > 0)

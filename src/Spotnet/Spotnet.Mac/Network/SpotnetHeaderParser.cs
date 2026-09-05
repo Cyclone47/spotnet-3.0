@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
@@ -329,8 +330,13 @@ public static class SpotnetHeaderParser
 
     /// <summary>
     /// Parses an NNTP XOVER/OVER tab-delimited overview line into a SpotItem.
+    /// When <paramref name="checkSignatures"/> is true, verifies RSA signatures on key > 1 spots.
     /// </summary>
-    public static SpotItem? ParseOverviewLine(string overviewLine, out long articleNumber)
+    public static SpotItem? ParseOverviewLine(
+        string overviewLine,
+        out long articleNumber,
+        bool checkSignatures = false,
+        IReadOnlyDictionary<int, string>? trustedKeys = null)
     {
         articleNumber = 0;
         if (string.IsNullOrWhiteSpace(overviewLine)) return null;
@@ -358,6 +364,29 @@ public static class SpotnetHeaderParser
         // Only headers that actually parsed as Spotnet spots belong in the database.
         // free.pt also carries moderation ("delete <id>@spot.net") and update-only
         // posts, which Windows drops the same way; Key is set only on the Spotnet path.
-        return spot.Key > 0 ? spot : null;
+        if (spot.Key <= 0) return null;
+
+        if (checkSignatures && spot.Key > 1)
+        {
+            var (isValid, validModulus) = SpotnetSignatureVerifier.VerifySpotHeader(
+                poster: spot.SenderName,
+                title: spot.Subject,
+                fromHeader: from,
+                messageId: msgId,
+                keyId: (byte)spot.Key,
+                trustedKeys: trustedKeys);
+
+            if (!isValid)
+            {
+                return null;
+            }
+
+            if (!string.IsNullOrEmpty(validModulus))
+            {
+                spot.Modulus = validModulus;
+            }
+        }
+
+        return spot;
     }
 }

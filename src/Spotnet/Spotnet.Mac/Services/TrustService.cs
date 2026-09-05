@@ -32,6 +32,7 @@ public sealed class TrustService : IDisposable
     private HashSet<string> _spotWhiteList = new(StringComparer.OrdinalIgnoreCase);
     private HashSet<string> _spotBlackList = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<(string User, string Modulus)> _serverWhiteList = new();
+    private readonly Dictionary<int, string> _trustedKeys = new();
 
     private System.Threading.Timer? _autoUpdateTimer;
     private bool _disposed;
@@ -42,6 +43,16 @@ public sealed class TrustService : IDisposable
     public IReadOnlySet<string> BlacklistMsgIds => _spotBlackList;
     public IReadOnlySet<string> WhitelistModuli => _whiteList;
     public IReadOnlySet<string> WhitelistMsgIds => _spotWhiteList;
+    public IReadOnlyDictionary<int, string> TrustedKeys
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return new Dictionary<int, string>(_trustedKeys);
+            }
+        }
+    }
 
     public static TrustService? Instance { get; private set; }
 
@@ -74,6 +85,12 @@ public sealed class TrustService : IDisposable
                 CreateEmptyXmlList(blacklistXml);
             }
 
+            string keysXml = Path.Combine(_appPaths.DataFolder, "keys.xml");
+            if (!File.Exists(keysXml))
+            {
+                CreateDefaultKeysXml(keysXml);
+            }
+
             ReloadAllLists();
         }
     }
@@ -87,6 +104,11 @@ public sealed class TrustService : IDisposable
             _spotWhiteList = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             _spotBlackList = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             _serverWhiteList.Clear();
+            _trustedKeys.Clear();
+
+            // 0. Trusted keys (keys.xml)
+            string keysXml = Path.Combine(_appPaths.DataFolder, "keys.xml");
+            LoadKeysXml(keysXml);
 
             // 1. Poster whitelist (local XML)
             string whitelistXml = Path.Combine(_appPaths.DataFolder, "whitelist.xml");
@@ -117,8 +139,8 @@ public sealed class TrustService : IDisposable
             string whiteCsv = Path.Combine(_appPaths.DataFolder, "whitelist.srv.csv");
             LoadServerWhitelistCsv(whiteCsv);
 
-            Log.Info("Trust lists loaded: {0} whitelisted posters, {1} blacklisted posters, {2} whitelisted spots, {3} blacklisted spots, {4} verified server posters.",
-                _whiteList.Count, _blackList.Count, _spotWhiteList.Count, _spotBlackList.Count, _serverWhiteList.Count);
+            Log.Info("Trust lists loaded: {0} whitelisted posters, {1} blacklisted posters, {2} whitelisted spots, {3} blacklisted spots, {4} verified server posters, {5} trusted keys.",
+                _whiteList.Count, _blackList.Count, _spotWhiteList.Count, _spotBlackList.Count, _serverWhiteList.Count, _trustedKeys.Count);
         }
 
         ListsChanged?.Invoke();
@@ -350,6 +372,11 @@ public sealed class TrustService : IDisposable
         await DownloadAndReplaceAsync(prefs.BlacklistUrl, Path.Combine(_appPaths.DataFolder, "blacklist.srv.csv"), cancellationToken);
         await DownloadAndReplaceAsync(prefs.SpotWhitelistUrl, Path.Combine(_appPaths.DataFolder, "spot_whitelist.srv.csv"), cancellationToken);
         await DownloadAndReplaceAsync(prefs.SpotBlacklistUrl, Path.Combine(_appPaths.DataFolder, "spot_blacklist.srv.csv"), cancellationToken);
+
+        if (!string.IsNullOrWhiteSpace(prefs.KeysUrl))
+        {
+            await DownloadAndReplaceAsync(prefs.KeysUrl, Path.Combine(_appPaths.DataFolder, "keys.xml"), cancellationToken);
+        }
 
         ReloadAllLists();
     }
@@ -595,6 +622,66 @@ public sealed class TrustService : IDisposable
         catch (Exception ex)
         {
             Log.Warn(ex, "Failed to remove key from XML file {0}", file);
+        }
+    }
+
+    private static void CreateDefaultKeysXml(string file)
+    {
+        try
+        {
+            var doc = new XDocument(
+                new XElement("Keys",
+                    new XElement("Key", new XAttribute("ID", "2"), "ys8WSlqonQMWT8ubG0tAA2Q07P36E+CJmb875wSR1XH7IFhEi0CCwlUzNqBFhC+P"),
+                    new XElement("Key", new XAttribute("ID", "3"), "uiyChPV23eguLAJNttC/o0nAsxXgdjtvUvidV2JL+hjNzc4Tc/PPo2JdYvsqUsat"),
+                    new XElement("Key", new XAttribute("ID", "4"), "1k6RNDVD6yBYWR6kHmwzmSud7JkNV4SMigBrs+jFgOK5Ldzwl17mKXJhl+su/GR9")
+                )
+            );
+            string? dir = Path.GetDirectoryName(file);
+            if (!string.IsNullOrEmpty(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+            string tmp = file + ".tmp";
+            doc.Save(tmp);
+            File.Move(tmp, file, overwrite: true);
+        }
+        catch (Exception ex)
+        {
+            Log.Warn(ex, "Failed to create default keys.xml at {0}", file);
+        }
+    }
+
+    private void LoadKeysXml(string file)
+    {
+        if (!File.Exists(file)) return;
+        try
+        {
+            var doc = XDocument.Load(file);
+            if (doc.Root == null) return;
+
+            foreach (var elem in doc.Root.Elements("Key"))
+            {
+                string? idAttr = elem.Attribute("ID")?.Value;
+                if (int.TryParse(idAttr, out int id) && id >= 2 && id <= 8)
+                {
+                    string val = elem.Value.Trim();
+                    var rsaElem = elem.Element("RSAKeyValue") ?? elem.Element("rsakeyvalue");
+                    var modElem = rsaElem?.Element("Modulus") ?? rsaElem?.Element("modulus");
+                    if (modElem != null)
+                    {
+                        val = modElem.Value.Trim();
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(val))
+                    {
+                        _trustedKeys[id] = val;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warn(ex, "Failed to load keys.xml from {0}", file);
         }
     }
 

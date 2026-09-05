@@ -1,4 +1,4 @@
-﻿# Build output
+# Build output
 /artifacts/
 **/bin/
 **/obj/
@@ -22,3 +22,4 @@ build_diag.txt
 /reference/spotnet-2.0.0.284-packages/
 /decompiled_200/
 /src/Spotnet/lib/Spotnet.exe
+.freebuff/

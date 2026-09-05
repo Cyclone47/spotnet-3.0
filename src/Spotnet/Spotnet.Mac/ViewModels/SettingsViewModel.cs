@@ -234,6 +234,17 @@ public sealed class SettingsViewModel : ViewModelBase
 
     private bool _externalBrowser = true;
     private bool _allowInvalidServerCertificate;
+    private bool _checkSignatures = true;
+
+    /// <summary>
+    /// Whether cryptographic RSA signatures on spots are verified before storing them.
+    /// Matches Windows Settings.Default.CheckSignatures.
+    /// </summary>
+    public bool CheckSignatures
+    {
+        get => _checkSignatures;
+        set => SetProperty(ref _checkSignatures, value);
+    }
 
     /// <summary>
     /// Accept a TLS certificate that fails validation. Off by default, as on Windows.
@@ -490,6 +501,7 @@ public sealed class SettingsViewModel : ViewModelBase
         _dbAutoUpdateIntervalMin = prefs.DbAutoUpdateIntervalMin > 0 ? prefs.DbAutoUpdateIntervalMin : 10;
         _retentionEnabled = prefs.Retention >= 1;
         _retention = prefs.Retention >= 1 ? prefs.Retention : 30;
+        _checkSignatures = prefs.CheckSignatures;
 
         OnPropertyChanged(nameof(SelectedDownloadMode));
         OnPropertyChanged(nameof(SelectedInitialFetchRange));
@@ -498,6 +510,7 @@ public sealed class SettingsViewModel : ViewModelBase
         OnPropertyChanged(nameof(RetentionEnabled));
         OnPropertyChanged(nameof(Retention));
         OnPropertyChanged(nameof(IsRetentionInputEnabled));
+        OnPropertyChanged(nameof(CheckSignatures));
 
         if (string.IsNullOrEmpty(Server))
         {
@@ -571,6 +584,7 @@ public sealed class SettingsViewModel : ViewModelBase
             prefs.DbAutoUpdateIntervalMin = DbAutoUpdateIntervalMin > 0 ? DbAutoUpdateIntervalMin : 10;
             prefs.SelectedProvider = SelectedProvider;
             prefs.Retention = newRetention;
+            prefs.CheckSignatures = CheckSignatures;
             _prefsService.Save(prefs);
 
             if (newRetention >= 1 && (oldRetention < 1 || newRetention < oldRetention) && _dbService != null)

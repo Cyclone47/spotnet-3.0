@@ -351,7 +351,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         };
 
         _nzbService = new NzbService(_appPaths, _secretStore, _prefsService);
-        _syncService = new SpotSyncService(_appPaths, _secretStore, _dbService, _prefsService);
+        _syncService = new SpotSyncService(_appPaths, _secretStore, _dbService, _prefsService, _trustService);
         _commentService = new CommentService(_appPaths, _secretStore, _dbService);
         _bodyService = new SpotBodyService(_appPaths, _secretStore);
 
