@@ -147,6 +147,18 @@
                               HorizontalAlignment="Stretch"/>
                 </Grid>
 
+                <CheckBox IsChecked="{Binding HideBlacklistedSpots}"
+                          Content="Spots van zwarte lijst gebruikers niet tonen"
+                          ToolTip.Tip="Verberg spots waarvan de afzender of de spot zelf op de zwarte lijst staat"/>
+
+                <CheckBox IsChecked="{Binding ShowTrustedOnlyMode}"
+                          Content="Toon standaard alleen de spots van witte lijst en vertrouwde afzenders"
+                          ToolTip.Tip="Verberg spots van niet-geverifieerde en onbetrouwbare afzenders"/>
+
+                <CheckBox IsChecked="{Binding ShowEroticaInSearchResults}"
+                          Content="Toon erotiek in de zoekresultaten"
+                          ToolTip.Tip="Neem spots uit categorie 9 (Erotiek) mee in zoekresultaten"/>
+
                 <TextBlock Text="Database onderhoud &amp; optimalisatie:" FontWeight="Medium"/>
                 <Button Content="Database controleren &amp; repareren"
                         Command="{Binding QuickRepairCommand}"

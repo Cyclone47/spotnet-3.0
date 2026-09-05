@@ -298,6 +298,69 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public ICommand RemoveSpotFromWhitelistCommand { get; }
     public ICommand DownloadExternalListsCommand { get; }
 
+    public ICommand ToggleShowTrustedOnlyCommand { get; }
+    public ICommand ToggleHideBlacklistedSpotsCommand { get; }
+    public ICommand ToggleShowEroticaCommand { get; }
+
+    public bool ShowTrustedOnlyMode
+    {
+        get => _prefsService.Current.ShowTrustedOnlyMode;
+        set
+        {
+            if (_prefsService.Current.ShowTrustedOnlyMode != value)
+            {
+                var prefs = _prefsService.Current;
+                prefs.ShowTrustedOnlyMode = value;
+                _prefsService.Save(prefs);
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(ShowTrustedOnlyTooltip));
+                _ = RefreshViewAndCountsAsync();
+            }
+        }
+    }
+
+    public string ShowTrustedOnlyTooltip => ShowTrustedOnlyMode
+        ? "Toon spots van vertrouwde en onbetrouwbare afzenders"
+        : "Toon alleen spots van vertrouwde afzenders";
+
+    public bool HideBlacklistedSpots
+    {
+        get => _prefsService.Current.HideBlacklistedSpots;
+        set
+        {
+            if (_prefsService.Current.HideBlacklistedSpots != value)
+            {
+                var prefs = _prefsService.Current;
+                prefs.HideBlacklistedSpots = value;
+                _prefsService.Save(prefs);
+                OnPropertyChanged();
+                _ = RefreshViewAndCountsAsync();
+            }
+        }
+    }
+
+    public bool ShowEroticaInSearchResults
+    {
+        get => _prefsService.Current.ShowEroticaInSearchResults;
+        set
+        {
+            if (_prefsService.Current.ShowEroticaInSearchResults != value)
+            {
+                var prefs = _prefsService.Current;
+                prefs.ShowEroticaInSearchResults = value;
+                _prefsService.Save(prefs);
+                OnPropertyChanged();
+                _ = RefreshViewAndCountsAsync();
+            }
+        }
+    }
+
+    private async Task RefreshViewAndCountsAsync()
+    {
+        await RefreshSpotsAsync();
+        await UpdateFilterCountsAsync();
+    }
+
     public bool UseSocksProxy => _prefsService.Current.UseSocksProxy;
     public string SocksProxyIcon => UseSocksProxy ? "🔒" : "🔓";
     public string SocksProxyForeground => UseSocksProxy ? "#39A633" : "#888888";
@@ -549,6 +612,10 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             await _trustService.SyncToDatabaseAsync(_dbService);
             await RefreshSpotsAsync();
         });
+
+        ToggleShowTrustedOnlyCommand = new RelayCommand(() => ShowTrustedOnlyMode = !ShowTrustedOnlyMode);
+        ToggleHideBlacklistedSpotsCommand = new RelayCommand(() => HideBlacklistedSpots = !HideBlacklistedSpots);
+        ToggleShowEroticaCommand = new RelayCommand(() => ShowEroticaInSearchResults = !ShowEroticaInSearchResults);
 
         DownloadExternalListsCommand = new RelayCommand(async () =>
         {
@@ -956,6 +1023,10 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     {
         NotifySocksProxyChanged();
         StartAutoSyncTimer();
+        OnPropertyChanged(nameof(ShowTrustedOnlyMode));
+        OnPropertyChanged(nameof(ShowTrustedOnlyTooltip));
+        OnPropertyChanged(nameof(HideBlacklistedSpots));
+        OnPropertyChanged(nameof(ShowEroticaInSearchResults));
         await _dbService.UpdateDatabaseStatsAsync(_prefsService);
         await RefreshSpotsAsync();
         await UpdateFilterCountsAsync();

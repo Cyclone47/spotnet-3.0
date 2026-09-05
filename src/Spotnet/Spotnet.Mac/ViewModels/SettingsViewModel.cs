@@ -283,6 +283,30 @@ public sealed class SettingsViewModel : ViewModelBase
         }
     }
 
+    private bool _hideBlacklistedSpots;
+    /// <summary>Matches Windows Settings.Default.HideBlacklistedSpots.</summary>
+    public bool HideBlacklistedSpots
+    {
+        get => _hideBlacklistedSpots;
+        set => SetProperty(ref _hideBlacklistedSpots, value);
+    }
+
+    private bool _showTrustedOnlyMode;
+    /// <summary>Matches Windows MainWindowVm.ShowTrustedOnlyMode.</summary>
+    public bool ShowTrustedOnlyMode
+    {
+        get => _showTrustedOnlyMode;
+        set => SetProperty(ref _showTrustedOnlyMode, value);
+    }
+
+    private bool _showEroticaInSearchResults;
+    /// <summary>Matches Windows Settings.Default.ShowEroticaInSearchResults.</summary>
+    public bool ShowEroticaInSearchResults
+    {
+        get => _showEroticaInSearchResults;
+        set => SetProperty(ref _showEroticaInSearchResults, value);
+    }
+
     /// <summary>
     /// Accept a TLS certificate that fails validation. Off by default, as on Windows.
     /// Without this escape hatch a provider with a self-signed certificate would be
@@ -540,6 +564,9 @@ public sealed class SettingsViewModel : ViewModelBase
         _retention = prefs.Retention >= 1 ? prefs.Retention : 30;
         _checkSignatures = prefs.CheckSignatures;
         _numOfSpamReportsToSpotHide = prefs.NumOfSpamReportsToSpotHide;
+        _hideBlacklistedSpots = prefs.HideBlacklistedSpots;
+        _showTrustedOnlyMode = prefs.ShowTrustedOnlyMode;
+        _showEroticaInSearchResults = prefs.ShowEroticaInSearchResults;
 
         OnPropertyChanged(nameof(SelectedDownloadMode));
         OnPropertyChanged(nameof(SelectedInitialFetchRange));
@@ -550,6 +577,9 @@ public sealed class SettingsViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsRetentionInputEnabled));
         OnPropertyChanged(nameof(CheckSignatures));
         OnPropertyChanged(nameof(SelectedSpamReportsThreshold));
+        OnPropertyChanged(nameof(HideBlacklistedSpots));
+        OnPropertyChanged(nameof(ShowTrustedOnlyMode));
+        OnPropertyChanged(nameof(ShowEroticaInSearchResults));
 
         if (string.IsNullOrEmpty(Server))
         {
@@ -625,6 +655,9 @@ public sealed class SettingsViewModel : ViewModelBase
             prefs.Retention = newRetention;
             prefs.CheckSignatures = CheckSignatures;
             prefs.NumOfSpamReportsToSpotHide = _numOfSpamReportsToSpotHide;
+            prefs.HideBlacklistedSpots = HideBlacklistedSpots;
+            prefs.ShowTrustedOnlyMode = ShowTrustedOnlyMode;
+            prefs.ShowEroticaInSearchResults = ShowEroticaInSearchResults;
             _prefsService.Save(prefs);
 
             if (newRetention >= 1 && (oldRetention < 1 || newRetention < oldRetention) && _dbService != null)

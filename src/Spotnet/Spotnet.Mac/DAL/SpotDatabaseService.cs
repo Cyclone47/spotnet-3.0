@@ -389,6 +389,10 @@ public sealed class SpotDatabaseService
                 values.Clear();
             }
         }
+        else if (!showErotica)
+        {
+            clauses.Add("spots.cat < 9");
+        }
 
         if (!string.IsNullOrWhiteSpace(searchText))
         {

@@ -121,6 +121,21 @@
       <Setter Property="Background" Value="{DynamicResource AppMenuBackground}"/>
       <Setter Property="Foreground" Value="{DynamicResource AppMenuForeground}"/>
     </Style>
+    <!-- ShowTrustedOnly border toggle button -->
+    <Style Selector="Border.ShowTrustedOnlyBorder">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
+    </Style>
+    <Style Selector="Border.ShowTrustedOnlyBorder TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource AppMutedTextBrush}"/>
+    </Style>
+    <Style Selector="Border.ShowTrustedOnlyBorder.active">
+      <Setter Property="Background" Value="#FFAADCAA"/>
+      <Setter Property="BorderBrush" Value="#FF78AA78"/>
+    </Style>
+    <Style Selector="Border.ShowTrustedOnlyBorder.active TextBlock">
+      <Setter Property="Foreground" Value="#FFFFFFFF"/>
+    </Style>
   </Window.Styles>
 
   <Grid RowDefinitions="Auto,*,Auto">
@@ -150,6 +165,13 @@
       </MenuItem>
       <MenuItem Header="_Weergave">
         <MenuItem Header="_Vernieuwen (Spots ophalen)" InputGesture="Cmd+R" Command="{Binding RefreshCommand}"/>
+        <Separator/>
+        <MenuItem Header="✓ Alleen vertrouwde spots tonen" IsVisible="{Binding ShowTrustedOnlyMode}" Command="{Binding ToggleShowTrustedOnlyCommand}"/>
+        <MenuItem Header="  Alleen vertrouwde spots tonen" IsVisible="{Binding !ShowTrustedOnlyMode}" Command="{Binding ToggleShowTrustedOnlyCommand}"/>
+        <MenuItem Header="✓ Spots van zwarte lijst gebruikers niet tonen" IsVisible="{Binding HideBlacklistedSpots}" Command="{Binding ToggleHideBlacklistedSpotsCommand}"/>
+        <MenuItem Header="  Spots van zwarte lijst gebruikers niet tonen" IsVisible="{Binding !HideBlacklistedSpots}" Command="{Binding ToggleHideBlacklistedSpotsCommand}"/>
+        <MenuItem Header="✓ Toon erotiek in de zoekresultaten" IsVisible="{Binding ShowEroticaInSearchResults}" Command="{Binding ToggleShowEroticaCommand}"/>
+        <MenuItem Header="  Toon erotiek in de zoekresultaten" IsVisible="{Binding !ShowEroticaInSearchResults}" Command="{Binding ToggleShowEroticaCommand}"/>
         <Separator/>
         <MenuItem Header="_Stijl &amp; Thema">
           <MenuItem Header="☀️ Modern Licht"  Command="{Binding SetThemeCommand}" CommandParameter="{x:Static services:AppThemeStyle.ModernLight}"/>
@@ -225,7 +247,24 @@
           <!-- FILTERS tree -->
           <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="0">
-              <TextBlock Classes="SidebarHeader" Margin="12,8,12,4" Text="⬛ FILTERS"/>
+              <Grid ColumnDefinitions="*,Auto" Margin="12,8,12,4">
+                <TextBlock Grid.Column="0" Classes="SidebarHeader" Text="⬛ FILTERS" VerticalAlignment="Center"/>
+                <Border Grid.Column="1"
+                        Classes="ShowTrustedOnlyBorder"
+                        Classes.active="{Binding ShowTrustedOnlyMode}"
+                        ToolTip.Tip="{Binding ShowTrustedOnlyTooltip}"
+                        Cursor="Hand"
+                        CornerRadius="3"
+                        BorderThickness="1"
+                        Padding="5,1">
+                  <Button Background="Transparent"
+                          BorderThickness="0"
+                          Padding="0"
+                          Command="{Binding ToggleShowTrustedOnlyCommand}">
+                    <TextBlock Text="V" FontWeight="Bold" FontSize="11" FontFamily="Courier New, Menlo, monospace"/>
+                  </Button>
+                </Border>
+              </Grid>
 
               <!-- Level 0: the bundled advanced filters, plus "Eigen filters".
                    Same list the Windows client shows; a node's chevron expands it,
