@@ -25,6 +25,7 @@ public static class DefaultFilterProvider
     /// </summary>
     private static readonly Dictionary<string, string> IconByName = new(StringComparer.OrdinalIgnoreCase)
     {
+        ["Favorieten"] = "⭐",
         ["Nieuw"] = "🆕",
         ["Overzicht"] = "📋",
         ["Laatste 24 uur"] = "🕐",

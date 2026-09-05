@@ -200,7 +200,7 @@ public sealed class SpotDatabaseService
         string where = BuildFilterWhere(filterQuery, searchText, cmd, hideBlacklisted, showTrustedOnly, showErotica, spamReportsThreshold);
 
         cmd.CommandText =
-            $"SELECT {FilterQueryBuilder.SpotColumns} FROM spots LEFT JOIN spamgroup s USING (msgid){where} ORDER BY {SpotSort.ToSqlColumn(sortColumn)} {order}, spots.rowid {order} LIMIT @take OFFSET @skip;";
+            $"SELECT {FilterQueryBuilder.SpotColumns} FROM spots LEFT JOIN spamgroup s USING (msgid) LEFT JOIN favorites f USING (msgid){where} ORDER BY {SpotSort.ToSqlColumn(sortColumn)} {order}, spots.rowid {order} LIMIT @take OFFSET @skip;";
         cmd.Parameters.AddWithValue("@take", take);
         cmd.Parameters.AddWithValue("@skip", skip);
 
@@ -225,7 +225,7 @@ public sealed class SpotDatabaseService
         using var cmd = conn.CreateCommand();
 
         string where = BuildFilterWhere(filterQuery, searchText, cmd, hideBlacklisted, showTrustedOnly, showErotica, spamReportsThreshold);
-        cmd.CommandText = $"SELECT COUNT(1) FROM spots LEFT JOIN spamgroup s USING (msgid){where};";
+        cmd.CommandText = $"SELECT COUNT(1) FROM spots LEFT JOIN spamgroup s USING (msgid) LEFT JOIN favorites f USING (msgid){where};";
 
         var result = await cmd.ExecuteScalarAsync();
         return Convert.ToInt32(result);
@@ -249,7 +249,7 @@ public sealed class SpotDatabaseService
         using var cmd = conn.CreateCommand();
 
         string where = BuildFilterWhere(filterQuery, null, cmd, hideBlacklisted, showTrustedOnly, showErotica, spamReportsThreshold);
-        cmd.CommandText = $"SELECT COUNT(1) FROM spots LEFT JOIN spamgroup s USING (msgid){where} AND spots.rowid > @rowNew;";
+        cmd.CommandText = $"SELECT COUNT(1) FROM spots LEFT JOIN spamgroup s USING (msgid) LEFT JOIN favorites f USING (msgid){where} AND spots.rowid > @rowNew;";
         cmd.Parameters.AddWithValue("@rowNew", RowNew);
 
         var result = await cmd.ExecuteScalarAsync();
@@ -441,10 +441,11 @@ public sealed class SpotDatabaseService
     {
         using var conn = _db.OpenConnection(readOnly: true);
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = @"
-            SELECT spots.rowid, spots.key, spots.cat, spots.subcat, spots.extcat, spots.date, spots.filesize, spots.cats, spots.sender, spots.tag, spots.subject, spots.msgid, spots.modulus, IFNULL(s.cnt, 0)
+        cmd.CommandText = $@"
+            SELECT {FilterQueryBuilder.SpotColumns}
             FROM spots
             LEFT JOIN spamgroup s USING (msgid)
+            LEFT JOIN favorites f USING (msgid)
             WHERE spots.msgid = @msgid
             LIMIT 1;";
         cmd.Parameters.AddWithValue("@msgid", msgId);
@@ -811,7 +812,8 @@ public sealed class SpotDatabaseService
             Subject = reader.IsDBNull(10) ? "" : reader.GetString(10),
             MsgId = reader.IsDBNull(11) ? "" : reader.GetString(11),
             Modulus = reader.IsDBNull(12) ? "" : reader.GetString(12),
-            NumberOfSpamReports = reader.FieldCount > 13 ? reader.GetInt32(13) : 0
+            NumberOfSpamReports = reader.FieldCount > 13 ? reader.GetInt32(13) : 0,
+            IsFavorite = reader.FieldCount > 14 && !reader.IsDBNull(14) && Convert.ToInt32(reader.GetValue(14)) != 0
         };
     }
 
@@ -1015,5 +1017,80 @@ public sealed class SpotDatabaseService
         }
 
         return totalDeleted;
+    }
+
+    /// <summary>
+    /// Adds a spot to favorites: records in the <c>favorites</c> table and marks <c>cats</c> with ' f1'
+    /// for backwards compatibility with Windows Spotnet and Remote API.
+    /// </summary>
+    public async Task AddFavoriteAsync(string msgId)
+    {
+        if (string.IsNullOrWhiteSpace(msgId)) return;
+        using var conn = _db.OpenConnection(readOnly: false);
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            INSERT OR IGNORE INTO favorites (msgid, favdate) VALUES (@msgid, @date);
+            UPDATE spots SET cats = cats || ' f1' WHERE msgid = @msgid AND cats NOT LIKE '% f1%';";
+        cmd.Parameters.AddWithValue("@msgid", msgId);
+        cmd.Parameters.AddWithValue("@date", DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    /// <summary>
+    /// Removes a spot from favorites: removes from <c>favorites</c> table and strips ' f1' from <c>cats</c>.
+    /// </summary>
+    public async Task RemoveFavoriteAsync(string msgId)
+    {
+        if (string.IsNullOrWhiteSpace(msgId)) return;
+        using var conn = _db.OpenConnection(readOnly: false);
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            DELETE FROM favorites WHERE msgid = @msgid;
+            UPDATE spots SET cats = replace(cats, ' f1', '') WHERE msgid = @msgid;";
+        cmd.Parameters.AddWithValue("@msgid", msgId);
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    /// <summary>
+    /// Checks whether a spot is saved in favorites.
+    /// </summary>
+    public async Task<bool> IsFavoriteAsync(string msgId)
+    {
+        if (string.IsNullOrWhiteSpace(msgId)) return false;
+        using var conn = _db.OpenConnection(readOnly: true);
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT 1 FROM favorites WHERE msgid = @msgid LIMIT 1;";
+        cmd.Parameters.AddWithValue("@msgid", msgId);
+        var res = await cmd.ExecuteScalarAsync();
+        return res != null;
+    }
+
+    /// <summary>
+    /// Returns the total count of spots in favorites.
+    /// </summary>
+    public async Task<int> GetFavoritesCountAsync()
+    {
+        using var conn = _db.OpenConnection(readOnly: true);
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT COUNT(1) FROM favorites;";
+        var res = await cmd.ExecuteScalarAsync();
+        return Convert.ToInt32(res);
+    }
+
+    /// <summary>
+    /// Returns all favorited message IDs ordered newest first.
+    /// </summary>
+    public async Task<List<string>> GetFavoriteMsgIdsAsync()
+    {
+        var list = new List<string>();
+        using var conn = _db.OpenConnection(readOnly: true);
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT msgid FROM favorites ORDER BY favdate DESC;";
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            list.Add(reader.GetString(0));
+        }
+        return list;
     }
 }

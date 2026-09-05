@@ -34,6 +34,7 @@ public static class SpotSort
         ["SenderName"] = "sender",
         ["Age"] = "date",
         ["FormattedSize"] = "filesize",
+        ["IsFavorite"] = "isfavorite",
     };
 
     /// <summary>Whether the grid may offer sorting on this column.</summary>

@@ -41,6 +41,10 @@ public sealed class SpotDetailViewModel : ViewModelBase
                 OnPropertyChanged(nameof(MsgId));
                 OnPropertyChanged(nameof(WebsiteUrl));
                 OnPropertyChanged(nameof(SpamReportCount));
+                OnPropertyChanged(nameof(IsFavorite));
+                OnPropertyChanged(nameof(FavoriteStar));
+                OnPropertyChanged(nameof(FavoriteTooltip));
+                OnPropertyChanged(nameof(FavoriteForeground));
 
                 PosterImage = null;
                 RebuildFields();
@@ -253,6 +257,12 @@ public sealed class SpotDetailViewModel : ViewModelBase
     public ICommand PostCommentCommand { get; }
     public ICommand OpenWebsiteCommand { get; }
     public ICommand OpenWebLinkCommand { get; }
+    public ICommand ToggleFavoriteCommand { get; }
+
+    public bool IsFavorite => _spot?.IsFavorite ?? false;
+    public string FavoriteStar => IsFavorite ? "★" : "☆";
+    public string FavoriteTooltip => IsFavorite ? "Verwijderen uit Favorieten" : "Toevoegen aan Favorieten";
+    public string FavoriteForeground => IsFavorite ? "#FFD700" : "#888888";
 
     public event Action<string>? RequestNzbDownload;
     public event Action? RequestClose;
@@ -276,6 +286,25 @@ public sealed class SpotDetailViewModel : ViewModelBase
         _bodyService = bodyService;
 
         CloseCommand = new RelayCommand(() => RequestClose?.Invoke());
+
+        ToggleFavoriteCommand = new RelayCommand(async () =>
+        {
+            if (_spot == null || string.IsNullOrWhiteSpace(_spot.MsgId)) return;
+            bool newState = !_spot.IsFavorite;
+            _spot.IsFavorite = newState;
+            if (newState)
+            {
+                await _dbService.AddFavoriteAsync(_spot.MsgId);
+            }
+            else
+            {
+                await _dbService.RemoveFavoriteAsync(_spot.MsgId);
+            }
+            OnPropertyChanged(nameof(IsFavorite));
+            OnPropertyChanged(nameof(FavoriteStar));
+            OnPropertyChanged(nameof(FavoriteTooltip));
+            OnPropertyChanged(nameof(FavoriteForeground));
+        });
 
         OpenWebsiteCommand = new RelayCommand(() =>
         {

@@ -47,6 +47,10 @@ public static class MacSpotsSchema
     public const string CreateWhitelist =
         "CREATE TABLE IF NOT EXISTS whitelist(key TEXT PRIMARY KEY, type INT);";
 
+    /// <summary>Favorites table: msgid of favorited spots.</summary>
+    public const string CreateFavorites =
+        "CREATE TABLE IF NOT EXISTS favorites(msgid TEXT PRIMARY KEY, favdate INT);";
+
     public static readonly string[] Tables =
     {
         CreateSpots,
@@ -58,7 +62,8 @@ public static class MacSpotsSchema
         CreateComments,
         CreateCommentIndex,
         CreateBlacklist,
-        CreateWhitelist
+        CreateWhitelist,
+        CreateFavorites
     };
 
     public static readonly string[] Indexes =
@@ -72,7 +77,8 @@ public static class MacSpotsSchema
         "CREATE INDEX IF NOT EXISTS spammodidx ON spamreports(modulus);",
         "CREATE INDEX IF NOT EXISTS commentspotidx ON comments(spotmsgid);",
         "CREATE INDEX IF NOT EXISTS blacktypeidx ON blacklist(type);",
-        "CREATE INDEX IF NOT EXISTS whitetypeidx ON whitelist(type);"
+        "CREATE INDEX IF NOT EXISTS whitetypeidx ON whitelist(type);",
+        "CREATE INDEX IF NOT EXISTS favmsgidx ON favorites(msgid);"
     };
 
     public static readonly string[] SearchTriggers =

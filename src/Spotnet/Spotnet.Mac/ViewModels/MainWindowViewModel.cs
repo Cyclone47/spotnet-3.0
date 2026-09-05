@@ -302,6 +302,10 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public ICommand ToggleHideBlacklistedSpotsCommand { get; }
     public ICommand ToggleShowEroticaCommand { get; }
 
+    public ICommand ToggleSpotFavoriteCommand { get; }
+    public ICommand AddSpotToFavoritesCommand { get; }
+    public ICommand RemoveSpotFromFavoritesCommand { get; }
+
     public bool ShowTrustedOnlyMode
     {
         get => _prefsService.Current.ShowTrustedOnlyMode;
@@ -617,6 +621,41 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         ToggleHideBlacklistedSpotsCommand = new RelayCommand(() => HideBlacklistedSpots = !HideBlacklistedSpots);
         ToggleShowEroticaCommand = new RelayCommand(() => ShowEroticaInSearchResults = !ShowEroticaInSearchResults);
 
+        ToggleSpotFavoriteCommand = new RelayCommand(async param =>
+        {
+            var spot = param as SpotItem ?? SelectedSpot;
+            if (spot == null || string.IsNullOrWhiteSpace(spot.MsgId)) return;
+            bool newState = !spot.IsFavorite;
+            spot.IsFavorite = newState;
+            if (newState)
+            {
+                await _dbService.AddFavoriteAsync(spot.MsgId);
+            }
+            else
+            {
+                await _dbService.RemoveFavoriteAsync(spot.MsgId);
+            }
+            await UpdateFilterCountsAsync();
+        });
+
+        AddSpotToFavoritesCommand = new RelayCommand(async param =>
+        {
+            var spot = param as SpotItem ?? SelectedSpot;
+            if (spot == null || string.IsNullOrWhiteSpace(spot.MsgId) || spot.IsFavorite) return;
+            spot.IsFavorite = true;
+            await _dbService.AddFavoriteAsync(spot.MsgId);
+            await UpdateFilterCountsAsync();
+        });
+
+        RemoveSpotFromFavoritesCommand = new RelayCommand(async param =>
+        {
+            var spot = param as SpotItem ?? SelectedSpot;
+            if (spot == null || string.IsNullOrWhiteSpace(spot.MsgId) || !spot.IsFavorite) return;
+            spot.IsFavorite = false;
+            await _dbService.RemoveFavoriteAsync(spot.MsgId);
+            await UpdateFilterCountsAsync();
+        });
+
         DownloadExternalListsCommand = new RelayCommand(async () =>
         {
             StatusText = "Externe lijsten downloaden...";
@@ -706,6 +745,17 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private void BuildFilterTree()
     {
         FilterTree.Clear();
+
+        // ── Favorieten filter node ────────────────────────────────────────────
+        var favFilter = new FilterItem
+        {
+            Id = "def_Favorieten",
+            Kind = FilterKind.Preset,
+            Name = "Favorieten",
+            Icon = "⭐",
+            Query = "spots.msgid in favorieten"
+        };
+        FilterTree.Add(favFilter);
 
         // ── Bundled advanced filters ──────────────────────────────────────────
         // Same tree the Windows client ships (Nieuw, Overzicht, Laatste 24 uur,
@@ -1076,15 +1126,22 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     {
         if (!string.IsNullOrWhiteSpace(group.Query))
         {
-            var prefs = _prefsService.Current;
-            // The badge is a "new since the last sync" count, as on Windows — not the
-            // total the filter holds.
-            group.Count = await _dbService.CountNewByFilterAsync(
-                group.Query,
-                hideBlacklisted: prefs.HideBlacklistedSpots,
-                showTrustedOnly: prefs.ShowTrustedOnlyMode,
-                showErotica: prefs.ShowEroticaInSearchResults,
-                spamReportsThreshold: prefs.NumOfSpamReportsToSpotHide);
+            if (group.Id == "def_Favorieten")
+            {
+                group.Count = await _dbService.GetFavoritesCountAsync();
+            }
+            else
+            {
+                var prefs = _prefsService.Current;
+                // The badge is a "new since the last sync" count, as on Windows — not the
+                // total the filter holds.
+                group.Count = await _dbService.CountNewByFilterAsync(
+                    group.Query,
+                    hideBlacklisted: prefs.HideBlacklistedSpots,
+                    showTrustedOnly: prefs.ShowTrustedOnlyMode,
+                    showErotica: prefs.ShowEroticaInSearchResults,
+                    spamReportsThreshold: prefs.NumOfSpamReportsToSpotHide);
+            }
         }
 
         foreach (var child in group.Children)

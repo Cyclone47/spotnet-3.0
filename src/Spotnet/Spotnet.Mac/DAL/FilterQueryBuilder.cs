@@ -18,7 +18,7 @@ public static class FilterQueryBuilder
 {
     /// <summary>Columns selected by every spot query, in the order <c>MapSpotRow</c> expects.</summary>
     public const string SpotColumns =
-        "spots.rowid, spots.key, spots.cat, spots.subcat, spots.extcat, spots.date, spots.filesize, spots.cats, spots.sender, spots.tag, spots.subject, spots.msgid, spots.modulus, IFNULL(s.cnt, 0)";
+        "spots.rowid, spots.key, spots.cat, spots.subcat, spots.extcat, spots.date, spots.filesize, spots.cats, spots.sender, spots.tag, spots.subject, spots.msgid, spots.modulus, IFNULL(s.cnt, 0), (f.msgid IS NOT NULL) AS isfavorite";
 
     /// <summary>Windows hides its own placeholder rows (key 2 and 5) from every filter.</summary>
     public const string KeyGuard = "spots.key != 2 AND spots.key != 5";
@@ -27,12 +27,29 @@ public static class FilterQueryBuilder
         => filter != null && filter.Contains(" match ", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Replaces the <c>[SN:DATE]</c> / <c>[SN:NEW]</c> markers the bundled filters carry.
+    /// Replaces the <c>[SN:DATE]</c> / <c>[SN:NEW]</c> / <c>[SN:FAV]</c> markers the bundled filters carry.
     /// </summary>
     public static string ResolveMarkers(string filter, long nowUnix, long rowNew)
-        => filter
+    {
+        string resolved = filter
             .Replace("[SN:DATE]", nowUnix.ToString(System.Globalization.CultureInfo.InvariantCulture))
             .Replace("[SN:NEW]", rowNew.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+        if (resolved.Contains("spots.msgid in favorieten", StringComparison.OrdinalIgnoreCase))
+        {
+            resolved = resolved.Replace("spots.msgid in favorieten", "spots.msgid IN (SELECT msgid FROM favorites)", StringComparison.OrdinalIgnoreCase);
+        }
+        else if (resolved.StartsWith("favorites", StringComparison.OrdinalIgnoreCase))
+        {
+            resolved = "spots.msgid IN (SELECT msgid FROM favorites)" + resolved["favorites".Length..];
+        }
+        else if (resolved.Contains("[SN:FAV]", StringComparison.OrdinalIgnoreCase))
+        {
+            resolved = resolved.Replace("[SN:FAV]", "spots.msgid IN (SELECT msgid FROM favorites)", StringComparison.OrdinalIgnoreCase);
+        }
+
+        return resolved;
+    }
 
     private static readonly System.Text.RegularExpressions.Regex PosterIdentRegex =
         new(@"^PosterIdent\s+IN\s+\(([W|B|F|T|N|,|\s|V|O]+)\)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);

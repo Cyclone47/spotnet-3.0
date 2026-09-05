@@ -21,7 +21,7 @@ public static class FilterExpressionCompiler
         "IS", "NULL", "BETWEEN", "ESCAPE",
 
         // Tables exposed to the filter language.
-        "spots", "search",
+        "spots", "search", "favorites",
 
         // Search/spots columns. Names are the only identifiers a filter may supply.
         // "docid" is the FTS4 spelling a handful of bundled filters still use; it is
@@ -161,7 +161,7 @@ public static class FilterExpressionCompiler
                 return pair;
             }
         }
-        if (current is '=' or '<' or '>' or '+' or '-' or '*' or '/' or '%')
+        if (current is '=' or '<' or '>' or '+' or '-' or '*' or '/' or '%' or '.')
         {
             index++;
             return current.ToString();

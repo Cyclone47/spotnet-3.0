@@ -135,9 +135,23 @@
     <ScrollViewer Grid.Column="1" Padding="18" VerticalScrollBarVisibility="Auto">
       <StackPanel Spacing="16">
 
-        <TextBlock Text="{Binding Title}" FontSize="21" FontWeight="Bold"
-                   TextWrapping="Wrap"
-                   Foreground="{DynamicResource AppTextBrush}"/>
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="21" FontWeight="Bold"
+                     TextWrapping="Wrap"
+                     Foreground="{DynamicResource AppTextBrush}"/>
+          <Button Grid.Column="1"
+                  Command="{Binding ToggleFavoriteCommand}"
+                  Background="Transparent"
+                  BorderThickness="0"
+                  Padding="8,2"
+                  VerticalAlignment="Top"
+                  ToolTip.Tip="{Binding FavoriteTooltip}"
+                  Cursor="Hand">
+            <TextBlock Text="{Binding FavoriteStar}"
+                       FontSize="22"
+                       Foreground="{Binding FavoriteForeground}"/>
+          </Button>
+        </Grid>
 
         <!-- A long description gets its own scrollbar rather than pushing the comments
              and the reply form off the bottom of the column. -->

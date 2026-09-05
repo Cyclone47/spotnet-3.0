@@ -45,10 +45,32 @@ public sealed class SpotItem : INotifyPropertyChanged
         Modulus = source.Modulus;
         PosterIdent = source.PosterIdent;
         NumberOfSpamReports = source.NumberOfSpamReports;
+        IsFavorite = source.IsFavorite;
         IsPlaceholder = false;
 
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
     }
+
+    private bool _isFavorite;
+    public bool IsFavorite
+    {
+        get => _isFavorite;
+        set
+        {
+            if (_isFavorite != value)
+            {
+                _isFavorite = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsFavorite)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FavoriteStar)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FavoriteTooltip)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FavoriteForeground)));
+            }
+        }
+    }
+
+    public string FavoriteStar => IsFavorite ? "★" : "☆";
+    public string FavoriteTooltip => IsFavorite ? "Verwijderen uit Favorieten" : "Toevoegen aan Favorieten";
+    public string FavoriteForeground => IsFavorite ? "#FFD700" : "#888888";
 
     public long Id { get; set; }
     public int Key { get; set; }
