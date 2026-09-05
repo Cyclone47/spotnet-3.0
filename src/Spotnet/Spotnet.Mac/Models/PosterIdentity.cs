@@ -28,6 +28,18 @@ public static class PosterIdentity
     }
 
     /// <summary>
+    /// Converts a base64 string to Spotnet's URL-safe encoding without padding.
+    /// Matches Windows SpotHelper.SpecialString: replaces / with -s, + with -p, and strips =.
+    /// </summary>
+    public static string Escape(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return "";
+        return value.Replace("/", "-s", StringComparison.Ordinal)
+                    .Replace("+", "-p", StringComparison.Ordinal)
+                    .Replace("=", "", StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// Pulls the poster's modulus straight out of a raw From header, so a spot stored
     /// before the parser recorded it separately still resolves to the right id.
     /// Between "&lt;" and "@" sits "&lt;modulus&gt;.&lt;signature&gt;".

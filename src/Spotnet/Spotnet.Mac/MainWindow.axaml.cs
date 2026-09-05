@@ -42,6 +42,7 @@ public partial class MainWindow : Window
         _viewModel.RequestAddCustomFilter += ShowAddCustomFilterDialog;
         _viewModel.RequestOpenSpotWindow += detail => new SpotDetailWindow(detail).Show(this);
         _viewModel.RequestPickDownloadFolder += ShowPickDownloadFolderDialog;
+        _viewModel.RequestOpenComplaintDialog += ShowComplaintDialog;
         _viewModel.RequestSetDownloadPassword += ShowSetPasswordDialog;
         _viewModel.RequestConfirmRemoveDownload = ShowConfirmRemoveDownloadDialog;
         _viewModel.RequestConfirmClearDownloads = ShowConfirmClearDownloadsDialog;
@@ -85,6 +86,21 @@ public partial class MainWindow : Window
     private async void ShowReleaseNotesWindow()
     {
         var window = new ReleaseNotesWindow();
+        await window.ShowDialog(this);
+    }
+
+    private async void ShowComplaintDialog(Spotnet.Mac.Models.SpotItem spot)
+    {
+        var vm = new ComplaintViewModel(spot, _viewModel.ComplaintService);
+        vm.ComplaintSubmitted += async (success, message) =>
+        {
+            if (success)
+            {
+                _viewModel.StatusText = message;
+                await _viewModel.SpotDetail.ReloadSpamReportsAsync();
+            }
+        };
+        var window = new ComplaintWindow(vm);
         await window.ShowDialog(this);
     }
 

@@ -178,6 +178,11 @@
                 <CheckBox IsChecked="{Binding ExternalBrowser}"
                           Content="Weblinks in spots openen in standaardbrowser"/>
 
+                <Grid ColumnDefinitions="Auto,8,200,*" Margin="0,4,0,0">
+                    <TextBlock Grid.Column="0" Text="Afzender bijnaam (alias):" VerticalAlignment="Center"/>
+                    <TextBox Grid.Column="2" Text="{Binding Nickname}" MaxLength="30" Watermark="Spotter"/>
+                </Grid>
+
                 <!-- Status message -->
                 <TextBlock Text="{Binding StatusMessage}"
                            TextWrapping="Wrap"

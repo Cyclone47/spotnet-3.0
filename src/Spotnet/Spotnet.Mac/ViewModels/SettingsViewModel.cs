@@ -246,6 +246,16 @@ public sealed class SettingsViewModel : ViewModelBase
         set => SetProperty(ref _checkSignatures, value);
     }
 
+    private string _nickname = "Spotter";
+    /// <summary>
+    /// Posting nickname for comments and complaints. Matches Windows Settings.Default.Nickname.
+    /// </summary>
+    public string Nickname
+    {
+        get => _nickname;
+        set => SetProperty(ref _nickname, value);
+    }
+
     public List<string> SpamReportsThresholdList { get; } = new()
     {
         ">=1",
@@ -567,6 +577,7 @@ public sealed class SettingsViewModel : ViewModelBase
         _hideBlacklistedSpots = prefs.HideBlacklistedSpots;
         _showTrustedOnlyMode = prefs.ShowTrustedOnlyMode;
         _showEroticaInSearchResults = prefs.ShowEroticaInSearchResults;
+        _nickname = string.IsNullOrWhiteSpace(prefs.Nickname) ? "Spotter" : prefs.Nickname;
 
         OnPropertyChanged(nameof(SelectedDownloadMode));
         OnPropertyChanged(nameof(SelectedInitialFetchRange));
@@ -580,6 +591,7 @@ public sealed class SettingsViewModel : ViewModelBase
         OnPropertyChanged(nameof(HideBlacklistedSpots));
         OnPropertyChanged(nameof(ShowTrustedOnlyMode));
         OnPropertyChanged(nameof(ShowEroticaInSearchResults));
+        OnPropertyChanged(nameof(Nickname));
 
         if (string.IsNullOrEmpty(Server))
         {
@@ -658,6 +670,7 @@ public sealed class SettingsViewModel : ViewModelBase
             prefs.HideBlacklistedSpots = HideBlacklistedSpots;
             prefs.ShowTrustedOnlyMode = ShowTrustedOnlyMode;
             prefs.ShowEroticaInSearchResults = ShowEroticaInSearchResults;
+            prefs.Nickname = string.IsNullOrWhiteSpace(Nickname) ? "Spotter" : Nickname.Trim();
             _prefsService.Save(prefs);
 
             if (newRetention >= 1 && (oldRetention < 1 || newRetention < oldRetention) && _dbService != null)

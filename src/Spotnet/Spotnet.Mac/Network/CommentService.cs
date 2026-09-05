@@ -21,11 +21,13 @@ public sealed class CommentService
 
     private readonly SpotDatabaseService _dbService;
     private readonly UsenetConnection _connection;
+    private readonly Services.IUserKeyService _userKeyService;
 
-    public CommentService(IAppPaths appPaths, ISecretStore secretStore, SpotDatabaseService dbService)
+    public CommentService(IAppPaths appPaths, ISecretStore secretStore, SpotDatabaseService dbService, Services.IUserKeyService? userKeyService = null)
     {
         _dbService = dbService;
         _connection = new UsenetConnection(appPaths, secretStore);
+        _userKeyService = userKeyService ?? new Services.UserKeyService(dbService);
     }
 
     /// <summary>The group Spotnet replies are posted to (Windows' ReplyGroup setting).</summary>
@@ -189,7 +191,7 @@ public sealed class CommentService
             }
 
             // 1. Get or generate user RSA key
-            using var rsa = await GetOrCreateUserRsaKeyAsync();
+            using var rsa = await _userKeyService.GetOrCreateUserRsaKeyAsync();
             string pubKeyXml = rsa.ToXmlString(includePrivateParameters: false);
 
             string spotMsgId = spot.MsgId.Trim('<', '>');
@@ -248,29 +250,5 @@ public sealed class CommentService
             Log.Error(ex, "Fout bij plaatsen van reactie: {0}", ex.Message);
             return (false, null, $"Fout: {ex.Message}");
         }
-    }
-
-    private async Task<RSA> GetOrCreateUserRsaKeyAsync()
-    {
-        string? existingKeyXml = await _dbService.GetUserKeyXmlAsync();
-        var rsa = RSA.Create(2048);
-
-        if (!string.IsNullOrEmpty(existingKeyXml))
-        {
-            try
-            {
-                rsa.FromXmlString(existingKeyXml);
-                return rsa;
-            }
-            catch (Exception ex)
-            {
-                Log.Warn(ex, "Failed to load existing RSA key from database, generating new key.");
-            }
-        }
-
-        // Generate new key and store in SQLite
-        string newKeyXml = rsa.ToXmlString(includePrivateParameters: true);
-        await _dbService.SetUserKeyXmlAsync(newKeyXml);
-        return rsa;
     }
 }

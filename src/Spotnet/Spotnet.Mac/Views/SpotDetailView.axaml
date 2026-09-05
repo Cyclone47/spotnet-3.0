@@ -135,11 +135,22 @@
     <ScrollViewer Grid.Column="1" Padding="18" VerticalScrollBarVisibility="Auto">
       <StackPanel Spacing="16">
 
-        <Grid ColumnDefinitions="*,Auto">
+        <Grid ColumnDefinitions="*,Auto,Auto">
           <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="21" FontWeight="Bold"
                      TextWrapping="Wrap"
                      Foreground="{DynamicResource AppTextBrush}"/>
           <Button Grid.Column="1"
+                  Command="{Binding ComplainCommand}"
+                  Background="Transparent"
+                  BorderThickness="0"
+                  Padding="8,2"
+                  VerticalAlignment="Top"
+                  ToolTip.Tip="Melding versturen"
+                  Cursor="Hand">
+            <TextBlock Text="⚠️"
+                       FontSize="18"/>
+          </Button>
+          <Button Grid.Column="2"
                   Command="{Binding ToggleFavoriteCommand}"
                   Background="Transparent"
                   BorderThickness="0"

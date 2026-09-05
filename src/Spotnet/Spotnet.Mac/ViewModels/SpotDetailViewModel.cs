@@ -276,6 +276,8 @@ public sealed class SpotDetailViewModel : ViewModelBase
     private readonly CommentService? _commentService;
     private readonly SpotBodyService? _bodyService;
     private readonly Spotnet.Platform.IExternalLauncher _launcher = new Spotnet.Mac.Platform.MacExternalLauncher();
+    public event Action<SpotItem>? RequestComplain;
+    public ICommand ComplainCommand { get; }
 
     public SpotDetailViewModel(SpotDatabaseService dbService, NzbService? nzbService = null,
                                CommentService? commentService = null, SpotBodyService? bodyService = null)
@@ -286,6 +288,13 @@ public sealed class SpotDetailViewModel : ViewModelBase
         _bodyService = bodyService;
 
         CloseCommand = new RelayCommand(() => RequestClose?.Invoke());
+        ComplainCommand = new RelayCommand(() =>
+        {
+            if (_spot != null)
+            {
+                RequestComplain?.Invoke(_spot);
+            }
+        });
 
         ToggleFavoriteCommand = new RelayCommand(async () =>
         {
@@ -418,15 +427,7 @@ public sealed class SpotDetailViewModel : ViewModelBase
             }
 
             // Load spam reports
-            SpamReports.Clear();
-            var reports = await _dbService.GetSpamReportsAsync(spot.MsgId);
-            foreach (var r in reports)
-            {
-                SpamReports.Add(r);
-            }
-            SpamReportCount = reports.Count;
-            OnPropertyChanged(nameof(HasSpamReports));
-            RebuildFields();
+            await ReloadSpamReportsAsync();
 
             Description = "";
             StatusMessage = "Spot ophalen van Usenet...";
@@ -486,5 +487,19 @@ public sealed class SpotDetailViewModel : ViewModelBase
         {
             IsLoading = false;
         }
+    }
+
+    public async Task ReloadSpamReportsAsync()
+    {
+        if (_spot == null || string.IsNullOrWhiteSpace(_spot.MsgId)) return;
+        var reports = await _dbService.GetSpamReportsAsync(_spot.MsgId);
+        SpamReports.Clear();
+        foreach (var r in reports)
+        {
+            SpamReports.Add(r);
+        }
+        SpamReportCount = reports.Count;
+        OnPropertyChanged(nameof(HasSpamReports));
+        RebuildFields();
     }
 }

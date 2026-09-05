@@ -88,6 +88,11 @@ public sealed class UserPreferences
     public string SortDirection { get; set; } = DAL.SpotSort.DefaultDirection;
 
     /// <summary>
+    /// Posting nickname/alias for comments and complaints. Matches Windows Settings.Default.Nickname (default "Spotter").
+    /// </summary>
+    public string Nickname { get; set; } = "Spotter";
+
+    /// <summary>
     /// Accept a news server's TLS certificate even when it fails validation. Off by
     /// default, as on Windows. Only turn this on for a provider using a self-signed
     /// certificate: it removes the protection against another machine impersonating the

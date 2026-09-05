@@ -454,6 +454,11 @@
                             Command="{Binding $parent[Window].DataContext.AddSpotToWhitelistCommand}"
                             CommandParameter="{Binding $parent[Window].DataContext.SelectedSpot}"
                             IsEnabled="{Binding $parent[Window].DataContext.SelectedSpot, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                  <Separator/>
+                  <MenuItem Header="Melding versturen..."
+                            Command="{Binding $parent[Window].DataContext.ComplainToSpotCommand}"
+                            CommandParameter="{Binding $parent[Window].DataContext.SelectedSpot}"
+                            IsEnabled="{Binding $parent[Window].DataContext.SelectedSpot, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                 </ContextMenu>
               </DataGrid.ContextMenu>
               <DataGrid.Columns>

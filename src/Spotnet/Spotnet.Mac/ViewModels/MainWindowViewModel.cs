@@ -28,12 +28,15 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private readonly NzbService _nzbService;
     private readonly CustomFilterService _customFilterService;
     private readonly CommentService _commentService;
+    private readonly ComplaintService _complaintService;
+    private readonly UserKeyService _userKeyService;
     private readonly SpotBodyService _bodyService;
     private readonly IUiDispatcher _dispatcher;
     private readonly TrustService _trustService;
 
     public UserPreferencesService PreferencesService => _prefsService;
     public TrustService TrustService => _trustService;
+    public ComplaintService ComplaintService => _complaintService;
     private System.Threading.Timer? _autoSyncTimer;
 
     // ── State ─────────────────────────────────────────────────────────────────
@@ -305,6 +308,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public ICommand ToggleSpotFavoriteCommand { get; }
     public ICommand AddSpotToFavoritesCommand { get; }
     public ICommand RemoveSpotFromFavoritesCommand { get; }
+    public ICommand ComplainToSpotCommand { get; }
 
     public bool ShowTrustedOnlyMode
     {
@@ -391,6 +395,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public event Action? RequestOpenOnboarding;
     public event Action? RequestOpenReleaseNotes;
     public event Action? RequestAddCustomFilter;
+    public event Action<SpotItem>? RequestOpenComplaintDialog;
     public event Action? RequestPickDownloadFolder;
     public event Action<DownloadItem>? RequestSetDownloadPassword;
     public Func<DownloadItem, Task<(bool confirmed, bool deleteFiles)>>? RequestConfirmRemoveDownload;
@@ -418,9 +423,11 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             });
         };
 
+        _userKeyService = new UserKeyService(_dbService);
         _nzbService = new NzbService(_appPaths, _secretStore, _prefsService);
         _syncService = new SpotSyncService(_appPaths, _secretStore, _dbService, _prefsService, _trustService);
-        _commentService = new CommentService(_appPaths, _secretStore, _dbService);
+        _commentService = new CommentService(_appPaths, _secretStore, _dbService, _userKeyService);
+        _complaintService = new ComplaintService(_appPaths, _secretStore, _dbService, _prefsService, _trustService, _userKeyService);
         _bodyService = new SpotBodyService(_appPaths, _secretStore);
 
         _syncService.ProgressChanged += (current, total, msg) =>
@@ -435,6 +442,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         DownloadsTab = new DownloadsTabViewModel(new DownloadHistoryService(_appPaths), _prefsService);
         SpotDetail.NzbFetched += OnNzbFetched;
         SpotDetail.RequestClose += () => SelectedSpot = null;
+        SpotDetail.RequestComplain += spot => RequestOpenComplaintDialog?.Invoke(spot);
 
         OpenReleaseNotesCommand = new RelayCommand(() => RequestOpenReleaseNotes?.Invoke());
         QuickRepairDbCommand = new RelayCommand(async () =>
@@ -654,6 +662,15 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             spot.IsFavorite = false;
             await _dbService.RemoveFavoriteAsync(spot.MsgId);
             await UpdateFilterCountsAsync();
+        });
+
+        ComplainToSpotCommand = new RelayCommand(param =>
+        {
+            var spot = param as SpotItem ?? SelectedSpot;
+            if (spot != null)
+            {
+                RequestOpenComplaintDialog?.Invoke(spot);
+            }
         });
 
         DownloadExternalListsCommand = new RelayCommand(async () =>

@@ -1,0 +1,84 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Spotnet.Mac.ViewModels"
+        x:Class="Spotnet.Mac.Views.ComplaintWindow"
+        x:DataType="vm:ComplaintViewModel"
+        Title="Melding versturen"
+        Width="520" Height="420"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource AppWindowBackground}">
+
+  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto" Margin="20">
+    <!-- Header -->
+    <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="0,0,0,14">
+      <TextBlock Text="⚠️" FontSize="24" VerticalAlignment="Center"/>
+      <StackPanel VerticalAlignment="Center">
+        <TextBlock Text="Melding versturen" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource AppTextBrush}"/>
+        <TextBlock Text="Rapporteer een spot die spam, malware of ongewenste inhoud bevat."
+                   FontSize="12" Foreground="{DynamicResource AppMutedTextBrush}"/>
+      </StackPanel>
+    </StackPanel>
+
+    <!-- Spot info summary -->
+    <Border Grid.Row="1" Background="{DynamicResource AppGridBackground}"
+            BorderBrush="{DynamicResource AppBorderBrush}"
+            BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,14">
+      <Grid ColumnDefinitions="75,*" RowDefinitions="Auto,Auto">
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="Titel:" FontWeight="Bold" Foreground="{DynamicResource AppMutedTextBrush}"/>
+        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SpotTitle}" TextWrapping="Wrap" MaxLines="2" FontWeight="SemiBold" Foreground="{DynamicResource AppTextBrush}"/>
+
+        <TextBlock Grid.Row="1" Grid.Column="0" Text="Afzender:" FontWeight="Bold" Foreground="{DynamicResource AppMutedTextBrush}" Margin="0,6,0,0"/>
+        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SpotSenderWithId}" Foreground="{DynamicResource AppTextBrush}" Margin="0,6,0,0"/>
+      </Grid>
+    </Border>
+
+    <!-- Why prompt -->
+    <TextBlock Grid.Row="2" Text="Waarom moet deze spot verwijderd worden?"
+               FontWeight="SemiBold" Foreground="{DynamicResource AppTextBrush}" Margin="0,0,0,6"/>
+
+    <!-- Reason text box & counter -->
+    <Grid Grid.Row="3" RowDefinitions="*,Auto" Margin="0,0,0,10">
+      <TextBox Grid.Row="0"
+               Name="ReasonTextBox"
+               Text="{Binding Reason, Mode=TwoWay}"
+               AcceptsReturn="True"
+               TextWrapping="Wrap"
+               MaxLength="900"
+               Watermark="Geef een reden op (minimaal 3 tekens, bijv. spam, virus, nep-bestand)..."
+               IsEnabled="{Binding IsNotSubmitting}"/>
+      <TextBlock Grid.Row="1" Text="{Binding CharacterCountText}"
+                 FontSize="11" Foreground="{DynamicResource AppMutedTextBrush}"
+                 HorizontalAlignment="Right" Margin="0,4,0,0"/>
+    </Grid>
+
+    <!-- Add to blacklist checkbox -->
+    <CheckBox Grid.Row="4"
+              IsChecked="{Binding AddToBlacklist}"
+              Content="Poster toevoegen aan zwarte lijst"
+              IsEnabled="{Binding IsNotSubmitting}"
+              Margin="0,0,0,10"/>
+
+    <!-- Status message -->
+    <TextBlock Grid.Row="5"
+               Text="{Binding StatusMessage}"
+               FontSize="12"
+               Foreground="#D9534F"
+               TextWrapping="Wrap"
+               IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+               Margin="0,0,0,10"/>
+
+    <!-- Buttons -->
+    <Grid Grid.Row="6" ColumnDefinitions="*,Auto,8,Auto">
+      <Button Grid.Column="1"
+              Content="Annuleren"
+              Command="{Binding CancelCommand}"
+              IsEnabled="{Binding IsNotSubmitting}"/>
+      <Button Grid.Column="3"
+              Content="Melding versturen"
+              Classes="accent"
+              Command="{Binding SubmitCommand}"
+              IsEnabled="{Binding CanSubmit}"/>
+    </Grid>
+  </Grid>
+</Window>
