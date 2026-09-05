@@ -20,23 +20,24 @@ Het is geen wensenlijst: elke regel is geverifieerd in de broncode van beide cli
 | Tests | 470 | 256 (alle groen) |
 | Build | — | schoon, 0 fouten, 62 analyzer-warnings |
 
-De branches lopen 15 commits (main) tegen 9 commits (macos-client) uiteen vanaf
-merge-base `65a484f`. Alles wat main sinds die basis heeft toegevoegd — 3.0.6.8,
-3.0.7.0, 3.0.8.0, de Android-app en de mapstructuurwijziging — zit **niet** in de
-macOS-branch.
+### Merge-status — gedaan
 
-### Merge-status
+Fase 0 is uitgevoerd in merge-commit `eacac2c` (branchtip vóór de merge: `7e4bdc8`).
+`macos-client` bevat nu alles van main tot en met 3.0.8.0. Alle 25 conflicten waren
+mechanisch: 21× `rename/rename` op de bestanden die deze branch naar `Spotnet.Core`
+verplaatste en main naar `src/`, 2× `rename/delete`, 2× projectbestanden. Byte-vergelijking
+merge-base ↔ main bevestigde dat main geen van die bestanden inhoudelijk had aangeraakt.
 
-`git merge-tree HEAD origin/main` geeft **25 conflicten**, allemaal mechanisch:
+`Spotnet.Core`, `Spotnet.Mac` en `Spotnet.Mac.Tests` staan nu onder `src/Spotnet/`.
+`WindowsTargetFramework` staat op `net10.0-windows`; de portable libraries blijven op
+net8.0 tot er een .NET 10 SDK op de macOS-kant staat.
 
-* 21× `rename/rename` — de bestanden die deze branch naar `Spotnet.Core` verplaatste
-  (`ServerInfo`, `NntpSettings`, `Socks5Client`, `YEnc*`, `SaveSpotsRow`, …) zijn op
-  main meeverhuisd naar `src/Spotnet/Spotnet/Spotnet/Model/`.
-* 2× `rename/delete` — `ArticleWatermark.cs` en `UnpackPasswordDetector.cs`, op deze
-  branch verplaatst naar `Spotnet.Core`, op main gewoon meeverhuisd.
-* 2× inhoudelijk — `Spotnet.csproj` en `Spotnet.Enc.csproj`.
-
-Er zijn **geen** inhoudelijke conflicten in logica. De merge is een dagtaak, geen risico.
+**Openstaand:** de WPF-client is niet gebouwd. `net10.0-windows` met `UseWPF` bouwt alleen
+op Windows en er is geen CI die het doet. Statische controle is wel gedaan — alle 21
+verplaatste types bestaan in `Spotnet.Core` met ongewijzigde namespace, er zijn geen
+expliciete `Compile`-items naar verwijderde bestanden, en de enige gewijzigde namespace
+(`Socks5Client` → `Spotnet.Network`) heeft in beide call sites de juiste `using`.
+Dit moet op Windows gebouwd worden voordat de branch ooit naar `main` teruggaat.
 
 ---
 
@@ -210,19 +211,21 @@ geïnstalleerd.
 
 De volgorde is gekozen op afhankelijkheid: elke fase heeft de vorige nodig.
 
-### Fase 0 — branches samenvoegen *(1 dag)*
+### Fase 0 — branches samenvoegen ✅ *(gedaan, `eacac2c`)*
 
-Zonder dit blijft elke nieuwe Windows-release de kloof vergroten.
+Merge uitgevoerd, projecten verhuisd naar `src/Spotnet/`, TFM's gelijkgetrokken,
+scripts en documentatie bijgewerkt. Mac-kant groen: schone build, 256/256 tests.
 
-1. Merge `origin/main` in `macos-client`. Los de 25 conflicten mechanisch op: houd de
-   `Spotnet.Core`-versie van elk verplaatst bestand, en verwijder het duplicaat onder
-   `src/Spotnet/Spotnet/Spotnet/Model/`.
-2. Verplaats `Spotnet.Core`, `Spotnet.Mac` en `Spotnet.Mac.Tests` mee naar `src/Spotnet/`.
-3. Werk `Spotnet.sln`, `MACOS_DEVELOPMENT.md`, `tools/make_app_bundle.sh` en
-   `tools/make_installer.sh` bij op de nieuwe paden.
-4. Laat de Windows-client tegen `Spotnet.Core` bouwen in plaats van tegen zijn eigen
-   kopieën, zodat er nog maar één `ServerInfo`, één `Socks5Client` en één `YEncDecoder` is.
-5. Zet de Mac-versie op 3.0.8.0 en voeg `Spotnet.Mac.Tests` toe aan CI.
+Wat hiervan nog openstaat:
+
+1. **De WPF-client op Windows bouwen** en de 470 tests draaien. Zie "Merge-status"
+   hierboven voor wat er wél statisch gecontroleerd is.
+2. Een CI-workflow toevoegen die de Windows-build dekt — `.github/workflows/` bevat
+   alleen `verify-providers.yml`, dus dit gat blijft anders bestaan.
+3. `Spotnet.Mac.Tests` aan CI toevoegen.
+4. De Mac-versie van 3.0.0-alpha naar 3.0.8.0 tillen.
+5. Portable libraries naar net10.0 zodra er een .NET 10 SDK op de macOS-kant staat;
+   het .NET 8-supportvenster sluit 2026-11-10.
 
 ### Fase 1 — de client bruikbaar maken bij echte volumes *(1–2 weken)*
 
