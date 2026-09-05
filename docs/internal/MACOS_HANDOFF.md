@@ -75,7 +75,7 @@ libraries op net8.0.
 | 3. Automatische sync-timer + retentie | ✅ | `6e5cc37` |
 | 4. Rolgebaseerde servers (Headers/Download/Upload) | ✅ | `aad428b` |
 | 5. SOCKS5 aansluiten | ⚠️ deels | `4ebbd70` |
-| 6. Providercatalogus uit `providers.json` | ❌ **open** | — |
+| 6. Providercatalogus uit `providers.json` | ✅ | `c4b1cf2` |
 
 Bij item 5: de proxy werkt en is instelbaar in het instellingenvenster, maar de
 **statusindicator in de statusbalk ontbreekt nog**. Windows heeft die wel
@@ -164,11 +164,8 @@ Remote-API meldingen uitserveert.
 
 ### Fase 1 afmaken — begin hier
 
-1. **Automatische sync-timer plus retentie.** Windows: `DbAutoUpdateEnabled`,
-   `DbAutoUpdateIntervalMin`, `Retention`, `DatabaseMin/Max/Count`. Zonder retentie
-   groeit de database onbeperkt.
-2. **Providercatalogus uit `providers.json`** in plaats van de vaste lijst. Windows:
-   `Model/ProviderCatalogue.cs`, `ProviderCatalogueSource.cs`.
+1. ~~**Automatische sync-timer plus retentie.**~~ Gedaan (`bd74e77`).
+2. ~~**Providercatalogus uit `providers.json`** in plaats van de vaste lijst.~~ Gedaan.
 3. **SOCKS5-statusindicator** in de statusbalk afmaken.
 
 ### Fase 2 — vertrouwensmodel *(2–3 weken)*

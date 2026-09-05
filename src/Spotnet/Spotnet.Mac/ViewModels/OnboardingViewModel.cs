@@ -6,7 +6,9 @@ using System.Windows.Input;
 using System.Xml.Linq;
 using NLog;
 using Spotnet.Mac.Network;
+using System.Linq;
 using Spotnet.Mac.Services;
+using Spotnet.Mac.Models;
 using Spotnet.Model;
 using Spotnet.Platform;
 
@@ -87,26 +89,44 @@ public sealed class OnboardingViewModel : ViewModelBase
         set { if (value) SelectedStyle = AppThemeStyle.Classic; }
     }
 
-    public List<string> ProviderList { get; } = new()
+    public IReadOnlyList<ProviderItem> ProviderList { get; } = UsenetProviders.All;
+
+    private ProviderItem? _selectedProviderItem;
+    public ProviderItem? SelectedProviderItem
     {
-        "Eweka",
-        "Newshosting",
-        "Giganews",
-        "Astraweb",
-        "PureUsenet",
-        "ViperNews",
-        "Tweaknews",
-        "Aangepast (Custom)"
-    };
+        get => _selectedProviderItem;
+        set
+        {
+            if (SetProperty(ref _selectedProviderItem, value))
+            {
+                if (value != null)
+                {
+                    _selectedProvider = value.Name;
+                    OnPropertyChanged(nameof(SelectedProvider));
+                    ApplyProviderItem(value);
+                }
+            }
+        }
+    }
 
     public string SelectedProvider
     {
-        get => _selectedProvider;
+        get => _selectedProviderItem?.Name ?? _selectedProvider;
         set
         {
-            if (SetProperty(ref _selectedProvider, value))
+            if (_selectedProvider != value)
             {
-                ApplyProviderPreset(value);
+                _selectedProvider = value;
+                var match = ProviderList.FirstOrDefault(p => string.Equals(p.Name, value, StringComparison.OrdinalIgnoreCase));
+                if (match != null)
+                {
+                    SelectedProviderItem = match;
+                }
+                else
+                {
+                    OnPropertyChanged();
+                    ApplyProviderPreset(value);
+                }
             }
         }
     }
@@ -140,7 +160,7 @@ public sealed class OnboardingViewModel : ViewModelBase
         FinishCommand = new RelayCommand(FinishOnboarding);
         TestConnectionCommand = new RelayCommand(async () => await TestConnectionAsync());
 
-        ApplyProviderPreset(_selectedProvider);
+        SelectedProvider = _prefsService.Current.SelectedProvider ?? "Eweka";
     }
 
     private void GoNext()
@@ -169,34 +189,45 @@ public sealed class OnboardingViewModel : ViewModelBase
         }
     }
 
+    private void ApplyProviderItem(ProviderItem item)
+    {
+        if (item.IsManual)
+        {
+            Port = 563;
+            Ssl = true;
+            return;
+        }
+
+        Server = item.Headers;
+        Port = item.HeadersPort;
+        Ssl = item.HeadersPort == 563 || item.HeadersPort == 443;
+        if (item.Name.Equals("Newshosting", StringComparison.OrdinalIgnoreCase) ||
+            item.Name.Equals("Giganews", StringComparison.OrdinalIgnoreCase))
+        {
+            Connections = 20;
+        }
+        else if (item.Name.Equals("Astraweb", StringComparison.OrdinalIgnoreCase) ||
+                 item.Name.Equals("Tweaknews", StringComparison.OrdinalIgnoreCase))
+        {
+            Connections = 10;
+        }
+        else
+        {
+            Connections = 8;
+        }
+    }
+
     private void ApplyProviderPreset(string provider)
     {
+        var match = ProviderList.FirstOrDefault(p => string.Equals(p.Name, provider, StringComparison.OrdinalIgnoreCase));
+        if (match != null)
+        {
+            ApplyProviderItem(match);
+            return;
+        }
+
         switch (provider)
         {
-            case "Eweka":
-                Server = "news.eweka.nl";
-                Port = 563;
-                Ssl = true;
-                Connections = 8;
-                break;
-            case "Newshosting":
-                Server = "news.newshosting.com";
-                Port = 563;
-                Ssl = true;
-                Connections = 20;
-                break;
-            case "Giganews":
-                Server = "news.giganews.com";
-                Port = 563;
-                Ssl = true;
-                Connections = 20;
-                break;
-            case "Astraweb":
-                Server = "ssl.astraweb.com";
-                Port = 563;
-                Ssl = true;
-                Connections = 10;
-                break;
             case "PureUsenet":
                 Server = "news.pureusenet.nl";
                 Port = 563;
@@ -208,12 +239,6 @@ public sealed class OnboardingViewModel : ViewModelBase
                 Port = 563;
                 Ssl = true;
                 Connections = 8;
-                break;
-            case "Tweaknews":
-                Server = "news.tweaknews.eu";
-                Port = 563;
-                Ssl = true;
-                Connections = 10;
                 break;
         }
     }
@@ -250,16 +275,39 @@ public sealed class OnboardingViewModel : ViewModelBase
         {
             _appPaths.EnsureDirectoriesExist();
 
-            // 1. Save servers.xml
+            // 1. Save servers.xml with role-based entries
             string configPath = Path.Combine(_appPaths.DataFolder, "servers.xml");
+            var provider = SelectedProviderItem;
+            var headersHost = Server;
+            var downloadHost = provider != null && !provider.IsManual ? provider.Download : Server;
+            var uploadHost = provider != null && !provider.IsManual ? provider.Upload : Server;
+            var downloadPort = provider != null && !provider.IsManual ? provider.DownloadPort : Port;
+            var uploadPort = provider != null && !provider.IsManual ? provider.UploadPort : Port;
+
             var doc = new XDocument(
                 new XElement("Spotnet",
                     new XElement("Server",
                         new XAttribute("Type", "Headers"),
-                        new XAttribute("Server", Server),
+                        new XAttribute("Server", headersHost),
                         new XAttribute("Port", Port),
                         new XAttribute("SSL", Ssl ? "1" : "0"),
-                        new XAttribute("Connections", Connections),
+                        new XAttribute("Connections", 2),
+                        new XAttribute("Username", Username)
+                    ),
+                    new XElement("Server",
+                        new XAttribute("Type", "Downloads"),
+                        new XAttribute("Server", downloadHost),
+                        new XAttribute("Port", downloadPort),
+                        new XAttribute("SSL", Ssl ? "1" : "0"),
+                        new XAttribute("Connections", Math.Max(1, Connections - 2)),
+                        new XAttribute("Username", Username)
+                    ),
+                    new XElement("Server",
+                        new XAttribute("Type", "Uploads"),
+                        new XAttribute("Server", uploadHost),
+                        new XAttribute("Port", uploadPort),
+                        new XAttribute("SSL", Ssl ? "1" : "0"),
+                        new XAttribute("Connections", 1),
                         new XAttribute("Username", Username)
                     )
                 )
@@ -269,7 +317,12 @@ public sealed class OnboardingViewModel : ViewModelBase
             // 2. Save password in Keychain
             if (!string.IsNullOrEmpty(Password))
             {
-                _secretStore.SetSecret($"Spotnet_{Server}_{Username}", Password);
+                _secretStore.SetSecret($"Spotnet_{headersHost}_{Username}", Password);
+                if (!string.Equals(downloadHost, headersHost, StringComparison.OrdinalIgnoreCase))
+                    _secretStore.SetSecret($"Spotnet_{downloadHost}_{Username}", Password);
+                if (!string.Equals(uploadHost, headersHost, StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(uploadHost, downloadHost, StringComparison.OrdinalIgnoreCase))
+                    _secretStore.SetSecret($"Spotnet_{uploadHost}_{Username}", Password);
             }
 
             // 3. Save preferences

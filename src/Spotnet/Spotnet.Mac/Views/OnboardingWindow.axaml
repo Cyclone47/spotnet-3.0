@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Spotnet.Mac.ViewModels"
+        xmlns:models="using:Spotnet.Mac.Models"
         x:Class="Spotnet.Mac.Views.OnboardingWindow"
         x:DataType="vm:OnboardingViewModel"
         Title="Spotnet 3.0 - Welkom &amp; Installatie"
@@ -112,8 +113,17 @@
                 <StackPanel Spacing="12">
                     <TextBlock Text="Usenet Provider Keuze:" FontSize="14" FontWeight="SemiBold"/>
                     <ComboBox ItemsSource="{Binding ProviderList}"
-                              SelectedItem="{Binding SelectedProvider}"
-                              HorizontalAlignment="Stretch"/>
+                              SelectedItem="{Binding SelectedProviderItem}"
+                              HorizontalAlignment="Stretch">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="models:ProviderItem">
+                                <StackPanel Margin="0,2">
+                                    <TextBlock Text="{Binding Name}" FontWeight="Medium"/>
+                                    <TextBlock Text="{Binding Subtitle}" FontSize="11" Opacity="0.7"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
                     <TextBlock Text="Serveradres:" FontWeight="Medium"/>
                     <TextBox Text="{Binding Server}" Watermark="bijv. news.eweka.nl"/>

@@ -22,6 +22,8 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var appPaths = new StandardAppPaths();
+            Spotnet.Mac.Models.ProviderCatalogueSource.AppPaths = appPaths;
+            _ = Spotnet.Mac.Models.ProviderCatalogueSource.RefreshAsync();
             var prefsService = new UserPreferencesService(appPaths);
             var secretStore = new MacKeychainSecretStore();
 

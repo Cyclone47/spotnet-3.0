@@ -8,6 +8,7 @@ using System.Xml.Linq;
 using NLog;
 using Spotnet.Mac.Network;
 using Spotnet.Mac.Services;
+using Spotnet.Mac.Models;
 using Spotnet.Model;
 using Spotnet.Platform;
 
@@ -38,26 +39,44 @@ public sealed class SettingsViewModel : ViewModelBase
     public string StatusMessage { get => _statusMessage; set => SetProperty(ref _statusMessage, value); }
     public bool IsTesting { get => _isTesting; set => SetProperty(ref _isTesting, value); }
 
-    public List<string> ProviderList { get; } = new()
+    public IReadOnlyList<ProviderItem> ProviderList { get; } = UsenetProviders.All;
+
+    private ProviderItem? _selectedProviderItem;
+    public ProviderItem? SelectedProviderItem
     {
-        "Eweka",
-        "Newshosting",
-        "Giganews",
-        "Astraweb",
-        "PureUsenet",
-        "ViperNews",
-        "Tweaknews",
-        "Aangepast (Custom)"
-    };
+        get => _selectedProviderItem;
+        set
+        {
+            if (SetProperty(ref _selectedProviderItem, value))
+            {
+                if (value != null)
+                {
+                    _selectedProvider = value.Name;
+                    OnPropertyChanged(nameof(SelectedProvider));
+                    ApplyProviderItem(value);
+                }
+            }
+        }
+    }
 
     public string SelectedProvider
     {
-        get => _selectedProvider;
+        get => _selectedProviderItem?.Name ?? _selectedProvider;
         set
         {
-            if (SetProperty(ref _selectedProvider, value))
+            if (_selectedProvider != value)
             {
-                ApplyProviderPreset(value);
+                _selectedProvider = value;
+                var match = ProviderList.FirstOrDefault(p => string.Equals(p.Name, value, StringComparison.OrdinalIgnoreCase));
+                if (match != null)
+                {
+                    SelectedProviderItem = match;
+                }
+                else
+                {
+                    OnPropertyChanged();
+                    ApplyProviderPreset(value);
+                }
             }
         }
     }
@@ -312,34 +331,45 @@ public sealed class SettingsViewModel : ViewModelBase
         LoadSettings();
     }
 
+    private void ApplyProviderItem(ProviderItem item)
+    {
+        if (item.IsManual)
+        {
+            Port = 563;
+            Ssl = true;
+            return;
+        }
+
+        Server = item.Headers;
+        Port = item.HeadersPort;
+        Ssl = item.HeadersPort == 563 || item.HeadersPort == 443;
+        if (item.Name.Equals("Newshosting", StringComparison.OrdinalIgnoreCase) ||
+            item.Name.Equals("Giganews", StringComparison.OrdinalIgnoreCase))
+        {
+            Connections = 20;
+        }
+        else if (item.Name.Equals("Astraweb", StringComparison.OrdinalIgnoreCase) ||
+                 item.Name.Equals("Tweaknews", StringComparison.OrdinalIgnoreCase))
+        {
+            Connections = 10;
+        }
+        else
+        {
+            Connections = 8;
+        }
+    }
+
     private void ApplyProviderPreset(string provider)
     {
+        var match = ProviderList.FirstOrDefault(p => string.Equals(p.Name, provider, StringComparison.OrdinalIgnoreCase));
+        if (match != null)
+        {
+            ApplyProviderItem(match);
+            return;
+        }
+
         switch (provider)
         {
-            case "Eweka":
-                Server = "news.eweka.nl";
-                Port = 563;
-                Ssl = true;
-                Connections = 8;
-                break;
-            case "Newshosting":
-                Server = "news.newshosting.com";
-                Port = 563;
-                Ssl = true;
-                Connections = 20;
-                break;
-            case "Giganews":
-                Server = "news.giganews.com";
-                Port = 563;
-                Ssl = true;
-                Connections = 20;
-                break;
-            case "Astraweb":
-                Server = "ssl.astraweb.com";
-                Port = 563;
-                Ssl = true;
-                Connections = 10;
-                break;
             case "PureUsenet":
                 Server = "news.pureusenet.nl";
                 Port = 563;
@@ -351,12 +381,6 @@ public sealed class SettingsViewModel : ViewModelBase
                 Port = 563;
                 Ssl = true;
                 Connections = 8;
-                break;
-            case "Tweaknews":
-                Server = "news.tweaknews.eu";
-                Port = 563;
-                Ssl = true;
-                Connections = 10;
                 break;
         }
     }
@@ -397,27 +421,51 @@ public sealed class SettingsViewModel : ViewModelBase
     {
         try
         {
-            string configPath = Path.Combine(_appPaths.DataFolder, "servers.xml");
-            if (File.Exists(configPath))
+            var profile = Network.ServerProfile.Load(_appPaths, _secretStore);
+            var headersServer = profile.Get(Network.ServerRole.Headers);
+            if (headersServer != null && !string.IsNullOrEmpty(headersServer.Server))
             {
-                var doc = XDocument.Load(configPath);
-                var root = doc.Root;
-                var serverNode = root?.Element("Server");
-                if (serverNode != null)
+                Server = headersServer.Server;
+                Port = headersServer.Port;
+                Ssl = headersServer.SSL;
+                Connections = headersServer.Connections;
+                Username = headersServer.Username;
+                Password = headersServer.Password;
+            }
+            else
+            {
+                string configPath = Path.Combine(_appPaths.DataFolder, "servers.xml");
+                if (File.Exists(configPath))
                 {
-                    Server = (string?)serverNode.Attribute("Server") ?? "";
-                    if (int.TryParse((string?)serverNode.Attribute("Port"), out var p)) Port = p;
-                    Ssl = (string?)serverNode.Attribute("SSL") == "1";
-                    if (int.TryParse((string?)serverNode.Attribute("Connections"), out var c)) Connections = c;
-                    Username = (string?)serverNode.Attribute("Username") ?? "";
+                    var doc = XDocument.Load(configPath);
+                    var root = doc.Root;
+                    var serverNode = root?.Element("Server");
+                    if (serverNode != null)
+                    {
+                        Server = (string?)serverNode.Attribute("Server") ?? "";
+                        if (int.TryParse((string?)serverNode.Attribute("Port"), out var p)) Port = p;
+                        Ssl = (string?)serverNode.Attribute("SSL") == "1";
+                        if (int.TryParse((string?)serverNode.Attribute("Connections"), out var c)) Connections = c;
+                        Username = (string?)serverNode.Attribute("Username") ?? "";
+                    }
+                }
+
+                // Retrieve password from macOS Keychain
+                string? secret = _secretStore.GetSecret($"Spotnet_{Server}_{Username}");
+                if (!string.IsNullOrEmpty(secret))
+                {
+                    Password = secret;
                 }
             }
 
-            // Retrieve password from macOS Keychain
-            string? secret = _secretStore.GetSecret($"Spotnet_{Server}_{Username}");
-            if (!string.IsNullOrEmpty(secret))
+            var match = UsenetProviders.Match(ProviderList, Server)
+                ?? ProviderList.FirstOrDefault(p => string.Equals(p.Name, _prefsService.Current.SelectedProvider, StringComparison.OrdinalIgnoreCase));
+            if (match != null)
             {
-                Password = secret;
+                _selectedProviderItem = match;
+                _selectedProvider = match.Name;
+                OnPropertyChanged(nameof(SelectedProviderItem));
+                OnPropertyChanged(nameof(SelectedProvider));
             }
         }
         catch (Exception ex)
@@ -464,10 +512,6 @@ public sealed class SettingsViewModel : ViewModelBase
             _appPaths.EnsureDirectoriesExist();
             string configPath = Path.Combine(_appPaths.DataFolder, "servers.xml");
 
-            // This dialog edits one server: the reader Spotnet pulls headers from. A
-            // profile copied from Windows can also carry Download and Upload entries with
-            // different hostnames, and rewriting the file from scratch used to throw those
-            // away. Only the headers entry is replaced; everything else is kept.
             XDocument doc;
             XElement root;
             try
@@ -483,28 +527,28 @@ public sealed class SettingsViewModel : ViewModelBase
                 doc = new XDocument(root);
             }
 
-            var headersEntry = root.Elements("Server")
-                .FirstOrDefault(e => Network.ServerProfile.ParseRole((string?)e.Attribute("Type")) == Network.ServerRole.Headers);
+            var provider = SelectedProviderItem;
+            var headersHost = Server;
+            var downloadHost = provider != null && !provider.IsManual ? provider.Download : Server;
+            var uploadHost = provider != null && !provider.IsManual ? provider.Upload : Server;
+            var downloadPort = provider != null && !provider.IsManual ? provider.DownloadPort : Port;
+            var uploadPort = provider != null && !provider.IsManual ? provider.UploadPort : Port;
 
-            if (headersEntry == null)
-            {
-                headersEntry = new XElement("Server");
-                root.Add(headersEntry);
-            }
-
-            headersEntry.SetAttributeValue("Type", Network.ServerProfile.RoleAttribute(Network.ServerRole.Headers));
-            headersEntry.SetAttributeValue("Server", Server);
-            headersEntry.SetAttributeValue("Port", Port);
-            headersEntry.SetAttributeValue("SSL", Ssl ? "1" : "0");
-            headersEntry.SetAttributeValue("Connections", Connections);
-            headersEntry.SetAttributeValue("Username", Username);
+            SetOrUpdateServerElement(root, Network.ServerRole.Headers, headersHost, Port, Ssl, 2, Username);
+            SetOrUpdateServerElement(root, Network.ServerRole.Download, downloadHost, downloadPort, Ssl, Math.Max(1, Connections - 2), Username);
+            SetOrUpdateServerElement(root, Network.ServerRole.Upload, uploadHost, uploadPort, Ssl, 1, Username);
 
             doc.Save(configPath);
 
             // Store password in macOS Keychain securely
             if (!string.IsNullOrEmpty(Password))
             {
-                _secretStore.SetSecret($"Spotnet_{Server}_{Username}", Password);
+                _secretStore.SetSecret(Network.ServerProfile.SecretKey(headersHost, Username), Password);
+                if (!string.Equals(downloadHost, headersHost, StringComparison.OrdinalIgnoreCase))
+                    _secretStore.SetSecret(Network.ServerProfile.SecretKey(downloadHost, Username), Password);
+                if (!string.Equals(uploadHost, headersHost, StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(uploadHost, downloadHost, StringComparison.OrdinalIgnoreCase))
+                    _secretStore.SetSecret(Network.ServerProfile.SecretKey(uploadHost, Username), Password);
             }
 
             var prefs = _prefsService.Current;
@@ -525,6 +569,7 @@ public sealed class SettingsViewModel : ViewModelBase
             prefs.SocksProxyUsername = SocksProxyUsername;
             prefs.DbAutoUpdateEnabled = DbAutoUpdateEnabled;
             prefs.DbAutoUpdateIntervalMin = DbAutoUpdateIntervalMin > 0 ? DbAutoUpdateIntervalMin : 10;
+            prefs.SelectedProvider = SelectedProvider;
             prefs.Retention = newRetention;
             _prefsService.Save(prefs);
 
@@ -556,5 +601,22 @@ public sealed class SettingsViewModel : ViewModelBase
         {
             StatusMessage = $"Fout bij opslaan: {ex.Message}";
         }
+    }
+
+    private static void SetOrUpdateServerElement(XElement root, Network.ServerRole role, string host, int port, bool ssl, int connections, string username)
+    {
+        var entry = root.Elements("Server")
+            .FirstOrDefault(e => Network.ServerProfile.ParseRole((string?)e.Attribute("Type")) == role);
+        if (entry == null)
+        {
+            entry = new XElement("Server");
+            root.Add(entry);
+        }
+        entry.SetAttributeValue("Type", Network.ServerProfile.RoleAttribute(role));
+        entry.SetAttributeValue("Server", host);
+        entry.SetAttributeValue("Port", port);
+        entry.SetAttributeValue("SSL", ssl ? "1" : "0");
+        entry.SetAttributeValue("Connections", connections);
+        entry.SetAttributeValue("Username", username);
     }
 }
