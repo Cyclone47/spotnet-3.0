@@ -51,6 +51,7 @@ public sealed class UsenetConnection
             await client.ConnectAsync(
                 server.Server, server.Port, server.SSL,
                 allowInvalidCertificate: _preferences.Current.AllowInvalidServerCertificate,
+                proxy: ProxySettings.FromPreferences(_preferences.Current, _secretStore),
                 cancellationToken: cancellationToken);
 
             if (!string.IsNullOrEmpty(server.Username))

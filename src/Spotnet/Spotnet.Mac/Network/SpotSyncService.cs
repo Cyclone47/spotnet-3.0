@@ -56,7 +56,9 @@ public sealed class SpotSyncService
 
             using var client = new NntpClient();
             await client.ConnectAsync(serverInfo.Server, serverInfo.Port, serverInfo.SSL,
-                                      _preferences.Current.AllowInvalidServerCertificate, cancellationToken);
+                                      _preferences.Current.AllowInvalidServerCertificate,
+                                      ProxySettings.FromPreferences(_preferences.Current, _secretStore),
+                                      cancellationToken);
 
             if (!string.IsNullOrEmpty(serverInfo.Username))
             {

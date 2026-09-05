@@ -223,3 +223,66 @@ public class CertificateValidationTests
         Assert.True(NntpClient.ValidateCertificate("news.example.com", errors, allowInvalid: true));
     }
 }
+
+/// <summary>
+/// The SOCKS5 proxy settings. Spotnet.Core already carried a working Socks5Client; it
+/// was simply never wired to anything on macOS.
+/// </summary>
+public class ProxySettingsTests
+{
+    [Fact]
+    public void No_proxy_when_the_switch_is_off()
+    {
+        Assert.Null(ProxySettings.Create(enabled: false, "127.0.0.1", 1080, "", ""));
+    }
+
+    [Fact]
+    public void An_enabled_proxy_with_a_host_is_usable()
+    {
+        var proxy = ProxySettings.Create(enabled: true, " 127.0.0.1 ", 1080, " tor ", "secret");
+
+        Assert.NotNull(proxy);
+        Assert.Equal("127.0.0.1", proxy!.Host);
+        Assert.Equal("tor", proxy.Username);
+        Assert.Equal(1080, proxy.Port);
+    }
+
+    [Theory]
+    [InlineData("", 1080)]
+    [InlineData("   ", 1080)]
+    [InlineData("127.0.0.1", 0)]
+    [InlineData("127.0.0.1", 70000)]
+    public void An_incomplete_proxy_reads_as_no_proxy_rather_than_failing_the_connection(string host, int port)
+    {
+        Assert.Null(ProxySettings.Create(enabled: true, host, port, "", ""));
+    }
+
+    [Fact]
+    public void The_password_never_appears_in_a_log_line()
+    {
+        var proxy = ProxySettings.Create(enabled: true, "proxy.example.com", 1080, "user", "hunter2");
+
+        string rendered = proxy!.ToString();
+        Assert.DoesNotContain("hunter2", rendered, StringComparison.Ordinal);
+        Assert.Equal("socks5://user@proxy.example.com:1080", rendered);
+    }
+
+    [Fact]
+    public void The_password_comes_from_the_keychain_not_from_preferences()
+    {
+        var store = new FakeSecretStore();
+        store.SetSecret(ProxySettings.SecretKey, "from-keychain");
+
+        var prefs = new Spotnet.Mac.Services.UserPreferences
+        {
+            UseSocksProxy = true,
+            SocksProxyHost = "proxy.example.com",
+            SocksProxyPort = 9050,
+            SocksProxyUsername = "user",
+        };
+
+        var proxy = ProxySettings.FromPreferences(prefs, store);
+
+        Assert.Equal("from-keychain", proxy!.Password);
+    }
+}

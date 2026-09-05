@@ -94,6 +94,18 @@ public sealed class UserPreferences
     /// server and reading the credentials sent in AUTHINFO.
     /// </summary>
     public bool AllowInvalidServerCertificate { get; set; }
+
+    /// <summary>
+    /// Route news traffic through a SOCKS5 proxy, as the Windows client's UseSocksProxy
+    /// setting does. The proxy password lives in the keychain, not here.
+    /// </summary>
+    public bool UseSocksProxy { get; set; }
+
+    public string SocksProxyHost { get; set; } = "";
+
+    public int SocksProxyPort { get; set; } = 1080;
+
+    public string SocksProxyUsername { get; set; } = "";
 }
 
 public sealed class UserPreferencesService

@@ -6,6 +6,8 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Spotnet")]
 [assembly: InternalsVisibleTo("Spotnet.Tests")]
 [assembly: InternalsVisibleTo("Spotnet.AutoTests")]
+[assembly: InternalsVisibleTo("Spotnet.Mac")]
+[assembly: InternalsVisibleTo("Spotnet.Mac.Tests")]
 
 [assembly: AssemblyTitle("Spotnet.Core")]
 [assembly: AssemblyDescription("Platform-neutral Spotnet core shared by the Windows and macOS clients.")]

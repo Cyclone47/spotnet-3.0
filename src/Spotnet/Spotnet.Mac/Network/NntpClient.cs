@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NLog;
 using Spotnet.Model;
+using Spotnet.Network;
 
 namespace Spotnet.Mac.Network;
 
@@ -29,15 +30,32 @@ public sealed class NntpClient : IDisposable
 
     public async Task ConnectAsync(string host, int port, bool useSsl,
                                    bool allowInvalidCertificate = false,
+                                   ProxySettings? proxy = null,
                                    CancellationToken cancellationToken = default)
     {
         Close();
 
-        Log.Info("Connecting to Usenet server {0}:{1} (SSL={2})...", host, port, useSsl);
+        Log.Info("Connecting to Usenet server {0}:{1} (SSL={2}){3}...",
+                 host, port, useSsl, proxy != null ? $" via {proxy}" : "");
+
         _tcpClient = new TcpClient();
         _tcpClient.ReceiveTimeout = 25000;
         _tcpClient.SendTimeout = 25000;
-        await _tcpClient.ConnectAsync(host, port, cancellationToken);
+
+        if (proxy != null)
+        {
+            // The socket goes to the proxy; the SOCKS5 handshake then points the tunnel
+            // at the news server. TLS is negotiated afterwards, against the news
+            // server's own hostname, so the proxy sees an encrypted stream it cannot
+            // read and certificate validation still checks the right name.
+            await _tcpClient.ConnectAsync(proxy.Host, proxy.Port, cancellationToken);
+            var socks = new Socks5Client(proxy.Username, proxy.Password) { TcpClient = _tcpClient };
+            await socks.ConnectAsync(host, port, cancellationToken);
+        }
+        else
+        {
+            await _tcpClient.ConnectAsync(host, port, cancellationToken);
+        }
 
         Stream rawStream = _tcpClient.GetStream();
 
@@ -281,12 +299,12 @@ public sealed class NntpClient : IDisposable
         return (false, postResult ?? "Fout bij verzenden van reactie naar server.");
     }
 
-    public static async Task<(bool success, string message)> TestConnectionAsync(ServerInfo server, bool allowInvalidCertificate = false, CancellationToken cancellationToken = default)
+    public static async Task<(bool success, string message)> TestConnectionAsync(ServerInfo server, bool allowInvalidCertificate = false, ProxySettings? proxy = null, CancellationToken cancellationToken = default)
     {
         try
         {
             using var client = new NntpClient();
-            await client.ConnectAsync(server.Server, server.Port, server.SSL, allowInvalidCertificate, cancellationToken);
+            await client.ConnectAsync(server.Server, server.Port, server.SSL, allowInvalidCertificate, proxy, cancellationToken);
             if (!string.IsNullOrEmpty(server.Username))
             {
                 await client.AuthenticateAsync(server.Username, server.Password, cancellationToken);

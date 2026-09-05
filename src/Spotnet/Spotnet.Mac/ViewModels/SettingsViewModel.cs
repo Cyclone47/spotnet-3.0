@@ -191,6 +191,44 @@ public sealed class SettingsViewModel : ViewModelBase
         set => SetProperty(ref _allowInvalidServerCertificate, value);
     }
 
+    private bool _useSocksProxy;
+    private string _socksProxyHost = "";
+    private int _socksProxyPort = 1080;
+    private string _socksProxyUsername = "";
+    private string _socksProxyPassword = "";
+
+    /// <summary>Route news traffic through a SOCKS5 proxy (Windows: UseSocksProxy).</summary>
+    public bool UseSocksProxy
+    {
+        get => _useSocksProxy;
+        set => SetProperty(ref _useSocksProxy, value);
+    }
+
+    public string SocksProxyHost
+    {
+        get => _socksProxyHost;
+        set => SetProperty(ref _socksProxyHost, value);
+    }
+
+    public int SocksProxyPort
+    {
+        get => _socksProxyPort;
+        set => SetProperty(ref _socksProxyPort, value);
+    }
+
+    public string SocksProxyUsername
+    {
+        get => _socksProxyUsername;
+        set => SetProperty(ref _socksProxyUsername, value);
+    }
+
+    /// <summary>Kept out of preferences.json; stored in the keychain on save.</summary>
+    public string SocksProxyPassword
+    {
+        get => _socksProxyPassword;
+        set => SetProperty(ref _socksProxyPassword, value);
+    }
+
     public bool ExternalBrowser
     {
         get => _externalBrowser;
@@ -310,7 +348,11 @@ public sealed class SettingsViewModel : ViewModelBase
 
         // Test against the setting as it stands in the dialog, not the saved one, so the
         // checkbox can be tried before committing it.
-        var (success, message) = await NntpClient.TestConnectionAsync(info, AllowInvalidServerCertificate);
+        // Test what is on screen, not what was last saved.
+        var proxy = Network.ProxySettings.Create(
+            UseSocksProxy, SocksProxyHost, SocksProxyPort, SocksProxyUsername, SocksProxyPassword);
+
+        var (success, message) = await NntpClient.TestConnectionAsync(info, AllowInvalidServerCertificate, proxy);
         IsTesting = false;
         StatusMessage = success ? $"✓ {message}" : $"✗ Fout: {message}";
     }
@@ -349,6 +391,11 @@ public sealed class SettingsViewModel : ViewModelBase
 
         var prefs = _prefsService.Current;
         _allowInvalidServerCertificate = prefs.AllowInvalidServerCertificate;
+        _useSocksProxy = prefs.UseSocksProxy;
+        _socksProxyHost = prefs.SocksProxyHost;
+        _socksProxyPort = prefs.SocksProxyPort;
+        _socksProxyUsername = prefs.SocksProxyUsername;
+        _socksProxyPassword = _secretStore.GetSecret(Network.ProxySettings.SecretKey) ?? "";
         _downloadMode = prefs.DownloadMode;
         DownloadFolder = string.IsNullOrWhiteSpace(prefs.DownloadFolder) ? _appPaths.DownloadsFolder : prefs.DownloadFolder;
         MaxDownloadConnections = prefs.MaxDownloadConnections > 0 ? prefs.MaxDownloadConnections : 4;
@@ -423,7 +470,16 @@ public sealed class SettingsViewModel : ViewModelBase
             prefs.ShowDesktopNotifications = ShowDesktopNotifications;
             prefs.ExternalBrowser = ExternalBrowser;
             prefs.AllowInvalidServerCertificate = AllowInvalidServerCertificate;
+            prefs.UseSocksProxy = UseSocksProxy;
+            prefs.SocksProxyHost = SocksProxyHost;
+            prefs.SocksProxyPort = SocksProxyPort;
+            prefs.SocksProxyUsername = SocksProxyUsername;
             _prefsService.Save(prefs);
+
+            if (!string.IsNullOrEmpty(SocksProxyPassword))
+            {
+                _secretStore.SetSecret(Network.ProxySettings.SecretKey, SocksProxyPassword);
+            }
 
             StatusMessage = "Instellingen opgeslagen in Sleutelhanger (Keychain)!";
             RequestClose?.Invoke();

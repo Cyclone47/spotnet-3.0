@@ -51,6 +51,32 @@
                           Content="Ongeldig servercertificaat toestaan"
                           ToolTip.Tip="Alleen inschakelen als je provider een zelfondertekend certificaat gebruikt. Het haalt de bescherming weg tegen een andere machine die zich voordoet als de server."/>
 
+                <CheckBox IsChecked="{Binding UseSocksProxy}"
+                          Content="Via SOCKS5-proxy verbinden"
+                          ToolTip.Tip="Al het nieuwsverkeer loopt via de proxy. TLS wordt daarna opgezet naar de newsserver zelf, dus de proxy ziet alleen versleuteld verkeer."/>
+
+                <Grid ColumnDefinitions="*,8,90" IsVisible="{Binding UseSocksProxy}">
+                  <StackPanel Grid.Column="0" Spacing="4">
+                    <TextBlock Text="Proxy host:" FontWeight="Medium"/>
+                    <TextBox Text="{Binding SocksProxyHost}" Watermark="127.0.0.1"/>
+                  </StackPanel>
+                  <StackPanel Grid.Column="2" Spacing="4">
+                    <TextBlock Text="Poort:" FontWeight="Medium"/>
+                    <TextBox Text="{Binding SocksProxyPort}"/>
+                  </StackPanel>
+                </Grid>
+
+                <Grid ColumnDefinitions="*,8,*" IsVisible="{Binding UseSocksProxy}">
+                  <StackPanel Grid.Column="0" Spacing="4">
+                    <TextBlock Text="Proxy gebruikersnaam:" FontWeight="Medium"/>
+                    <TextBox Text="{Binding SocksProxyUsername}" Watermark="optioneel"/>
+                  </StackPanel>
+                  <StackPanel Grid.Column="2" Spacing="4">
+                    <TextBlock Text="Proxy wachtwoord (Keychain):" FontWeight="Medium"/>
+                    <TextBox Text="{Binding SocksProxyPassword}" PasswordChar="•" Watermark="optioneel"/>
+                  </StackPanel>
+                </Grid>
+
                 <TextBlock Text="Gebruikersnaam:" FontWeight="Medium"/>
                 <TextBox Text="{Binding Username}" Watermark="Usenet gebruikersnaam"/>
 
