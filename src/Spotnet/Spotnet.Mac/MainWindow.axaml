@@ -123,7 +123,7 @@
     </Style>
   </Window.Styles>
 
-  <Grid RowDefinitions="Auto,Auto,*,Auto">
+  <Grid RowDefinitions="Auto,*,Auto">
 
     <!-- ── Menu ────────────────────────────────────────────────────────────── -->
     <Menu Grid.Row="0">
@@ -173,55 +173,13 @@
       </MenuItem>
     </Menu>
 
-    <!-- ── Toolbar ──────────────────────────────────────────────────────────── -->
-    <Border Grid.Row="1"
-            Background="{DynamicResource AppMenuBackground}"
-            BorderBrush="{DynamicResource AppBorderBrush}"
-            BorderThickness="0,0,0,1"
-            Padding="12,8">
-      <Grid ColumnDefinitions="Auto,8,Auto,*,Auto,8,Auto">
-        <Button Grid.Column="0"
-                Command="{Binding RefreshCommand}"
-                IsEnabled="{Binding !IsLoading}"
-                Padding="10,4"
-                ToolTip.Tip="Nieuwe spots ophalen (Cmd+R)">
-          <StackPanel Orientation="Horizontal" Spacing="6">
-            <TextBlock Text="&#x21BB;" FontSize="15" VerticalAlignment="Center"/>
-            <TextBlock Text="Spots Ophalen" VerticalAlignment="Center"/>
-          </StackPanel>
-        </Button>
-        <ProgressBar Grid.Column="2"
-                     IsIndeterminate="True"
-                     IsVisible="{Binding IsLoading}"
-                     Width="80" Height="4"
-                     VerticalAlignment="Center"/>
-        <Grid Grid.Column="4" Width="360" ColumnDefinitions="*,Auto,Auto">
-          <TextBox x:Name="SearchBox"
-                   Grid.Column="0"
-                   Text="{Binding SearchText, Mode=TwoWay}"
-                   Watermark="Zoek spots (titel, afzender, tags)..."
-                   VerticalContentAlignment="Center"
-                   KeyDown="OnSearchKeyDown"/>
-          <Button Grid.Column="1"
-                  Command="{Binding ClearSearchCommand}"
-                  Content="✕"
-                  ToolTip.Tip="Zoekopdracht wissen"
-                  IsVisible="{Binding SearchText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                  Margin="2,0"/>
-          <Button Grid.Column="2"
-                  Command="{Binding SearchCommand}"
-                  Content="🔍"
-                  ToolTip.Tip="Zoeken in database"/>
-        </Grid>
-        <Button Grid.Column="6"
-                Command="{Binding OpenSettingsCommand}"
-                Content="⚙️"
-                ToolTip.Tip="Instellingen (Cmd+,)"/>
-      </Grid>
-    </Border>
+    <!-- No toolbar row. The Windows client has none: searching lives in the ZOEKEN
+         panel on the left, fetching spots is the ↻ button at the right of the status
+         bar, and settings are reached from the menu. This client used to carry a
+         toolbar that duplicated all three. -->
 
     <!-- ── Main Content ─────────────────────────────────────────────────────── -->
-    <Grid Grid.Row="2" ColumnDefinitions="235,Auto,*,Auto">
+    <Grid Grid.Row="1" ColumnDefinitions="235,Auto,*,Auto">
 
       <!-- ── LEFT SIDEBAR ───────────────────────────────────────────────────── -->
       <Border Grid.Column="0"
@@ -233,8 +191,10 @@
           <!-- ZOEKEN section -->
           <StackPanel Grid.Row="0" Margin="12,10,12,6" Spacing="4">
             <TextBlock Classes="SidebarHeader" Text="⬛ ZOEKEN"/>
-            <Grid ColumnDefinitions="*,Auto">
-              <TextBox Grid.Column="0"
+            <Grid ColumnDefinitions="*,Auto,Auto">
+              <!-- The only search box in the window; Cmd+F focuses this one. -->
+              <TextBox x:Name="SearchBox"
+                       Grid.Column="0"
                        Text="{Binding SearchText, Mode=TwoWay}"
                        Watermark="Zoeken..."
                        FontSize="12"
@@ -242,6 +202,16 @@
                        VerticalContentAlignment="Center"
                        KeyDown="OnSearchKeyDown"/>
               <Button Grid.Column="1"
+                      Command="{Binding ClearSearchCommand}"
+                      Content="✕"
+                      FontSize="11"
+                      Padding="4,2"
+                      Margin="2,0,0,0"
+                      Height="26"
+                      VerticalAlignment="Center"
+                      ToolTip.Tip="Zoekopdracht wissen"
+                      IsVisible="{Binding SearchText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+              <Button Grid.Column="2"
                       Command="{Binding SearchCommand}"
                       Content="🔍"
                       FontSize="11"
@@ -592,7 +562,7 @@
     </Grid>
 
     <!-- ── Status Bar ───────────────────────────────────────────────────────── -->
-    <Border Grid.Row="3"
+    <Border Grid.Row="2"
             Background="{DynamicResource AppMenuBackground}"
             BorderBrush="{DynamicResource AppBorderBrush}"
             BorderThickness="0,1,0,0"
