@@ -286,6 +286,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public ICommand SetSpotOpenModeCommand { get; }
     public ICommand SetDownloadModeCommand { get; }
     public ICommand PickDownloadFolderCommand { get; }
+    public ICommand OpenSpotlinkCommand { get; }
     public ICommand DeleteSelectedCommand { get; }
     public ICommand OpenReleaseNotesCommand { get; }
     public ICommand QuickRepairDbCommand { get; }
@@ -391,6 +392,8 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     /// <summary>Raised when a spot should open in its own window rather than a tab.</summary>
     public event Action<SpotDetailViewModel>? RequestOpenSpotWindow;
 
+    public event Action? RequestOpenSpotlinkDialog;
+
     public event Action? RequestOpenSettings;
     public event Action? RequestOpenOnboarding;
     public event Action? RequestOpenReleaseNotes;
@@ -479,6 +482,10 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         OpenSettingsCommand = new RelayCommand(() => RequestOpenSettings?.Invoke());
         OpenOnboardingCommand = new RelayCommand(() => RequestOpenOnboarding?.Invoke());
         ToggleSocksProxyCommand = new RelayCommand(ToggleSocksProxy);
+
+        // Windows: ExecuteOpenSpotlink → OpenSpotlinkWindow → OpenSpotlink(link).
+        // Het venster zelf blijft in de view; hier staat de koppeling en de parsing.
+        OpenSpotlinkCommand = new RelayCommand(() => RequestOpenSpotlinkDialog?.Invoke());
 
         SetThemeCommand = new RelayCommand(param =>
         {
@@ -911,6 +918,10 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             await RefreshSpotsAsync();
             await UpdateFilterCountsAsync();
             StartAutoSyncTimer();
+
+            // .nzb-bestanden en spotnet://-links van bij het opstarten (Open With,
+            // URL-scheme), zoals Windows die uit de pipe-parameters haalt.
+            await HandleStartupTargetsAsync(Program.StartupTargets);
         }
         catch (Exception ex)
         {
@@ -921,6 +932,107 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         {
             IsLoading = false;
         }
+    }
+
+    /// <summary>
+    /// Opent een spotlink zoals Windows' OpenSpotlink: haal met de regex het
+    /// message-id eruit (eventueel met spotnet://-prefix), zoek de spot in de
+    /// database en open hem.
+    /// </summary>
+    public async Task OpenSpotlinkAsync(string? link)
+    {
+        if (string.IsNullOrWhiteSpace(link)) return;
+
+        // Windows: regex (spotnet://)?([A-Za-z0-9]+@[\\.-A-Za-z0-9]+)
+        var match = System.Text.RegularExpressions.Regex.Match(
+            link, "(spotnet://)?([A-Za-z0-9]+@[\\.-A-Za-z0-9]+)",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (!match.Success) return;
+
+        string msgId = match.Groups[2].Value;
+        if (msgId.Length > 200) return;
+
+        var spot = await _dbService.GetSpotByMsgIdAsync(msgId);
+        if (spot == null)
+        {
+            StatusText = $"Spot niet gevonden in de database: {msgId}";
+            return;
+        }
+        OpenSpot(spot);
+    }
+
+    /// <summary>
+    /// Verwerkt de doelwitten die met de app meekwamen: een spotnet://-link opent de
+    /// spot (zoals Windows' ProcessSpotnetProtocol), een .nzb-pad downloadt de bestanden
+    /// direct (zoals ScheduleNzbDownload).
+    /// </summary>
+    internal async Task HandleStartupTargetsAsync(System.Collections.Generic.IReadOnlyList<string> targets)
+    {
+        foreach (string target in targets ?? System.Array.Empty<string>())
+        {
+            try
+            {
+                if (target.StartsWith("spotnet://", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Windows: regex (spotnet://)?([A-Za-z0-9]+@[\\.-A-Za-z0-9]+), max 200 tekens.
+                    var match = System.Text.RegularExpressions.Regex.Match(
+                        target, "(spotnet://)?([A-Za-z0-9]+@[\\.-A-Za-z0-9]+)",
+                        System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    if (!match.Success || match.Groups[2].Value.Length > 200) continue;
+
+                    string msgId = match.Groups[2].Value;
+                    var spot = await _dbService.GetSpotByMsgIdAsync(msgId);
+                    if (spot == null)
+                    {
+                        StatusText = $"Spot niet gevonden in de database: {msgId}";
+                        continue;
+                    }
+                    OpenSpot(spot);
+                }
+                else if (File.Exists(target))
+                {
+                    await ImportNzbFileAsync(target);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warn(ex, "Startup target kon niet worden verwerkt: {0}", target);
+            }
+            await Task.Yield();
+        }
+    }
+
+    /// <summary>
+    /// Importeert een .nzb-bestand van schijf: parseert het en zet een downloadjob klaar
+    /// in de Downloads-tab, zoals Windows' ScheduleNzbDownload.
+    /// </summary>
+    internal async Task ImportNzbFileAsync(string nzbPath)
+    {
+        string xml = await File.ReadAllTextAsync(nzbPath);
+        var files = NzbParser.Parse(xml);
+        if (files.Count == 0)
+        {
+            StatusText = $"NZB bevat geen downloadbare bestanden: {Path.GetFileName(nzbPath)}";
+            return;
+        }
+
+        var prefs = _prefsService.Current;
+        string title = Path.GetFileNameWithoutExtension(nzbPath);
+        string downloadDir = Path.Combine(
+            string.IsNullOrEmpty(prefs.DownloadFolder)
+                ? System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "Spotnet")
+                : prefs.DownloadFolder,
+            NzbService.SanitizeFileName(title));
+
+        int maxConn = prefs.MaxDownloadConnections > 0 ? prefs.MaxDownloadConnections : 4;
+        var connection = new UsenetConnection(_appPaths, _secretStore);
+        var job = new NzbDownloadJob(connection, files, downloadDir, maxConn,
+            NzbDownloadOptions.FromPreferences(prefs));
+
+        DownloadsTab.Add(new SpotItem { MsgId = "nzb:" + title, Subject = title, Filesize = 0 },
+            success: true, nzbPath: nzbPath, message: "NZB geïmporteerd", job: job);
+        StatusText = $"NZB geïmporteerd: {title}";
     }
 
     // ── Spots Query ───────────────────────────────────────────────────────────

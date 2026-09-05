@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>nl.spotnet.mac</string>
+	<key>CFBundleName</key>
+	<string>Spotnet</string>
+	<key>CFBundleDisplayName</key>
+	<string>Spotnet</string>
+	<key>CFBundleVersion</key>
+	<string>3.0.0</string>
+	<key>CFBundleShortVersionString</key>
+	<string>3.0.0</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleExecutable</key>
+	<string>Spotnet.Mac</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>11.0</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>nl-NL</string>
+
+	<!-- .nzb-bestanden openen (dubbelklik in Finder, "Openen met") -->
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>NZB File</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>nl.spotnet.nzb</string>
+				<string>public.data</string>
+			</array>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>nzb</string>
+			</array>
+		</dict>
+	</array>
+
+	<!-- Declaratie van het eigen UTI voor .nzb -->
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>nl.spotnet.nzb</string>
+			<key>UTTypeDescription</key>
+			<string>NZB File</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.xml</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>nzb</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+
+	<!-- spotnet://-links openen vanuit de browser -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>NL Spotnet protocol</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>spotnet</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

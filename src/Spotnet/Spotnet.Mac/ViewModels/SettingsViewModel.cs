@@ -285,7 +285,8 @@ public sealed class SettingsViewModel : ViewModelBase
     {
         "Downloaden (ingebouwd)",
         "NZB Openen met app",
-        "Alleen NZB opslaan"
+        "Alleen NZB opslaan",
+        "Gebruik externe NZBget"
     };
 
     private DownloadMode _downloadMode = DownloadMode.Integrated;
@@ -296,6 +297,7 @@ public sealed class SettingsViewModel : ViewModelBase
             DownloadMode.Integrated => "Downloaden (ingebouwd)",
             DownloadMode.OpenNzb => "NZB Openen met app",
             DownloadMode.SaveNzb => "Alleen NZB opslaan",
+            DownloadMode.ExternalNzbGet => "Gebruik externe NZBget",
             _ => "Downloaden (ingebouwd)"
         };
         set
@@ -304,10 +306,44 @@ public sealed class SettingsViewModel : ViewModelBase
             {
                 "NZB Openen met app" => DownloadMode.OpenNzb,
                 "Alleen NZB opslaan" => DownloadMode.SaveNzb,
+                "Gebruik externe NZBget" => DownloadMode.ExternalNzbGet,
                 _ => DownloadMode.Integrated
             };
             OnPropertyChanged();
+            OnPropertyChanged(nameof(IsExternalNzbGet));
         }
+    }
+
+    /// <summary>Whether the NZBGet connection fields are relevant right now.</summary>
+    public bool IsExternalNzbGet => _downloadMode == DownloadMode.ExternalNzbGet;
+
+    // ── Externe NZBget (Windows: NzbGetControl*-instellingen) ─────────────────
+    private string _nzbGetControlIP = "-";
+    public string NzbGetControlIP
+    {
+        get => _nzbGetControlIP;
+        set { _nzbGetControlIP = value; OnPropertyChanged(); }
+    }
+
+    private string _nzbGetControlPort = "-";
+    public string NzbGetControlPort
+    {
+        get => _nzbGetControlPort;
+        set { _nzbGetControlPort = value; OnPropertyChanged(); }
+    }
+
+    private string _nzbGetControlUsername = "-";
+    public string NzbGetControlUsername
+    {
+        get => _nzbGetControlUsername;
+        set { _nzbGetControlUsername = value; OnPropertyChanged(); }
+    }
+
+    private string _nzbGetControlPassword = "-";
+    public string NzbGetControlPassword
+    {
+        get => _nzbGetControlPassword;
+        set { _nzbGetControlPassword = value; OnPropertyChanged(); }
     }
 
     // ── Synchronisation & Database Settings ────────────────────────────────────
@@ -737,6 +773,10 @@ public sealed class SettingsViewModel : ViewModelBase
         _removePar2FilesAfterDownload = prefs.RemovePar2FilesAfterDownload;
         _removeFilesOnDownloadRemove = prefs.RemoveFilesOnDownloadRemove;
         _shutdownPcAfterDownloads = prefs.ShutdownPcAfterDownloads;
+        _nzbGetControlIP = prefs.NzbGetControlIP;
+        _nzbGetControlPort = prefs.NzbGetControlPort;
+        _nzbGetControlUsername = prefs.NzbGetControlUsername;
+        _nzbGetControlPassword = prefs.NzbGetControlPassword;
         _initialFetchDays = prefs.InitialFetchDays;
         ShowDesktopNotifications = prefs.ShowDesktopNotifications;
         ExternalBrowser = prefs.ExternalBrowser;
@@ -769,6 +809,11 @@ public sealed class SettingsViewModel : ViewModelBase
         OnPropertyChanged(nameof(RemovePar2FilesAfterDownload));
         OnPropertyChanged(nameof(SelectedRemoveFilesMode));
         OnPropertyChanged(nameof(ShutdownPcAfterDownloads));
+        OnPropertyChanged(nameof(NzbGetControlIP));
+        OnPropertyChanged(nameof(NzbGetControlPort));
+        OnPropertyChanged(nameof(NzbGetControlUsername));
+        OnPropertyChanged(nameof(NzbGetControlPassword));
+        OnPropertyChanged(nameof(IsExternalNzbGet));
         OnPropertyChanged(nameof(DbAutoUpdateEnabled));
         OnPropertyChanged(nameof(DbAutoUpdateIntervalMin));
         OnPropertyChanged(nameof(RetentionEnabled));
@@ -874,6 +919,10 @@ public sealed class SettingsViewModel : ViewModelBase
             prefs.RemovePar2FilesAfterDownload = RemovePar2FilesAfterDownload;
             prefs.RemoveFilesOnDownloadRemove = _removeFilesOnDownloadRemove;
             prefs.ShutdownPcAfterDownloads = ShutdownPcAfterDownloads;
+            prefs.NzbGetControlIP = string.IsNullOrWhiteSpace(NzbGetControlIP) ? "-" : NzbGetControlIP.Trim();
+            prefs.NzbGetControlPort = string.IsNullOrWhiteSpace(NzbGetControlPort) ? "-" : NzbGetControlPort.Trim();
+            prefs.NzbGetControlUsername = string.IsNullOrWhiteSpace(NzbGetControlUsername) ? "-" : NzbGetControlUsername.Trim();
+            prefs.NzbGetControlPassword = string.IsNullOrWhiteSpace(NzbGetControlPassword) ? "-" : NzbGetControlPassword.Trim();
 
             // Apply the new limit to downloads that are already running, the way the
             // Windows ChangeDownloadSpeedLimitWindow calls Sys.Downloader

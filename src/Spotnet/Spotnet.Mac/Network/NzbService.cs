@@ -70,6 +70,18 @@ public sealed class NzbService
                     OpenWithDefaultApp(nzbPath!);
                     return (true, nzbPath, $"✓ NZB geopend met standaard-app: {Path.GetFileName(nzbPath)}", null);
 
+                case DownloadMode.ExternalNzbGet:
+                    // Windows: Settings.Default.ExternalNzbGet schakelt NzbGetDownloader in;
+                    // de NZB gaat via JSON-RPC "append" naar de externe NZBGet-installatie.
+                    var nzbGet = new NzbGetRpcClient(() => _prefsService.Current);
+                    int nzbGetId = await nzbGet.AppendAsync(nzbPath!, spot.CategoryName).ConfigureAwait(false);
+                    if (nzbGetId > 0)
+                    {
+                        return (true, nzbPath, $"✓ Doorgestuurd naar NZBGet (id {nzbGetId})", null);
+                    }
+                    return (false, nzbPath,
+                        "Doorsturen naar NZBGet mislukt — controleer de NZBGet-instellingen (Bewerken › Instellingen › Geavanceerd).", null);
+
                 case DownloadMode.Integrated:
                 default:
                     // Parse the NZB and start the binary download.

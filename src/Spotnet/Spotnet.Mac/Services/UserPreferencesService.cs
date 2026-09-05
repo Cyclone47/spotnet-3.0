@@ -31,7 +31,12 @@ public enum DownloadMode
     /// <summary>Save the .nzb file and open it with the OS default handler (SABnzbd, NZBGet, …).</summary>
     OpenNzb,
     /// <summary>Only save the .nzb file to the downloads folder, nothing else.</summary>
-    SaveNzb
+    SaveNzb,
+    /// <summary>
+    /// Forward the NZB to the external NZBGet installation over JSON-RPC, as Windows'
+    /// Settings.Default.ExternalNzbGet does.
+    /// </summary>
+    ExternalNzbGet
 }
 
 public sealed class UserPreferences
@@ -293,6 +298,23 @@ public sealed class UserPreferences
     /// The dialog lets the user cancel within 60 seconds, as on Windows.
     /// </summary>
     public bool ShutdownPcAfterDownloads { get; set; }
+
+    /// <summary>
+    /// Whether the external NZBGet downloader handles all binary downloads instead of
+    /// the built-in downloader. Matches Windows Settings.Default.ExternalNzbGet.
+    /// </summary>
+    public bool ExternalNzbGet { get; set; }
+
+    /// <summary>NZBGet RPC host. Matches Windows Settings.Default.NzbGetControlIP (default "-").</summary>
+    public string NzbGetControlIP { get; set; } = "-";
+
+    /// <summary>NZBGet RPC port. Matches Windows Settings.Default.NzbGetControlPort (default "-").</summary>
+    public string NzbGetControlPort { get; set; } = "-";
+
+    /// <summary>NZBGet RPC username. Matches Windows Settings.Default.NzbGetControlUsername (default "-").</summary>
+    public string NzbGetControlUsername { get; set; } = "-";
+    /// <summary>NZBGet RPC password. Matches Windows Settings.Default.NzbGetControlPassword (default "-").</summary>
+    public string NzbGetControlPassword { get; set; } = "-";
 
     /// <summary>
     /// A host is a provider cache server when it ends in one of these suffixes.

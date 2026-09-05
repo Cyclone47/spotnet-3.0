@@ -101,6 +101,19 @@
                           SelectedItem="{Binding SelectedDownloadMode}"
                           HorizontalAlignment="Stretch"/>
 
+                <!-- Externe NZBget (Windows: settingsforadvanceddownload) -->
+                <StackPanel IsVisible="{Binding IsExternalNzbGet}" Spacing="4" Margin="0,8,0,0">
+                    <TextBlock Text="Gebruik externe NZBget" FontWeight="Medium"/>
+                    <TextBlock Text="IP-adres:"/>
+                    <TextBox Text="{Binding NzbGetControlIP}" Watermark="127.0.0.1"/>
+                    <TextBlock Text="Poort:"/>
+                    <TextBox Text="{Binding NzbGetControlPort}" Watermark="6789"/>
+                    <TextBlock Text="Gebruikersnaam:"/>
+                    <TextBox Text="{Binding NzbGetControlUsername}"/>
+                    <TextBlock Text="Wachtwoord:"/>
+                    <TextBox Text="{Binding NzbGetControlPassword}" PasswordChar="•"/>
+                </StackPanel>
+
                 <TextBlock Text="Downloadmap:" FontWeight="Medium"/>
                 <Grid ColumnDefinitions="*,8,Auto">
                     <TextBox Grid.Column="0" Text="{Binding DownloadFolder}" Watermark="Pad naar downloadmap"/>

@@ -151,6 +151,8 @@
         <MenuItem Header="_Zoeken" InputGesture="Cmd+F" Click="OnFocusSearchClick"/>
         <MenuItem Header="_Zoekopdracht wissen" Command="{Binding ClearSearchCommand}"/>
         <Separator/>
+        <MenuItem Header="_Open Spotlink..." Command="{Binding OpenSpotlinkCommand}"/>
+        <Separator/>
         <MenuItem Header="_Downloadmap..." InputGesture="Cmd+D" Command="{Binding PickDownloadFolderCommand}"/>
         <MenuItem Header="Download_knop">
           <MenuItem Header="✓ Downloaden (ingebouwd)" IsVisible="{Binding IsDownloadModeIntegrated}" Command="{Binding SetDownloadModeCommand}" CommandParameter="{x:Static services:DownloadMode.Integrated}"/>

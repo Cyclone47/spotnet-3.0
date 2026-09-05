@@ -46,6 +46,7 @@ public partial class MainWindow : Window
         _viewModel.RequestSetDownloadPassword += ShowSetPasswordDialog;
         _viewModel.RequestConfirmRemoveDownload = ShowConfirmRemoveDownloadDialog;
         _viewModel.RequestConfirmClearDownloads = ShowConfirmClearDownloadsDialog;
+        _viewModel.RequestOpenSpotlinkDialog += () => _ = ShowOpenSpotlinkDialogAsync();
 
         // Afsluiten na downloads (fase 3, item 3): de Downloads-tab geeft het teken,
         // het venster toont het aftelvenster van Windows' ShutdownComputerDialog.
@@ -459,6 +460,62 @@ public partial class MainWindow : Window
         await dialog.ShowDialog(this);
         _rememberRemoveFilesAnswer = rememberCheck.IsChecked == true;
         return deleteFiles;
+    }
+
+    /// <summary>
+    /// "Open Spotlink..." (Windows: OpenSpotlinkWindow, tekst "Geef de spotlink in"
+    /// uit Words.nl.resx). De invoer gaat naar MainWindowViewModel.OpenSpotlinkAsync.
+    /// </summary>
+    private async Task ShowOpenSpotlinkDialogAsync()
+    {
+        var prompt = new TextBlock
+        {
+            Text = "Geef de spotlink in",
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 0, 0, 10)
+        };
+
+        var input = new TextBox
+        {
+            Watermark = "spotnet://…",
+            Margin = new Thickness(0, 0, 0, 14)
+        };
+
+        var cancelBtn = new Button { Content = "Annuleren" };
+        var okBtn = new Button { Content = "OK", Classes = { "accent" }, IsDefault = true };
+
+        var dialog = new Window
+        {
+            Title = "Open Spotlink...",
+            Width = 460,
+            Height = 190,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            CanResize = false,
+            Content = new StackPanel
+            {
+                Margin = new Thickness(20),
+                Children = { prompt, input,
+                    new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Spacing = 8,
+                        Children = { cancelBtn, okBtn }
+                    } }
+            }
+        };
+
+        string? link = null;
+        okBtn.Click += (_, _) => { link = input.Text; dialog.Close(); };
+        cancelBtn.Click += (_, _) => dialog.Close();
+        input.Focus();
+
+        await dialog.ShowDialog(this);
+
+        if (!string.IsNullOrWhiteSpace(link))
+        {
+            await _viewModel.OpenSpotlinkAsync(link);
+        }
     }
 
     /// <summary>
