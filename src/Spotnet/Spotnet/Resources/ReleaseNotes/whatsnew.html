@@ -1,0 +1,165 @@
+<section class="notes-section gh-release">
+<h3>Spotnet 3.0.8.0 <span class="gh-tag">New</span><span class="gh-date">Current version</span></h3>
+<div class="gh-body"><ul class="section-items tagged">
+<li><strong>.NET 10 included:</strong> Setup includes the Windows x64 .NET 10 runtime inside Spotnet&#39;s installation folder. No separate .NET installation is required; it does not appear as a separate entry in Installed Apps.</li>
+<li><strong>Remote password setup fixed:</strong> Enabling Remote for the first time asks for a password twice. Cancel keeps Remote disabled. Password settings remain accessible while Remote is off.</li>
+<li><strong>Password-only Remote login:</strong> The mobile login page no longer asks for a username. Existing passwords, paired devices and failed-login protection continue to work.</li>
+<li><strong>Updates before startup:</strong> The splash screen checks for updates before provider setup and database initialization. When an update is offered, startup waits for your choice. An unavailable update server times out after three seconds.</li>
+<li><strong>Startup crash fixed:</strong> The main window waits for server settings instead of firing its load handler too early.</li>
+<li><strong>New JSON spot cache:</strong> Replaces the obsolete binary cache for details and images. Old cached content is fetched again when needed. Corrupt cache entries no longer interrupt normal retrieval.</li>
+<li><strong>Existing profiles preserved:</strong> Upgrades keep databases and settings in place and do not create large automatic database backups.</li>
+<li>Updated English and Dutch release notes inside Spotnet.</li>
+</ul></div>
+</section>
+
+<section class="notes-section gh-release">
+    <h3>Spotnet 3.0.7.0 <span class="gh-date">4 September 2026</span></h3>
+    <div class="gh-body">
+        <div class="feature-highlight" style="background: rgba(2, 132, 199, 0.08); border-left: 4px solid #0284c7; padding: 14px 18px; margin-bottom: 18px; border-radius: 4px;">
+            <h4 style="margin: 0 0 6px 0; color: #0284c7; font-size: 16px; font-weight: 700;">🚀 Highlight: Spotnet Remote (Mobile Companion)</h4>
+            <p style="margin: 0; line-height: 1.55;">
+                Control Spotnet directly from your smartphone or tablet! With Spotnet Remote, you have your entire Usenet catalogue in your pocket, anywhere in your home over Wi-Fi or on the go via port-forwarding.
+            </p>
+        </div>
+
+        <ul class="section-items tagged">
+            <li>
+                <b class="tag tag-new">[New]</b>
+                <b>Spotnet Remote (Mobile Companion Web App):</b>
+                <div style="margin-top: 6px;">
+                    Wirelessly control Spotnet from any phone, tablet, or browser on your network:
+                    <ul style="margin: 6px 0 6px 18px; padding-left: 0;">
+                        <li><strong>Silent &amp; Instant QR Pairing:</strong> Simply scan the QR code displayed in Spotnet using your mobile camera. Your phone is automatically authorized with a secure pairing token — no manual typing of usernames or passwords required on your mobile device.</li>
+                        <li><strong>Full Catalogue &amp; Interaction:</strong> Real-time searching, filter synchronization with your PC, spot details and images, read comments, and post new comments with smileys.</li>
+                        <li><strong>Remote Downloads &amp; Sync:</strong> Trigger NZB downloads on your PC or external downloader, and trigger Usenet synchronization remotely to fetch the newest spots.</li>
+                        <li><strong>Strong Security:</strong> Optional authentication with username and salted PBKDF2-SHA256 password hashing for safe remote access via port-forwarding.</li>
+                        <li><strong>Keep Computer Awake:</strong> Prevent your PC from falling asleep while Spotnet Remote is active via Windows execution state management.</li>
+                    </ul>
+                </div>
+            </li>
+            <li>
+                <b class="tag tag-new">[New]</b>
+                <b>Live Titlebar Status Indicators for Remote:</b>
+                <div style="margin-top: 6px;">
+                    Convenient live status lights positioned in the titlebar next to the SPOTNET logo:
+                    <ul style="margin: 6px 0 6px 18px; padding-left: 0;">
+                        <li><span style="color: #22c55e; font-weight: bold;">● Green light (Active):</span> Remote server is running and ready for connections.</li>
+                        <li><span style="color: #3b82f6; font-weight: bold;">● Blue light (In Use):</span> One or more mobile devices are actively connected.</li>
+                        <li><span style="color: #eab308; font-weight: bold;">☀ Sun/Eye icon (Stay Awake):</span> Sleep prevention is active, ensuring your PC stays on while using your phone.</li>
+                        <li><span style="color: #94a3b8; font-weight: bold;">● Grey light (Off):</span> Spotnet Remote is disabled. Click any indicator to quickly open settings or display the QR pairing code.</li>
+                    </ul>
+                </div>
+            </li>
+            <li>
+                <b class="tag tag-new">[New]</b>
+                <b>Spotnet Notification Center &amp; Alerts:</b>
+                <div style="margin-top: 6px;">
+                    Receive alerts for new content matching your interests:
+                    <ul style="margin: 6px 0 6px 18px; padding-left: 0;">
+                        <li><strong>Two Rule Types:</strong> Filter-based alerts or Keyword-based alerts (Pepper-style notifications for terms like <code>F1</code>, TV shows, or artists).</li>
+                        <li><strong>Flexible Intervals:</strong> Check periodically (every 15m, 30m, 1h, 8h, 24h, or custom minutes) or instantly upon each Usenet synchronization.</li>
+                        <li><strong>Smart Bundling:</strong> Bundles new spots into a single clean digest instead of spamming separate notifications.</li>
+                        <li><strong>Clickable Spots &amp; Rule Editing:</strong> Open spots directly into Spotnet tabs, and easily edit existing rules anytime.</li>
+                        <li><strong>Desktop Integration:</strong> Native Windows Toast notifications and titlebar bell counter with unread badge.</li>
+                    </ul>
+                </div>
+            </li>
+            <li>
+                <b class="tag tag-fixed">[Fixed]</b>
+                <b>Theme &amp; Title Bar Alignment:</b> Dialog windows (Settings, Notification Center, Remote Pairing, etc.) now inherit theme-consistent navy blue headers in light themes and deep slate in dark themes.
+            </li>
+            <li>
+                <b class="tag tag-fixed">[Fixed]</b>
+                <b>Release Notes Typography &amp; Dark Mode:</b> Squeezed, overlapping text permanently resolved with clean Segoe UI typography, generous line-height, modern card styling, and Dark Mode support.
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section class="notes-section" id="new-features">
+<h3>What’s New</h3>
+
+<br><h5>3.0.6.8</h5>
+    <ul class="section-items tagged">
+        <li>
+            <b class="tag tag-fixed">[Fixed]</b>
+            The <i>What&rsquo;s new in this version</i> link in the update prompt now opens the Release Notes tab inside Spotnet, just like Help &gt; Release Notes, instead of opening an external browser.
+        </li>
+    </ul>
+
+<br><h5>3.0.6.7</h5>
+    <ul class="section-items tagged">
+        <li>
+            <b class="tag tag-new">[New]</b>
+            Archive passwords are found on their own. Spotnet reads the password from the NZB&rsquo;s own metadata, and failing that from the spot description, and hands it straight to UnRAR or 7-Zip. You are asked for a password only when none can be found or the one found turns out to be wrong.
+        </li>
+        <li>
+            <b class="tag tag-new">[New]</b>
+            A first synchronisation no longer has to reach back fifteen years. Choose how far back to fetch &mdash; the last 30 days, 90 days, a year, or everything &mdash; and a new installation is ready in minutes rather than hours.
+        </li>
+        <li>
+            <b class="tag tag-new">[New]</b>
+            Windows desktop notifications when a download has finished and unpacked, and when a database repair or rebuild is done. They appear only while Spotnet is not the window in front. Settings &gt; Common has a switch and a button that shows one on the spot.
+        </li>
+        <li>
+            <b class="tag tag-fixed">[Fixed]</b>
+            Links in a spot description opened an empty tab or did nothing at all. Web links now open in your own browser, or in a Spotnet tab if you prefer. Spotnet&rsquo;s own links stay inside the application either way.
+        </li>
+        <li>
+            <b class="tag tag-fixed">[Fixed]</b>
+            Dialogs and pop-ups kept fixed grey tones and could leave grey text on a grey background. Every window now follows the chosen theme, in Modern Dark, Modern Light and Classic alike.
+        </li>
+        <li>
+            <b class="tag tag-fixed">[Fixed]</b>
+            Spotnet failed to verify par2 files on Windows installations running in FIPS mode. It now uses hashing Windows accepts there; par2 verification itself is unchanged.
+        </li>
+    </ul>
+
+<br><h5>3.0.6.6</h5>
+    <ul class="section-items tagged">
+        <li>
+            <b class="tag tag-fixed">[Fixed]</b>
+            Downloads could finish with a warning and unpack with a checksum error. The decoder kept the doubled leading dot the news server adds to a line, which inserted a stray byte into the file. Files already downloaded cannot be repaired &mdash; delete and download them again.
+        </li>
+    </ul>
+
+<br><h5>3.0.6.0</h5>
+    <ul class="section-items tagged">
+        <li>
+            <b class="tag tag-new">[New]</b>
+            Spotnet now runs on .NET 8. Setup installs the runtime if it is missing.
+        </li>
+        <li>
+            <b class="tag tag-new">[New]</b>
+            Spot pages and their comments render in Edge WebView2; the old Windows browser control is gone.
+        </li>
+        <li>
+            <b class="tag tag-new">[New]</b>
+            Search uses SQLite FTS5. The index is rebuilt once on first start.
+        </li>
+        <li>
+            <b class="tag tag-new">[New]</b>
+            The list, list-with-details and thumbnail views moved to Edit &gt; View.
+        </li>
+        <li>
+            <b class="tag tag-fixed">[Fixed]</b>
+            Stored passwords and the signing key were truncated when longer than sixteen characters.
+        </li>
+        <li>
+            <b class="tag tag-fixed">[Fixed]</b>
+            Setup now removes the previous version&rsquo;s files, which could otherwise crash the application.
+        </li>
+        <li>
+            <b class="tag tag-changed">[Removed]</b>
+            The VPN Nederland integration is gone: the status-bar icon, the pop-up promoting it, and the button that downloaded and ran the provider&rsquo;s installer. Settings simply advises using a VPN, naming none.
+        </li>
+    </ul>
+
+<br><h5>3.0.0.0</h5>
+    <ul class="section-items tagged">
+        <li>
+            <b class="tag tag-fixed">[Fixed]</b>
+            Fixed several minor bugs.
+        </li>
+    </ul>
+</section>

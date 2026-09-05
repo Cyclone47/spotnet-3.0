@@ -34,7 +34,7 @@ matching GitHub release.
 | `url` | The installer. Must be `https` on GitHub; anything else is refused. |
 | `size` | Exact byte count of the installer. |
 | `sha256` | Its SHA-256. A download that does not match is deleted, never run. |
-| `releaseNotesUrl` | Optional. Makes the release-notes link available in the prompt; the link opens Spotnet's Release Notes tab. |
+| `releaseNotesUrl` | Optional. Opens the browser during startup, or Spotnet's Release Notes tab once the main window is available. |
 
 ## Publishing a release
 
@@ -55,15 +55,22 @@ has not taken it yet.
 
 - Only an **installed** copy updates itself. A build running out of a development output
   has no Setup that could replace it, and is left alone.
-- The first check runs on the splash screen, under a "Checking for updates" message,
-  bounded at three seconds so a slow server never holds up a start. After that it runs
-  every four hours, and Help ▸ *Check for updates* runs one on demand.
+- With automatic updates enabled, the first check runs on the splash screen under
+  "Checking for updates…", before constructing the main window, opening databases or
+  asking for provider details. The lookup is asynchronous and cancelled after three
+  seconds if unavailable. An available update opens a modal decision over the splash;
+  startup waits for that decision, with no timeout on the user or their download.
+  Installing hands control to Setup without starting the main window. Later/Skip
+  continue startup. A failed/cancelled download leaves the decision open for retry
+  or Later. Failed checks retry after one minute once the app starts; successful
+  checks repeat after four hours. Help ▸ *Check for updates* still works on demand.
 - `raw.githubusercontent.com` serves the manifest with a five minute CDN lifetime, and no
   request header or query parameter shortens it. A freshly pushed release can therefore
   take up to five minutes to become visible to clients. Nothing is wrong when that
   happens; wait for the next check.
-- The prompt shows the new version, the download size and a link that opens Spotnet's
-  Release Notes tab. The update prompt closes first so the tab can be used immediately.
+- The prompt shows the new version, the download size and release notes. At startup
+  the notes open in the default browser while the decision remains open. After startup
+  the prompt closes and opens Spotnet's Release Notes tab.
   *Update now* downloads, *Later* asks again next time, *Skip this version* suppresses that
   exact version until a newer one appears. A `forced` release has no Skip.
 - The download shows progress and can be cancelled. A partial file is resumed on the next

@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Spotnet Remote</title>
+  <meta name="theme-color" content="#090d16">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Spotnet Remote">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="/icon.svg">
+  <link rel="stylesheet" href="/app.css?v=3.0.7.5">
+</head>
+<body>
+  <!-- Pull to Refresh Indicator (Mobile Web / PWA) -->
+  <div id="pullToRefresh" class="pull-to-refresh">
+    <div class="ptr-icon-box">
+      <svg class="ptr-arrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <polyline points="19 12 12 19 5 12"></polyline>
+      </svg>
+      <div class="ptr-spinner"></div>
+    </div>
+    <span class="ptr-text">Trek omlaag om te synchroniseren</span>
+  </div>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo-badge">
+        <img src="/icon.png" class="header-logo-img" alt="Spotnet">
+      </div>
+      <div class="header-titles">
+        <h1 class="brand-title">Spotnet <span class="badge-accent">Remote</span></h1>
+        <div class="connection-status" id="connectionStatus">
+          <span class="status-dot online"></span>
+          <span class="status-text" id="statusText">Verbonden met PC</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="global-speed-badge" id="globalSpeedBadge" title="Totale downloadsnelheid">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+        <span id="headerSpeed">0 KB/s</span>
+      </div>
+      <button class="btn-header-notif" id="btnHeaderNotif" title="Meldingen" type="button">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <span class="header-notif-badge" id="headerNotifBadge" style="display: none;">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main View Area -->
+  <main class="main-content">
+    
+    <!-- View: Discover / Spots List -->
+    <section id="view-discover" class="view active">
+      <!-- Search & Filters Bar -->
+      <div class="search-container">
+        <div class="search-input-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="search" id="searchInput" placeholder="Zoek films, series, muziek..." autocomplete="off">
+          <button id="clearSearchBtn" class="clear-btn" aria-label="Wissen">&times;</button>
+        </div>
+      </div>
+
+      <!-- Categories / Filters Scroll (Dynamic from Desktop Spotnet) -->
+      <div class="category-chips-scroll" id="filterChipsContainer">
+        <button class="chip active" data-filter-id="all">Alles</button>
+      </div>
+      <!-- Sub-Filters Scroll (Dynamic subcategories) -->
+      <div class="category-chips-scroll subfilters-scroll" id="subFilterChipsContainer" style="display: none;"></div>
+
+      <!-- Filter Controls (Sort, Total & Usenet Sync) -->
+      <div class="filter-controls">
+        <div class="filter-controls-left">
+          <span class="results-count" id="resultsCount">Spots laden...</span>
+          <button class="btn-sync-spots" id="btnSyncSpots" title="Nieuwe spots ophalen van Usenet">
+            <svg class="sync-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            </svg>
+            <span>Nieuwe spots</span>
+          </button>
+        </div>
+        <div class="sort-select-wrapper">
+          <select id="sortSelect">
+            <option value="date_desc">Nieuwste eerst</option>
+            <option value="filesize_desc">Grootste eerst</option>
+            <option value="filesize_asc">Kleinste eerst</option>
+            <option value="subject_asc">Titel (A-Z)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Spots Grid Container -->
+      <div class="spots-grid" id="spotsGrid">
+        <!-- Cards rendered via JS -->
+      </div>
+
+      <!-- Pagination / Load More -->
+      <div class="pagination-wrapper">
+        <button id="loadMoreBtn" class="btn-load-more">Meer spots laden</button>
+      </div>
+    </section>
+
+    <!-- View: Downloads / Queue -->
+    <section id="view-queue" class="view">
+      <div class="queue-summary-card">
+        <div class="summary-top">
+          <div class="speed-gauge">
+            <span class="gauge-label">Downloadsnelheid</span>
+            <span class="gauge-val" id="queueSpeed">0 MB/s</span>
+          </div>
+          <div class="eta-gauge">
+            <span class="gauge-label">Resterende data</span>
+            <span class="gauge-val" id="queueRemaining">0 MB</span>
+          </div>
+        </div>
+        <div class="overall-progress-bar">
+          <div class="progress-fill" id="overallProgressFill" style="width: 0%"></div>
+        </div>
+        <div class="summary-stats">
+          <span id="queueActiveCount">0 actieve downloads</span>
+          <span id="queuePercent">0%</span>
+        </div>
+      </div>
+
+      <div class="section-title-row">
+        <h2>Downloads</h2>
+        <button class="btn-refresh" id="refreshQueueBtn" title="Verversen">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 4v6h-6"></path>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="queue-list" id="queueList">
+        <div class="empty-state">
+          <p>Er zijn momenteel geen downloads.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- View: Favorites -->
+    <section id="view-favorites" class="view">
+      <div class="section-title-row">
+        <h2>Opgeslagen Favorieten</h2>
+      </div>
+      <div class="spots-grid" id="favoritesGrid">
+        <!-- Favorite Cards -->
+      </div>
+    </section>
+
+    <!-- View: Settings / Device -->
+    <section id="view-settings" class="view">
+      <div class="settings-group">
+        <h3>Verbindingsinformatie</h3>
+        <div class="setting-item">
+          <span class="setting-label">Spotnet Versie</span>
+          <span class="setting-val" id="infoVersion">3.0</span>
+        </div>
+        <div class="setting-item">
+          <span class="setting-label">Usenet Provider</span>
+          <span class="setting-val" id="infoProvider">Actief</span>
+        </div>
+        <div class="setting-item">
+          <span class="setting-label">Spots in Database</span>
+          <span class="setting-val" id="infoSpotsCount">-</span>
+        </div>
+        <div class="setting-item">
+          <span class="setting-label">Remote Poort</span>
+          <span class="setting-val" id="infoPort">8770</span>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3>Weergave &amp; Zoeken</h3>
+        <div class="setting-item">
+          <span class="setting-label">Aantal spots op een pagina</span>
+          <div class="sort-select-wrapper">
+            <select id="pageSizeSelect">
+              <option value="25">25 spots</option>
+              <option value="50">50 spots</option>
+              <option value="100">100 spots</option>
+              <option value="200">200 spots</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3>Dit Apparaat</h3>
+        <p class="setting-desc">Dit toestel is gekoppeld met Spotnet op je computer.</p>
+        <button class="btn-danger" id="logoutBtn">Toestel ontkoppelen</button>
+      </div>
+
+      <div class="settings-group" id="nativeSettingsGroup" style="display: none;">
+        <h3>Android Companion Notificaties</h3>
+        <p class="setting-desc">Beheer achtergrondmeldingen op dit mobiele toestel.</p>
+        <div class="setting-item">
+          <span class="setting-label">Achtergrondnotificaties</span>
+          <label class="switch-toggle">
+            <input type="checkbox" id="nativeSwitchNotifs" checked>
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <span class="setting-label">Geluid bij melding</span>
+          <label class="switch-toggle">
+            <input type="checkbox" id="nativeSwitchSound" checked>
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <span class="setting-label">Trillen bij melding</span>
+          <label class="switch-toggle">
+            <input type="checkbox" id="nativeSwitchVibrate" checked>
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+        <div style="margin-top: 14px;">
+          <button class="btn-text-action" id="btnNativeTestNotif" type="button" style="padding: 8px 14px; border-radius: 8px;">Testnotificatie verzenden</button>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3>Over Spotnet Remote</h3>
+        <p class="setting-desc">Spotnet Remote PWA stelt je in staat om overal in huis en onderweg spots te ontdekken en direct te downloaden naar je desktop computer.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-target="view-discover">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7"></rect>
+        <rect x="14" y="3" width="7" height="7"></rect>
+        <rect x="14" y="14" width="7" height="7"></rect>
+        <rect x="3" y="14" width="7" height="7"></rect>
+      </svg>
+      <span>Ontdekken</span>
+    </button>
+    <button class="nav-btn" data-target="view-queue">
+      <div class="nav-icon-wrapper">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span class="nav-badge" id="navQueueBadge" style="display: none;">0</span>
+      </div>
+      <span>Downloads</span>
+    </button>
+    <button class="nav-btn" data-target="view-favorites">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+      </svg>
+      <span>Favorieten</span>
+    </button>
+    <button class="nav-btn" data-target="view-settings">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+      <span>Instellingen</span>
+    </button>
+  </nav>
+
+  <!-- Spot Detail Modal / Bottom Sheet -->
+  <div class="modal-backdrop" id="detailModal" style="display: none;">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <button class="modal-close-btn" id="closeDetailBtn">&times;</button>
+      <div class="sheet-content">
+        <div class="detail-hero">
+          <div class="detail-poster-wrapper" id="detailPosterWrapper">
+            <img id="detailPoster" src="" alt="Poster" style="display:none;">
+            <div class="poster-placeholder" id="detailPosterPlaceholder">
+              <span id="detailPosterCatIcon">🎬</span>
+            </div>
+          </div>
+          <div class="detail-meta">
+            <span class="badge-cat" id="detailCategory">Beeld</span>
+            <h2 id="detailTitle" class="detail-title">Titel laden...</h2>
+            <div class="meta-row">
+              <span class="meta-item">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <span id="detailPosterHandle">Poster</span>
+              </span>
+              <span class="meta-item">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span id="detailDate">Datum</span>
+              </span>
+              <span class="meta-item">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                <span id="detailSize">0 MB</span>
+              </span>
+            </div>
+            <div class="detail-badges" id="detailBadges">
+              <!-- UHD, 1080p, Dutch subs badges -->
+            </div>
+          </div>
+        </div>
+
+        <div class="action-buttons-row">
+          <button class="btn-primary" id="btnDownloadSpot">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Downloaden naar PC</span>
+          </button>
+          <button class="btn-secondary" id="btnToggleFavorite" title="Favoriet">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </button>
+        </div>
+
+        <div class="detail-description-section">
+          <h3>Omschrijving</h3>
+          <div class="description-body" id="detailDescription">
+            Laden...
+          </div>
+        </div>
+
+        <div class="detail-comments-section">
+          <div class="comments-header-row">
+            <h3>Reacties (<span id="commentsCount">0</span>)</h3>
+            <button class="btn-refresh-comments" id="btnRefreshComments" title="Reacties vernieuwen">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 4v6h-6"></path>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+              </svg>
+              <span>Vernieuwen</span>
+            </button>
+          </div>
+
+          <div class="comments-list" id="commentsList">
+            <div class="comments-empty">Reacties laden...</div>
+          </div>
+
+          <div class="comment-form-container">
+            <h4>Plaats een reactie</h4>
+            <div class="comment-input-group">
+              <input type="text" id="commentNicknameInput" class="comment-nickname-input" placeholder="Je naam of bijnaam" maxlength="40">
+            </div>
+            <div class="comment-input-group">
+              <textarea id="commentBodyInput" class="comment-textarea" placeholder="Typ je reactie..." rows="3" maxlength="1000"></textarea>
+            </div>
+            <div class="comment-emoji-bar">
+              <button type="button" class="emoji-btn" data-emoji="😊">😊</button>
+              <button type="button" class="emoji-btn" data-emoji="👍">👍</button>
+              <button type="button" class="emoji-btn" data-emoji="❤️">❤️</button>
+              <button type="button" class="emoji-btn" data-emoji="😂">😂</button>
+              <button type="button" class="emoji-btn" data-emoji="🔥">🔥</button>
+              <button type="button" class="emoji-btn" data-emoji="🎉">🎉</button>
+              <button type="button" class="emoji-btn" data-emoji="🙏">🙏</button>
+              <button type="button" class="emoji-btn" data-emoji="👏">👏</button>
+            </div>
+            <button class="btn-primary btn-submit-comment" id="btnSubmitComment">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+              <span>Plaatsen</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications Drawer / Modal -->
+  <div class="modal-backdrop" id="notifModal" style="display: none;">
+    <div class="modal-sheet notif-modal-sheet">
+      <div class="sheet-handle"></div>
+      <button class="modal-close-btn" id="closeNotifBtn">&times;</button>
+      <div class="notif-sheet-header">
+        <div class="notif-sheet-title-row">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <h2>Meldingen</h2>
+          <span class="notif-pill-count" id="notifModalCount" style="display: none;">0</span>
+        </div>
+        <button class="btn-text-action" id="btnMarkAllRead">Alles als gelezen markeren</button>
+      </div>
+      <div class="notif-list-container" id="notifListContainer">
+        <div class="notif-empty">Geen meldingen gevonden</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth & Pairing Modal (When not authenticated) -->
+  <div class="modal-backdrop" id="pairingModal" style="display: none;">
+    <div class="pairing-card">
+      <div class="pairing-icon">
+        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+
+      <!-- Tab Switcher -->
+      <div class="auth-tabs" id="authTabs">
+        <button class="auth-tab-btn active" id="tabBtnPassword" type="button">Wachtwoord</button>
+        <button class="auth-tab-btn" id="tabBtnPin" type="button">PIN / QR-code</button>
+      </div>
+
+      <!-- Password Login View -->
+      <div id="authViewPassword" class="auth-view">
+        <h2>Inloggen bij Spotnet</h2>
+        <p>Voer je wachtwoord in om toegang te krijgen tot Spotnet Remote.</p>
+
+        <div class="auth-inputs-wrapper">
+
+
+          <div class="auth-input-group">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <input type="password" id="loginPassword" placeholder="Wachtwoord" autocomplete="current-password">
+            <button type="button" class="btn-toggle-pwd" id="btnToggleLoginPassword" title="Wachtwoord tonen">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" id="pwdEyeIcon">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="loginError" class="pairing-error" style="display: none;"></div>
+
+        <button class="btn-primary" id="btnSubmitLogin">Inloggen</button>
+        <div class="pairing-hint">
+          Beveiligde verbinding &bull; Beschermd tegen ongeoorloofde toegang
+        </div>
+      </div>
+
+      <!-- PIN Pairing View -->
+      <div id="authViewPin" class="auth-view" style="display: none;">
+        <h2>Koppel met Spotnet</h2>
+        <p>Voer de 6-cijferige koppelcode in die op je computerscherm staat onder <em>Instellingen &gt; Remote</em>.</p>
+
+        <div class="pin-inputs-wrapper">
+          <input type="tel" id="pinInput" maxlength="7" placeholder="Bijv. 123-456" autocomplete="one-time-code">
+        </div>
+
+        <div id="pairingError" class="pairing-error" style="display: none;"></div>
+
+        <button class="btn-primary" id="btnSubmitPairing">Koppelen &amp; Starten</button>
+        <div class="pairing-hint">
+          Koppelcode is 5 minuten geldig.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="/app.js?v=3.0.7.5"></script>
+</body>
+</html>

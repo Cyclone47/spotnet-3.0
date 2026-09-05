@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand colors -->
+    <color name="spotnet_navy">#002855</color>
+    <color name="spotnet_navy_dark">#001a38</color>
+    <color name="spotnet_blue">#0284c7</color>
+    <color name="spotnet_blue_light">#38bdf8</color>
+    <color name="spotnet_green">#10b981</color>
+    <color name="spotnet_amber">#f59e0b</color>
+    <color name="spotnet_red">#ef4444</color>
+
+    <!-- Semantic tokens for Light Theme -->
+    <color name="bg_screen">#f8fafc</color>
+    <color name="bg_card">#ffffff</color>
+    <color name="header_bg">#002855</color>
+    <color name="text_primary">#0f172a</color>
+    <color name="text_secondary">#64748b</color>
+    <color name="text_header">#002855</color>
+    <color name="card_stroke">#e2e8f0</color>
+    <color name="divider_color">#e2e8f0</color>
+    <color name="nav_bar_bg">#002855</color>
+
+    <!-- Compatibility aliases -->
+    <color name="background_light">#f8fafc</color>
+    <color name="text_primary_light">#0f172a</color>
+    <color name="text_secondary_light">#64748b</color>
+    <color name="divider_light">#e2e8f0</color>
+</resources>

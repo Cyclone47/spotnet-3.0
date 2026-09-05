@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using Mono.Cecil;
 
@@ -8,7 +8,7 @@ namespace MakePublic
     {
         static void Main(string[] args)
         {
-            string dll = @"d:\sourcecode\reconstructed\Spotnet2\lib\Squirrel.dll";
+            string dll = @"d:\sourcecode\src\Spotnet\lib\Squirrel.dll";
             var asm = AssemblyDefinition.ReadAssembly(dll);
             var updateInfoType = asm.MainModule.Types.FirstOrDefault(t => t.Name == "UpdateInfo");
             Console.WriteLine($"UpdateInfo Type: {updateInfoType.FullName}, Attributes: {updateInfoType.Attributes}");

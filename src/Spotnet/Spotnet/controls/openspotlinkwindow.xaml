@@ -1,0 +1,10 @@
+<metro:MetroWindow x:Class="Spotnet.Controls.OpenSpotlinkWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls" Title="{x:Static p:Words.MenuOpenSpotlink}" ShowInTaskbar="False" ResizeMode="NoResize" SizeToContent="WidthAndHeight" WindowStartupLocation="CenterOwner" Topmost="False" GlowBrush="{DynamicResource HighlightBrush}" WindowTransitionsEnabled="True" Icon="/Resources/ImagesInternal/smallspotnet.ico" ShowIconOnTitleBar="False" ShowTitleBar="True" ShowActivated="True" WindowTitleBrush="{DynamicResource WindowTitleColorBrush}" TitleForeground="{DynamicResource WindowTitleForegroundBrush}" NonActiveWindowTitleBrush="{DynamicResource NonActiveWindowTitleBrush}" xmlns:controls="clr-namespace:Spotnet.Controls" FontSize="{Binding ElementName=VisibilityVmProxy, Path=DataContext.FontSize, Mode=OneWay}" Background="{DynamicResource DialogBackgroundBrush}">
+  <DockPanel FocusManager.FocusedElement="{Binding ElementName=LinkTextBox}">
+    <Label Name="ProviderLabel" DockPanel.Dock="Top" Content="{x:Static p:Words.OpenSpotlinkText}" HorizontalAlignment="Left" Margin="20,0,20,0" />
+    <TextBox Name="LinkTextBox" DockPanel.Dock="Top" MinWidth="150" TabIndex="1" Margin="20,0,20,0" GotFocus="LinkTextBox_GotFocus" TextChanged="LinkTextBox_OnTextChanged" />
+    <DockPanel Dock="Bottom" Margin="20,0,20,10" HorizontalAlignment="Right">
+      <Button Name="OpenButton" Width="124" Height="30" IsDefault="True" Content="{x:Static p:Words.Open}" TabIndex="7" Margin="10,10,10,0" Click="OpenButton_Click" />
+      <Button Name="CancelButton" Width="124" Height="30" IsEnabled="True" Content="{x:Static p:Words.Cancel}" TabIndex="8" Margin="10,10,0,0" Click="CancelButton_Click" />
+    </DockPanel>
+  </DockPanel>
+</metro:MetroWindow>

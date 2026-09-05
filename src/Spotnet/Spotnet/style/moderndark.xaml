@@ -1,0 +1,129 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- Core Palette Colors: Modern Dark Navy-Slate & Electric Blue/Cyan Accents -->
+  <!-- Menu-specific keys cannot be shadowed by MahApps or Windows Aero aliases. -->
+  <SolidColorBrush x:Key="SpotnetMenuBackground" Color="#FF131D28" />
+  <SolidColorBrush x:Key="SpotnetMenuForeground" Color="#FFF1F5F9" />
+  <SolidColorBrush x:Key="SpotnetMenuBorder" Color="#FF526681" />
+  <SolidColorBrush x:Key="SpotnetMenuHighlightBackground" Color="#FF244866" />
+  <SolidColorBrush x:Key="SpotnetMenuHighlightForeground" Color="#FFFFFFFF" />
+  <SolidColorBrush x:Key="SpotnetMenuDisabledForeground" Color="#FF94A3B8" />
+  <Color x:Key="HighlightColor">#FFCBD5E1</Color>
+  <Color x:Key="AccentColor">#FF94A3B8</Color>
+  <Color x:Key="AccentColor2">#FF7C8B9F</Color>
+  <Color x:Key="AccentColor3">#FF075985</Color>
+  <Color x:Key="AccentColor4">#FF1E293B</Color>
+  <Color x:Key="AccentColor5">#FF0F172A</Color>
+
+  <!-- Background Shades (Modern Dark Surface layers) -->
+  <Color x:Key="NotSelectedBackground">#FF111B27</Color>
+  <Color x:Key="AccentColor1Background">#FF182432</Color>
+  <Color x:Key="AccentColor2Background">#FF1E2D3E</Color>
+  <Color x:Key="AccentColor3Background">#FF24374C</Color>
+  <Color x:Key="AccentColor4Background">#FF111B27</Color>
+  <Color x:Key="AccentColor5Background">#FF0C131D</Color>
+
+  <!-- Tab Control Brushes -->
+  <SolidColorBrush x:Key="BackgroundSelected" Color="#FF16202C" />
+  <SolidColorBrush x:Key="BackgroundNotSelected" Color="#FF111B27" />
+  <SolidColorBrush x:Key="SpotBackgroundBrush" Color="#FF0E1622" />
+
+  <!-- Solid Brushes for Spotnet controls -->
+  <SolidColorBrush x:Key="NotSelectedBackgroundBrush" Color="{StaticResource NotSelectedBackground}" />
+  <SolidColorBrush x:Key="AccentColor1BackgroundBrush" Color="{StaticResource AccentColor1Background}" />
+  <SolidColorBrush x:Key="AccentColor2BackgroundBrush" Color="{StaticResource AccentColor2Background}" />
+  <SolidColorBrush x:Key="AccentColor3BackgroundBrush" Color="{StaticResource AccentColor3Background}" />
+  <SolidColorBrush x:Key="AccentColor4BackgroundBrush" Color="{StaticResource AccentColor4Background}" />
+  <SolidColorBrush x:Key="AccentColor5BackgroundBrush" Color="{StaticResource AccentColor5Background}" />
+
+  <SolidColorBrush x:Key="HighlightBrush" Color="{StaticResource HighlightColor}" />
+  <SolidColorBrush x:Key="AccentColorBrush" Color="{StaticResource AccentColor}" />
+  <SolidColorBrush x:Key="AccentColorBrush2" Color="{StaticResource AccentColor2}" />
+  <SolidColorBrush x:Key="AccentColorBrush3" Color="#FF253040" />
+  <SolidColorBrush x:Key="AccentColorBrush4" Color="#FF1E293B" />
+  <SolidColorBrush x:Key="AccentColorBrush5" Color="#FF0F172A" />
+
+  <!-- Window & Surface Theme -->
+  <SolidColorBrush x:Key="WindowTitleColorBrush" Color="#FF090D14" />
+  <SolidColorBrush x:Key="NonActiveWindowTitleBrush" Color="#FF111B27" />
+  <SolidColorBrush x:Key="MahApps.Brushes.WindowTitle" Color="#FF090D14" />
+  <SolidColorBrush x:Key="MahApps.Brushes.WindowTitle.NonActive" Color="#FF111B27" />
+  <SolidColorBrush x:Key="AccentSelectedColorBrush" Color="#FFCBD5E1" />
+
+  <LinearGradientBrush x:Key="MainWindowBackgroundBrush" EndPoint="1,0.5" StartPoint="0,0.5">
+    <GradientStop Offset="0" Color="#FF0B121A" />
+    <GradientStop Offset="0.5" Color="#FF0E1722" />
+    <GradientStop Offset="1.0" Color="#FF0E1724" />
+  </LinearGradientBrush>
+
+  <LinearGradientBrush x:Key="ProgressBrush" EndPoint="0.001,0.5" StartPoint="1.002,0.5">
+    <GradientStop Offset="0" Color="{StaticResource HighlightColor}" />
+    <GradientStop Offset="1" Color="{StaticResource AccentColor}" />
+  </LinearGradientBrush>
+
+  <SolidColorBrush x:Key="CheckmarkFill" Color="{StaticResource HighlightColor}" />
+  <SolidColorBrush x:Key="RightArrowFill" Color="{StaticResource HighlightColor}" />
+
+  <!-- Text & Typography Brushes (Light for dark theme) -->
+  <Color x:Key="IdealForegroundColor">#FFFFFFFF</Color>
+  <SolidColorBrush x:Key="IdealForegroundColorBrush" Color="{StaticResource IdealForegroundColor}" />
+  <SolidColorBrush x:Key="BlackBrush" Color="#FFF1F5F9" />
+  <Color x:Key="BlackColor">#FFF1F5F9</Color>
+  <SolidColorBrush x:Key="BlackColorBrush" Color="{StaticResource BlackColor}" />
+
+  <!-- Container Dark Surface Brush -->
+  <Color x:Key="WhiteColor">#FF131D28</Color>
+  <SolidColorBrush x:Key="WhiteColorBrush" Color="{StaticResource WhiteColor}" />
+  <SolidColorBrush x:Key="WhiteBrush" Color="#FF131D28" />
+
+  <!-- Grays tuned for Modern Dark -->
+  <SolidColorBrush x:Key="GrayBrush1" Color="#FFF8FAFC" />
+  <SolidColorBrush x:Key="GrayBrush2" Color="#FFE2E8F0" />
+  <SolidColorBrush x:Key="GrayBrush3" Color="#FFCBD5E1" />
+  <SolidColorBrush x:Key="GrayBrush4" Color="#FF94A3B8" />
+  <SolidColorBrush x:Key="GrayBrush5" Color="#FF64748B" />
+  <SolidColorBrush x:Key="GrayBrush6" Color="#FF475569" />
+  <SolidColorBrush x:Key="GrayBrush7" Color="#FF334155" />
+  <SolidColorBrush x:Key="GrayBrush8" Color="#FF1E293B" />
+  <SolidColorBrush x:Key="GrayBrush9" Color="#FF0F172A" />
+  <SolidColorBrush x:Key="GrayBrush10" Color="#FF0A0F1D" />
+
+  <!-- Dialog surfaces. Counterpart to the light gradient the dialogs used to
+       carry inline; see ClassicLight.xaml. -->
+  <LinearGradientBrush x:Key="DialogBackgroundBrush" EndPoint="0,1" StartPoint="0.5,0">
+    <GradientStop Color="#FF16202C" Offset="0.3" />
+    <GradientStop Color="#FF0E1722" Offset="0.6" />
+  </LinearGradientBrush>
+  <SolidColorBrush x:Key="DialogPanelBackgroundBrush" Color="#CC0C131D" />
+
+  <!-- Tab chrome, matching Modern Light on a dark ground. -->
+  <CornerRadius x:Key="TabCornerRadius">4,4,0,0</CornerRadius>
+  <Thickness x:Key="TabBorderThickness">0</Thickness>
+  <Thickness x:Key="TabUnderlineThickness">0,0,0,2</Thickness>
+  <SolidColorBrush x:Key="TabUnderlineBrush" Color="#FF94A3B8" />
+  <SolidColorBrush x:Key="TabSelectedForegroundBrush" Color="#FFF1F5F9" />
+  <SolidColorBrush x:Key="WindowTitleForegroundBrush" Color="#FFE5E7EB" />
+
+  <Color x:Key="MahApps.Colors.Accent">#FF475569</Color>
+  <SolidColorBrush x:Key="MahApps.Brushes.Accent" Color="#FF475569" />
+  <SolidColorBrush x:Key="MahApps.Brushes.Accent2" Color="#CC475569" />
+  <SolidColorBrush x:Key="MahApps.Brushes.Accent3" Color="#99475569" />
+  <SolidColorBrush x:Key="MahApps.Brushes.Accent4" Color="#66475569" />
+  <SolidColorBrush x:Key="MahApps.Brushes.Highlight" Color="#FF64748B" />
+
+  <!-- Filter tree selection, Graphite. -->
+  <SolidColorBrush x:Key="TreeSelectedBackgroundBrush" Color="#FF253040" />
+  <SolidColorBrush x:Key="TreeSelectedForegroundBrush" Color="#FFF1F5F9" />
+  <SolidColorBrush x:Key="TreeHoverBackgroundBrush" Color="#FF1B2634" />
+  <SolidColorBrush x:Key="TreeHoverForegroundBrush" Color="#FFD6DCE5" />
+  <SolidColorBrush x:Key="NoticeBackgroundBrush" Color="#17334D" />
+  <SolidColorBrush x:Key="NoticeForegroundBrush" Color="#E0F2FE" />
+  <SolidColorBrush x:Key="NoticeBorderBrush" Color="#4386B5" />
+  <SolidColorBrush x:Key="NoticeLinkBrush" Color="#93C5FD" />
+  <SolidColorBrush x:Key="SpotRowForegroundBrush" Color="#F1F5F9" />
+  <SolidColorBrush x:Key="SpotRowTrustedBrush" Color="#4ADE80" />
+  <SolidColorBrush x:Key="SpotRowMutedBrush" Color="#94A3B8" />
+  <SolidColorBrush x:Key="SpotRowFavoriteBrush" Color="#93C5FD" />
+  <SolidColorBrush x:Key="ErrorForegroundBrush" Color="#F87171" />
+</ResourceDictionary>

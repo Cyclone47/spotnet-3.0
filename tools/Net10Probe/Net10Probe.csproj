@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <TargetFramework Condition="'$(SpotnetTrialFramework)' != ''">$(SpotnetTrialFramework)</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Spotnet/Spotnet/Spotnet.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,4 +1,4 @@
-$baseRecon = 'd:\sourcecode\reconstructed\Spotnet2'
+﻿$baseRecon = 'd:\sourcecode\src\Spotnet'
 New-Item -ItemType Directory -Path $baseRecon -Force | Out-Null
 New-Item -ItemType Directory -Path "$baseRecon\Spotnet" -Force | Out-Null
 New-Item -ItemType Directory -Path "$baseRecon\Spotnet.Enc" -Force | Out-Null

@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$TestRoot,
+    [string]$InstallerPath,
     [ValidateSet('english', 'dutch')]
     [string]$Language = 'english',
     [ValidateRange(-1, 3)]
@@ -12,7 +13,7 @@ if (-not $TestRoot) { $TestRoot = Join-Path $repoRoot 'artifacts\installer-smoke
 $testRoot = [IO.Path]::GetFullPath($TestRoot)
 $allowedRoot = [IO.Path]::GetFullPath((Join-Path $repoRoot 'artifacts')) + '\'
 if (-not $testRoot.StartsWith($allowedRoot, [StringComparison]::OrdinalIgnoreCase)) { throw 'Smoke-test root must be under repository artifacts.' }
-$testInstaller = Join-Path $repoRoot 'artifacts\installer\Spotnet-3.0-x64-Setup-smoke.exe'
+$testInstaller = if ($InstallerPath) { [IO.Path]::GetFullPath($InstallerPath) } else { Join-Path $repoRoot 'artifacts\installer\Spotnet-3.0-x64-Setup-smoke.exe' }
 if (Get-Process Spotnet -ErrorAction SilentlyContinue) { throw 'Close Spotnet before the smoke test. This test never closes the real application.' }
 if (-not (Test-Path -LiteralPath $testInstaller)) { throw 'Compile Spotnet3.iss with /DSmokeTestRoot matching -TestRoot first.' }
 if (Test-Path -LiteralPath $testRoot) { throw 'Smoke-test directory already exists. Retain or relocate the previous test artifacts before a fresh run.' }
@@ -107,7 +108,12 @@ if ($ClassicMode -ge 0) {
 Invoke-SmokeSetup 'fresh.log'
 # nl\Spotnet.resources.dll is listed because its absence is silent: the app falls back to the
 # neutral English table and simply runs in the wrong language, which is how it shipped unnoticed.
-foreach ($required in @('Spotnet.exe', 'Spotnet.dll', 'Spotnet.runtimeconfig.json', 'Spotnet.install', 'NLog.config', 'runtimes\win-x64\native\WebView2Loader.dll', 'runtimes\win-x64\native\SQLite.Interop.dll', 'libvlc\win-x64\libvlc.dll', 'Data\TabThemes', 'nl\Spotnet.resources.dll')) {
+$runtimeConfig = Get-Content (Join-Path $appRoot 'Spotnet.runtimeconfig.json') -Raw | ConvertFrom-Json
+$nativePayload = @('runtimes\win-x64\native\WebView2Loader.dll', 'runtimes\win-x64\native\SQLite.Interop.dll')
+if ($runtimeConfig.runtimeOptions.PSObject.Properties['includedFrameworks']) {
+    $nativePayload = @('WebView2Loader.dll', 'SQLite.Interop.dll', 'coreclr.dll', 'hostfxr.dll', 'hostpolicy.dll', 'System.Private.CoreLib.dll', 'PresentationFramework.dll', 'Microsoft.AspNetCore.dll')
+}
+foreach ($required in @('Spotnet.exe', 'Spotnet.dll', 'Spotnet.runtimeconfig.json', 'Spotnet.install', 'NLog.config', 'libvlc\win-x64\libvlc.dll', 'Data\TabThemes', 'nl\Spotnet.resources.dll') + $nativePayload) {
     if (-not (Test-Path -LiteralPath (Join-Path $appRoot $required))) { throw "Missing payload: $required" }
 }
 if (-not (Test-Path -LiteralPath (Join-Path $profileRoot 'profile.ready'))) { throw 'Fresh profile was not initialized.' }
@@ -131,6 +137,11 @@ foreach ($link in @($oldLink, $currentLink, $squirrelLink, $unrelatedLink)) { $o
 $fixture = Join-Path $profileRoot 'smoke-personal-data.txt'
 'preserve-this-test-fixture' | Set-Content -LiteralPath $fixture
 $fixtureHash = (Get-FileHash -LiteralPath $fixture).Hash
+# Existing profiles are preserved in place; upgrades do not duplicate them.
+# Seed an older backup to verify that upgrade/uninstall preserve it as well.
+$backupFixture = Join-Path $testRoot 'Profile\Backups\previous-backup'
+New-Item -ItemType Directory -Force -Path $backupFixture | Out-Null
+Copy-Item -LiteralPath $fixture -Destination $backupFixture
 # Stand in for a binary an earlier layout left behind. The one that mattered was
 # x64\SQLite.Interop.dll: beside the copy under runtimes it loaded a second SQLite into
 # the process, and the first query corrupted the heap. Setup has to clear these.
@@ -148,7 +159,7 @@ if ((Get-ChildItem -LiteralPath $desktopRoot -Filter '*.lnk').Count -ne 3) { thr
 if ((Get-FileHash -LiteralPath $unrelatedLink).Hash -ne $originalHashes[$unrelatedLink]) { throw 'Unrelated shortcut changed.' }
 if ((Get-FileHash -LiteralPath $fixture).Hash -ne $fixtureHash) { throw 'Upgrade changed existing profile data.' }
 $backups = @(Get-ChildItem (Join-Path $testRoot 'Profile\Backups') -Directory)
-if ($backups.Count -ne 1) { throw 'Expected one pre-upgrade backup.' }
+if ($backups.Count -ne 1 -or $backups[0].Name -ne 'previous-backup') { throw 'Upgrade must preserve existing backups without duplicating the profile.' }
 if ((Get-FileHash -LiteralPath (Join-Path $backups[0].FullName 'smoke-personal-data.txt')).Hash -ne $fixtureHash) { throw 'Backup does not match.' }
 $uninstaller = Join-Path $appRoot 'unins000.exe'
 $process = Start-Process -FilePath $uninstaller -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', ('/LOG="' + (Join-Path $testRoot 'uninstall.log') + '"')) -WindowStyle Hidden -Wait -PassThru
@@ -169,5 +180,5 @@ if (Test-Path -LiteralPath (Join-Path $appRoot 'Spotnet.exe')) { throw 'Applicat
 if (Test-Path -LiteralPath (Join-Path $testRoot 'Profile')) { throw 'Explicit profile-removing uninstall retained personal data.' }
 foreach ($link in $originalHashes.Keys) { if ((Get-FileHash -LiteralPath $link).Hash -ne $originalHashes[$link]) { throw "Original shortcut was not restored before profile removal: $link" } }
 
-Write-Host "PASS ($Language): fresh install, payloads, old/current/Squirrel shortcut replacement, no duplicates, unrelated links preserved, upgrade backup, default uninstall retention, and opt-in permanent profile removal."
+Write-Host "PASS ($Language): fresh install, payloads, old/current/Squirrel shortcut replacement, no duplicates, unrelated links preserved, upgrade profile/backup retention, default uninstall retention, and opt-in permanent profile removal."
 Write-Host "Logs retained in $testRoot. The synthetic profile was permanently deleted; real installations and profiles were untouched."

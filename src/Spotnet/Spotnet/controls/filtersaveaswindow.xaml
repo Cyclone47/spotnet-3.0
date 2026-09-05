@@ -1,0 +1,10 @@
+<metro:MetroWindow x:Class="Spotnet.Controls.FilterSaveAsWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls" Title="{x:Static p:Words.FiltersSaveAs}" ShowInTaskbar="False" ResizeMode="NoResize" SizeToContent="WidthAndHeight" WindowStartupLocation="CenterOwner" Topmost="False" GlowBrush="{DynamicResource HighlightBrush}" WindowTransitionsEnabled="True" Icon="/Resources/ImagesInternal/smallspotnet.ico" ShowIconOnTitleBar="False" ShowTitleBar="True" ShowActivated="True" WindowTitleBrush="{DynamicResource WindowTitleColorBrush}" TitleForeground="{DynamicResource WindowTitleForegroundBrush}" NonActiveWindowTitleBrush="{DynamicResource NonActiveWindowTitleBrush}" xmlns:controls="clr-namespace:Spotnet.Controls" FontSize="{Binding ElementName=VisibilityVmProxy, Path=DataContext.FontSize, Mode=OneWay}" Background="{DynamicResource DialogBackgroundBrush}">
+  <DockPanel FocusManager.FocusedElement="{Binding ElementName=NameTextBox}">
+    <Label Name="ProviderLabel" DockPanel.Dock="Top" Content="{x:Static p:Words.FiltersEnterNewFilterName}" HorizontalAlignment="Left" Margin="20,0,20,0" />
+    <TextBox Name="NameTextBox" DockPanel.Dock="Top" MinWidth="150" TabIndex="1" Margin="20,0,20,0" GotFocus="NameTextBox_GotFocus" TextChanged="NameTextBox_OnTextChanged" />
+    <DockPanel Dock="Bottom" Margin="20,0,20,10" HorizontalAlignment="Right">
+      <Button Name="OKButton" Width="124" IsDefault="True" Content="{x:Static p:Words.Ok}" TabIndex="7" Margin="10,10,10,0" Click="OKButton_Click" />
+      <Button Name="CancelButton" Width="124" IsEnabled="True" Content="{x:Static p:Words.Cancel}" TabIndex="8" Margin="10,10,0,0" Click="CancelButton_Click" />
+    </DockPanel>
+  </DockPanel>
+</metro:MetroWindow>

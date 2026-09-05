@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ namespace WpfCleaner
     {
         static void Main(string[] args)
         {
-            string spotnetDir = @"d:\sourcecode\reconstructed\Spotnet2\Spotnet";
+            string spotnetDir = @"d:\sourcecode\src\Spotnet\Spotnet";
             string origDir = @"d:\sourcecode\decompiled_200\Spotnet";
 
             // 1. Restore all original decompiled C# files from decompiled_200

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Platform-neutral. SpotnetDecoder is pure byte arithmetic over System and
+    System.Runtime.CompilerServices, so it targets PortableTargetFramework and builds
+    AnyCPU: the old x64 PlatformTarget would have refused to load on Apple Silicon.
+    The WPF client still consumes it unchanged - a net8.0 library is referenceable
+    from net10.0-windows, and an AnyCPU library loaded into an x64 process runs x64.
+
+    Deliberately without the SpotnetTrialFramework hook the Windows projects carry:
+    that hook is always set to net10.0-windows, which would make this assembly
+    Windows-only and unreferenceable from Spotnet.Mac.
+  -->
+  <PropertyGroup>
+    <TargetFramework>$(PortableTargetFramework)</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyName>Spotnet.Enc</AssemblyName>
+    <RootNamespace>SpotnetEnc</RootNamespace>
+  </PropertyGroup>
+
+</Project>

@@ -1,8 +1,11 @@
-; Compile using build-installer.ps1 with Inno Setup 7.1 or newer.
+﻿; Compile using build-installer.ps1 with Inno Setup 7.1 or newer.
 #ifndef PayloadDir
   #error PayloadDir must be supplied by build-installer.ps1
 #endif
 #define AppVersion GetVersionNumbersString(PayloadDir + "\Spotnet.exe")
+#ifndef SetupSuffix
+  #define SetupSuffix ""
+#endif
 
 [Setup]
 AppId={{76851D20-501E-45B0-9869-853F814BE60E}
@@ -35,9 +38,9 @@ OutputDir={#OutputDir}
 OutputBaseFilename=Spotnet-3.0-x64-Setup-smoke
 CreateUninstallRegKey=no
 #else
-OutputBaseFilename=Spotnet-3.0-x64-Setup
+OutputBaseFilename=Spotnet-3.0-x64-Setup{#SetupSuffix}
 #endif
-SetupIconFile=..\reconstructed\Spotnet2\Spotnet\Resources\ImagesInternal\spotnet.ico
+SetupIconFile=..\src\Spotnet\Spotnet\Resources\ImagesInternal\spotnet.ico
 UninstallDisplayIcon={app}\Spotnet.exe
 Compression=lzma2/normal
 SolidCompression=yes
@@ -57,7 +60,7 @@ VersionInfoCopyright=Copyright (C) 2014-2026 Spotnet 3.0 contributors
 #ifdef SmokeTestRoot
 VersionInfoOriginalFileName=Spotnet-3.0-x64-Setup-smoke.exe
 #else
-VersionInfoOriginalFileName=Spotnet-3.0-x64-Setup.exe
+VersionInfoOriginalFileName=Spotnet-3.0-x64-Setup{#SetupSuffix}.exe
 #endif
 UninstallDisplayName=Spotnet 3.0 (64-bit)
 ; Authenticode signing is opt-in: build-installer.ps1 defines SignSetup and supplies the
@@ -77,13 +80,13 @@ Name: "dutch"; MessagesFile: "compiler:Languages\Dutch.isl"
 english.LaunchSpotnet=Launch Spotnet 3.0
 dutch.LaunchSpotnet=Spotnet 3.0 starten
 english.DotNetRequired=.NET Framework 4.7.2 or later is required. Install it from Microsoft, restart Windows if requested, then run Setup again. No Spotnet files have been changed.
-english.DotNetRuntimeFailed=Installing the .NET 8 Desktop Runtime did not complete. Install it from Microsoft and run Setup again. No Spotnet data has been migrated.
-english.StatusDotNet=Installing the .NET 8 Desktop Runtime. Microsoft's own installer shows its progress; this usually takes a few minutes...
-english.StatusDotNetPrepare=Unpacking the .NET 8 Desktop Runtime installer that ships with Setup (56 MB)...
+english.DotNetRuntimeFailed=Installing the .NET Desktop Runtime did not complete. Install it from Microsoft and run Setup again. No Spotnet data has been migrated.
+english.StatusDotNet=Installing the .NET Desktop Runtime. Microsoft's own installer shows its progress; this usually takes a few minutes...
+english.StatusDotNetPrepare=Unpacking the .NET Desktop Runtime installer that ships with Setup...
 dutch.DotNetRequired=.NET Framework 4.7.2 of nieuwer is vereist. Installeer dit via Microsoft, start Windows opnieuw op indien gevraagd en voer Setup daarna opnieuw uit. Er zijn geen Spotnet-bestanden gewijzigd.
-dutch.DotNetRuntimeFailed=De installatie van de .NET 8 Desktop Runtime is niet voltooid. Installeer deze via Microsoft en voer Setup opnieuw uit. Er zijn geen Spotnet-gegevens gemigreerd.
-dutch.StatusDotNet=.NET 8 Desktop Runtime installeren. Microsofts eigen installatieprogramma toont de voortgang; dit duurt meestal enkele minuten...
-dutch.StatusDotNetPrepare=Het meegeleverde installatieprogramma voor de .NET 8 Desktop Runtime uitpakken (56 MB)...
+dutch.DotNetRuntimeFailed=De installatie van de .NET Desktop Runtime is niet voltooid. Installeer deze via Microsoft en voer Setup opnieuw uit. Er zijn geen Spotnet-gegevens gemigreerd.
+dutch.StatusDotNet=.NET Desktop Runtime installeren. Microsofts eigen installatieprogramma toont de voortgang; dit duurt meestal enkele minuten...
+dutch.StatusDotNetPrepare=Het meegeleverde installatieprogramma voor de .NET Desktop Runtime uitpakken...
 english.ShortcutGroup=Shortcuts:
 dutch.ShortcutGroup=Snelkoppelingen:
 english.ProgramsIcon=Add shortcut to Start Menu
@@ -212,8 +215,8 @@ english.Welcome3=Setup will ask Spotnet to exit safely and wait for it to close.
 dutch.Welcome3=Setup vraagt Spotnet veilig af te sluiten en wacht tot het programma is gestopt. Grote databases vereisen extra schijfruimte en kopieertijd.
 english.Welcome4=Replace reuses the Spotnet shortcuts for 3.0. Alongside keeps Classic as Spotnet and creates selected 3.0 shortcuts as Spotnet 3.0.
 dutch.Welcome4=Vervangen gebruikt de Spotnet-snelkoppelingen voortaan voor 3.0. Naast elkaar behoudt Classic als Spotnet en maakt geselecteerde 3.0-snelkoppelingen als Spotnet 3.0.
-english.Welcome5=The .NET 8 Desktop Runtime ships with Setup and is installed if missing; Microsoft Edge WebView2 is fetched from Microsoft if missing (internet access required). Uninstall keeps personal data unless you choose to delete it.
-dutch.Welcome5=De .NET 8 Desktop Runtime zit in Setup en wordt geïnstalleerd als deze ontbreekt; Microsoft Edge WebView2 wordt bij Microsoft opgehaald als het ontbreekt (internettoegang vereist). Bij verwijderen blijven persoonlijke gegevens behouden, tenzij u kiest om ze te wissen.
+english.Welcome5=.NET 10 ships with Setup and is placed inside the Spotnet installation folder, so no separate .NET installation is needed; Microsoft Edge WebView2 is fetched from Microsoft if missing (internet access required). Uninstall keeps personal data unless you choose to delete it.
+dutch.Welcome5=.NET 10 zit in Setup en wordt in de installatiemap van Spotnet geplaatst, dus .NET apart installeren is niet nodig; Microsoft Edge WebView2 wordt bij Microsoft opgehaald als het ontbreekt (internettoegang vereist). Bij verwijderen blijven persoonlijke gegevens behouden, tenzij u kiest om ze te wissen.
 english.SeparateFolder=Choose a separate installation folder. Setup will not overwrite a legacy or portable Spotnet installation.
 dutch.SeparateFolder=Kies een afzonderlijke installatiemap. Setup overschrijft geen oudere of draagbare Spotnet-installatie.
 english.NoDowngrade=A newer Spotnet version is installed here. Downgrades are not supported.
@@ -232,8 +235,8 @@ english.QueueNotice=Active download queues are not imported. Existing downloads 
 dutch.QueueNotice=Actieve downloadwachtrijen worden niet geïmporteerd. Bestaande downloads blijven op hun oorspronkelijke locatie.
 english.ShortcutNotice=Update your existing Spotnet shortcuts in place, and add the ones selected above. Originals are backed up.
 dutch.ShortcutNotice=Bestaande Spotnet-snelkoppelingen worden bijgewerkt en de hierboven gekozen snelkoppelingen worden toegevoegd. Van originelen wordt een back-up gemaakt.
-english.WebViewNotice=The .NET 8 Desktop Runtime ships with Setup; WebView2 is downloaded from Microsoft if it is missing.
-dutch.WebViewNotice=De .NET 8 Desktop Runtime zit in Setup; WebView2 wordt bij Microsoft gedownload als het ontbreekt.
+english.WebViewNotice=.NET 10 ships with Setup, inside the Spotnet installation folder; WebView2 is downloaded from Microsoft if it is missing.
+dutch.WebViewNotice=.NET 10 zit in Setup, in de installatiemap van Spotnet; WebView2 wordt bij Microsoft gedownload als het ontbreekt.
 english.UninstallNotice=Uninstall keeps your profile and backups by default. You can optionally delete all personal data.
 dutch.UninstallNotice=Verwijderen behoudt standaard uw profiel en back-ups. U kunt ervoor kiezen alle persoonlijke gegevens te wissen.
 english.StatusClosing=Asking Spotnet to exit safely; waiting for database writes to finish...
@@ -298,7 +301,9 @@ Source: "{#PreviewDir}\style-modern-light.bmp"; Flags: dontcopy
 Source: "{#PreviewDir}\style-modern-dark.bmp"; Flags: dontcopy
 Source: "{#PreviewDir}\style-classic.bmp"; Flags: dontcopy
 Source: "{#WebViewBootstrapper}"; DestName: "MicrosoftEdgeWebview2Setup.exe"; Flags: dontcopy
+#ifndef SelfContained
 Source: "{#DotNetBootstrapper}"; DestName: "windowsdesktop-runtime.exe"; Flags: dontcopy
+#endif
 Source: "{#PayloadDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "Spotnet.install"; DestDir: "{app}"; Flags: ignoreversion
 
@@ -791,6 +796,7 @@ begin
     exit;
   end;
 #endif
+#ifndef SelfContained
   if ShowProgress then begin
     ProgressPage.SetProgress(1, 4);
     ProgressPage.SetText(CM('StatusDotNet'), CM('ProgressDetail'));
@@ -816,6 +822,7 @@ begin
     if ShowProgress then SetBusy(False);
 #endif
   end;
+#endif
   if ShowProgress then begin
     ProgressPage.SetProgress(2, 4);
     ProgressPage.SetText(CM('StatusWebView'), CM('ProgressDetail'));

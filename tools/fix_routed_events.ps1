@@ -1,4 +1,4 @@
-$spotnetDir = 'd:\sourcecode\reconstructed\Spotnet2\Spotnet'
+﻿$spotnetDir = 'd:\sourcecode\src\Spotnet\Spotnet'
 
 # Fix Event references in C# files
 $csFiles = Get-ChildItem -Path $spotnetDir -Filter *.cs -Recurse

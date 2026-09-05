@@ -2,7 +2,7 @@
 set -e
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-MAC_PROJ="$REPO_ROOT/reconstructed/Spotnet2/Spotnet.Mac/Spotnet.Mac.csproj"
+MAC_PROJ="$REPO_ROOT/src/Spotnet/Spotnet.Mac/Spotnet.Mac.csproj"
 APP_DIR="$REPO_ROOT/artifacts/Spotnet.app"
 CONTENTS="$APP_DIR/Contents"
 MACOS_DIR="$CONTENTS/MacOS"

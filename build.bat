@@ -1,4 +1,4 @@
-@echo off
+﻿@echo off
 setlocal enabledelayedexpansion
 
 title Spotnet 3.0 - Build and Test
@@ -8,7 +8,7 @@ echo                  Spotnet 3.0 Build System
 echo ======================================================================
 echo.
 
-set "SOLUTION_DIR=%~dp0reconstructed\Spotnet2"
+set "SOLUTION_DIR=%~dp0src\Spotnet"
 
 :: Check for dotnet CLI
 where dotnet >nul 2>&1

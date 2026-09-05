@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand colors (adjusted for dark theme) -->
+    <color name="spotnet_navy">#0f172a</color>
+    <color name="spotnet_navy_dark">#020617</color>
+    <color name="spotnet_blue">#38bdf8</color>
+    <color name="spotnet_blue_light">#7dd3fc</color>
+    <color name="spotnet_green">#34d399</color>
+    <color name="spotnet_amber">#fbbf24</color>
+    <color name="spotnet_red">#f87171</color>
+
+    <!-- Semantic tokens for Dark Theme -->
+    <color name="bg_screen">#0f172a</color>
+    <color name="bg_card">#1e293b</color>
+    <color name="header_bg">#0b1120</color>
+    <color name="text_primary">#f8fafc</color>
+    <color name="text_secondary">#94a3b8</color>
+    <color name="text_header">#38bdf8</color>
+    <color name="card_stroke">#334155</color>
+    <color name="divider_color">#334155</color>
+    <color name="nav_bar_bg">#0b1120</color>
+
+    <!-- Compatibility aliases -->
+    <color name="background_light">#0f172a</color>
+    <color name="text_primary_light">#f8fafc</color>
+    <color name="text_secondary_light">#94a3b8</color>
+    <color name="divider_light">#334155</color>
+</resources>

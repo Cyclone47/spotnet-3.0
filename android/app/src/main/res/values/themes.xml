@@ -1,0 +1,17 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.SpotnetCompanion" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/spotnet_blue</item>
+        <item name="colorPrimaryVariant">@color/spotnet_navy</item>
+        <item name="colorOnPrimary">#ffffff</item>
+        <item name="colorSecondary">@color/spotnet_navy</item>
+        <item name="colorSecondaryVariant">@color/spotnet_navy_dark</item>
+        <item name="colorOnSecondary">#ffffff</item>
+        <item name="android:statusBarColor">@color/spotnet_navy</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">@color/spotnet_navy</item>
+    </style>
+
+    <style name="Theme.SpotnetCompanion.Fullscreen" parent="Theme.SpotnetCompanion">
+        <item name="android:windowNoTitle">true</item>
+    </style>
+</resources>

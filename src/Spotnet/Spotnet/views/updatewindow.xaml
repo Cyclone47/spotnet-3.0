@@ -1,0 +1,40 @@
+<metro:MetroWindow x:Class="Spotnet.Views.UpdateWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls" xmlns:p="clr-namespace:Spotnet.Properties" Title="{x:Static p:Words.UpdateTitle}" ShowInTaskbar="False" ResizeMode="NoResize" SizeToContent="Manual" WindowStartupLocation="CenterOwner" Topmost="False" GlowBrush="{DynamicResource HighlightBrush}" Height="300" Width="520" WindowTransitionsEnabled="True" ShowIconOnTitleBar="False" ShowTitleBar="True" ShowActivated="True" WindowTitleBrush="{DynamicResource WindowTitleColorBrush}" TitleForeground="{DynamicResource WindowTitleForegroundBrush}" NonActiveWindowTitleBrush="{DynamicResource NonActiveWindowTitleBrush}" Background="{DynamicResource DialogBackgroundBrush}" Closing="Window_Closing">
+  <Grid Margin="24,20,24,18">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <StackPanel Grid.Row="0">
+      <TextBlock Name="HeadlineLabel" FontSize="19" FontWeight="Bold" TextWrapping="Wrap" Foreground="{DynamicResource AccentColorBrush}" />
+      <TextBlock Name="VersionLabel" FontSize="12" Margin="0,6,0,0" TextWrapping="Wrap" Foreground="{DynamicResource BlackColorBrush}" />
+    </StackPanel>
+
+    <Rectangle Grid.Row="1" Height="1" Margin="0,14,0,14" Fill="{DynamicResource GrayBrush7}" />
+
+    <StackPanel Grid.Row="2" VerticalAlignment="Top">
+      <TextBlock Name="SizeLabel" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource GrayBrush2}" />
+      <TextBlock Name="NotesPanel" Margin="0,6,0,0" Visibility="Collapsed">
+        <Hyperlink Name="NotesLink" RequestNavigate="NotesLink_RequestNavigate" Foreground="{DynamicResource AccentColorBrush}">
+          <Run Text="{x:Static p:Words.UpdateReleaseNotes}" FontSize="12" />
+        </Hyperlink>
+      </TextBlock>
+
+      <!-- Download progress. Setup shows its own bar once this window hands over. -->
+      <StackPanel Name="ProgressPanel" Margin="0,14,0,0" Visibility="Collapsed">
+        <ProgressBar Name="DownloadProgress" Height="12" Minimum="0" Maximum="1" Value="0" Foreground="{DynamicResource AccentColorBrush}" Background="{DynamicResource GrayBrush8}" BorderThickness="0" />
+        <TextBlock Name="ProgressLabel" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" Foreground="{DynamicResource GrayBrush2}" />
+      </StackPanel>
+
+      <TextBlock Name="ErrorLabel" FontSize="12" Margin="0,14,0,0" TextWrapping="Wrap" Visibility="Collapsed" Foreground="{DynamicResource ErrorForegroundBrush}" />
+    </StackPanel>
+
+    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+      <Button Name="SkipButton" Content="{x:Static p:Words.UpdateSkipVersion}" MinWidth="132" Height="30" Margin="0,0,8,0" Click="SkipButton_Click" />
+      <Button Name="LaterButton" Content="{x:Static p:Words.UpdateLater}" MinWidth="92" Height="30" Margin="0,0,8,0" Click="LaterButton_Click" IsCancel="True" />
+      <Button Name="InstallButton" Content="{x:Static p:Words.UpdateInstallNow}" MinWidth="118" Height="30" Click="InstallButton_Click" IsDefault="True" />
+    </StackPanel>
+  </Grid>
+</metro:MetroWindow>

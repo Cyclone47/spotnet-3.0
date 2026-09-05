@@ -56,8 +56,8 @@ $src.Dispose()
 
 [System.IO.File]::WriteAllBytes($dstPath, $ms.ToArray())
 
-Copy-Item $dstPath 'D:\sourcecode\reconstructed\Spotnet2\Spotnet\Resources\ImagesInternal\spotnet.ico' -Force
-Copy-Item $dstPath 'D:\sourcecode\reconstructed\Spotnet2\Spotnet\Resources\ImagesInternal\smallspotnet.ico' -Force
+Copy-Item $dstPath 'D:\sourcecode\src\Spotnet\Spotnet\Resources\ImagesInternal\spotnet.ico' -Force
+Copy-Item $dstPath 'D:\sourcecode\src\Spotnet\Spotnet\Resources\ImagesInternal\smallspotnet.ico' -Force
 if (Test-Path 'C:\Users\Tobias\AppData\Local\Spotnet\') {
     Copy-Item $dstPath 'C:\Users\Tobias\AppData\Local\Spotnet\app.ico' -Force
 }

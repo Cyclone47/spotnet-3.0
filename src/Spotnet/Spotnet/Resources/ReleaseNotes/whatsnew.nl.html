@@ -1,0 +1,370 @@
+<section class="notes-section gh-release">
+<h3>Spotnet 3.0.8.0 <span class="gh-tag">Nieuw</span><span class="gh-date">Huidige versie</span></h3>
+<div class="gh-body"><ul class="section-items tagged">
+<li><strong>.NET 10 inbegrepen:</strong> De setup levert de Windows x64-runtime van .NET 10 mee in de Spotnet-installatiemap. Apart installeren is niet nodig; .NET 10 verschijnt daarom niet als afzonderlijke app bij Ge&#239;nstalleerde apps.</li>
+<li><strong>Wachtwoord instellen voor Remote hersteld:</strong> Bij de eerste keer inschakelen vul je het wachtwoord twee keer in. Met Annuleren blijft Remote uit. Wachtwoordinstellingen blijven bereikbaar terwijl Remote uitstaat.</li>
+<li><strong>Remote-inloggen met alleen een wachtwoord:</strong> De mobiele inlogpagina vraagt niet meer om een gebruikersnaam. Bestaande wachtwoorden, gekoppelde apparaten en bescherming tegen mislukte inlogpogingen blijven werken.</li>
+<li><strong>Updates v&#243;&#243;r het opstarten:</strong> Het splashscherm controleert op updates voordat providerinstellingen en databases worden geladen. Bij een beschikbare update wacht Spotnet op je keuze. Een onbereikbare updateserver vertraagt de start maximaal drie seconden.</li>
+<li><strong>Opstartcrash opgelost:</strong> Het hoofdvenster wacht op de serverinstellingen voordat de laadcode wordt uitgevoerd.</li>
+<li><strong>Nieuwe JSON-cache voor spots:</strong> Vervangt de verouderde binaire cache voor details en afbeeldingen. Oude cachegegevens worden zo nodig opnieuw opgehaald. Beschadigde cachebestanden onderbreken het ophalen niet meer.</li>
+<li><strong>Bestaande profielen behouden:</strong> Upgrades laten databases en instellingen op hun plek en maken geen grote automatische databaseback-ups.</li>
+<li>Nederlandse en Engelse release notes in Spotnet bijgewerkt.</li>
+</ul></div>
+</section>
+
+<section class="notes-section gh-release">
+    <h3>Spotnet 3.0.7.0 <span class="gh-date">4 september 2026</span></h3>
+    <div class="gh-body">
+        <div class="feature-highlight" style="background: rgba(2, 132, 199, 0.08); border-left: 4px solid #0284c7; padding: 14px 18px; margin-bottom: 18px; border-radius: 4px;">
+            <h4 style="margin: 0 0 6px 0; color: #0284c7; font-size: 16px; font-weight: 700;">🚀 Uitgelicht: Spotnet Remote (Mobiele Companion)</h4>
+            <p style="margin: 0; line-height: 1.55;">
+                Bedien Spotnet nu volledig vanaf uw smartphone of tablet! Met Spotnet Remote heeft u uw complete Usenet-collectie altijd bij de hand, waar u ook bent in huis (via Wi-Fi) of onderweg (via port-forwarding).
+            </p>
+        </div>
+
+        <ul class="section-items tagged">
+            <li>
+                <b class="tag tag-new">[Nieuw]</b>
+                <b>Spotnet Remote (Mobiele Companion Web-App):</b>
+                <div style="margin-top: 6px;">
+                    Bedien Spotnet draadloos vanaf elke smartphone, tablet of computer in uw netwerk:
+                    <ul style="margin: 6px 0 6px 18px; padding-left: 0;">
+                        <li><strong>Stille &amp; directe QR-koppeling:</strong> Scan eenvoudig de QR-code op uw scherm met uw mobiele camera. Uw apparaat wordt direct geautoriseerd met een veilig pairing-token — u hoeft op uw telefoon <em>nooit</em> handmatig een gebruikersnaam of wachtwoord in te vullen.</li>
+                        <li><strong>Volledige functionaliteit:</strong> Real-time zoeken, categorieën en filters synchroniseren met Spotnet op de pc, spots en posters bekijken, reacties lezen en direct reacties plaatsen met emoticons/smileys.</li>
+                        <li><strong>Downloads &amp; Usenet bedienen:</strong> Start NZB downloads direct op afstand via uw downloadclient of Spotnet, en trigger handmatig een Usenet-synchronisatie om direct de nieuwste spots binnen te halen.</li>
+                        <li><strong>Geavanceerde beveiliging:</strong> Optionele authenticatie met gebruikersnaam en sterk gehasht wachtwoord (PBKDF2-SHA256) voor veilige toegang buitenshuis via port-forwarding.</li>
+                        <li><strong>Houd computer wakker:</strong> Nieuwe instelling in Spotnet Remote die voorkomt dat Windows in slaapstand valt zolang Spotnet Remote actief is.</li>
+                    </ul>
+                </div>
+            </li>
+            <li>
+                <b class="tag tag-new">[Nieuw]</b>
+                <b>Live Titelbalk Statusindicatoren voor Remote:</b>
+                <div style="margin-top: 6px;">
+                    Direct rechts naast het SPOTNET-logo in de titelbalk ziet u direct de live status van Spotnet Remote:
+                    <ul style="margin: 6px 0 6px 18px; padding-left: 0;">
+                        <li><span style="color: #22c55e; font-weight: bold;">● Groen lampje (Aan):</span> Spotnet Remote server is actief en gereed voor verbindingen.</li>
+                        <li><span style="color: #3b82f6; font-weight: bold;">● Blauw lampje (In gebruik):</span> Er is momenteel een mobiele telefoon of tablet verbonden (inclusief teller van actieve apparaten).</li>
+                        <li><span style="color: #eab308; font-weight: bold;">☀ Zon-/waakicoon (Houd PC wakker):</span> Slaapstandpreventie is ingeschakeld zodat de computer niet uitvalt tijdens mobiel gebruik.</li>
+                        <li><span style="color: #94a3b8; font-weight: bold;">● Grijs lampje (Uit):</span> Spotnet Remote is uitgeschakeld. Klik op de lampjes om direct het configuratiemenu of de QR-code te openen.</li>
+                    </ul>
+                </div>
+            </li>
+            <li>
+                <b class="tag tag-new">[Nieuw]</b>
+                <b>Spotnet Meldingsysteem &amp; Meldingcentrum:</b>
+                <div style="margin-top: 6px;">
+                    Mis nooit meer nieuwe spots met het geïntegreerde meldingsysteem:
+                    <ul style="margin: 6px 0 6px 18px; padding-left: 0;">
+                        <li><strong>Twee soorten alerts:</strong> Maak meldingen op basis van <em>Filters</em> (nieuwe content in geselecteerde filters) of <em>Trefwoorden</em> (Pepper-stijl alerts op zoektermen zoals <code>F1</code>, <code>Formule 1</code>, serie- of filmnamen).</li>
+                        <li><strong>Flexibele planning:</strong> Controleer periodiek (per 15 min, 30 min, 1 uur, 8 uur, 24 uur of aangepaste minuten), óf direct bij elke Usenet-synchronisatie.</li>
+                        <li><strong>Slimme bundeling:</strong> Geen spam bij tientallen spots; resultaten per controlecyclus worden netjes samengevat in één duidelijke melding.</li>
+                        <li><strong>Direct doorklikken:</strong> Spots in het meldingcentrum zijn direct aanklikbaar en openen meteen in Spotnet.</li>
+                        <li><strong>Regels bewerken:</strong> Bestaande meldingsregels kunnen te allen tijde eenvoudig worden aangepast via 'Bewerken'.</li>
+                        <li><strong>Bureaubladintegratie:</strong> Inclusief inheemse Windows Toast notificaties en een meldingenbel rechtsboven in de titelbalk met teller van ongelezen spots.</li>
+                    </ul>
+                </div>
+            </li>
+            <li>
+                <b class="tag tag-fixed">[Opgelost]</b>
+                <b>Thema- en titelbalkkleuren:</b> Alle dialoogvensters (Instellingen, Meldingcentrum, Remote Koppelen, etc.) gebruiken nu exact dezelfde donkerblauwe titelbalkkleur als het FILTERS-menu in lichte thema's en diep antraciet in donkere thema's, in plaats van de eerdere afwijkende lichtblauwe kleur.
+            </li>
+            <li>
+                <b class="tag tag-fixed">[Opgelost]</b>
+                <b>Release Notes formattering &amp; Dark Mode:</b> Overlappende en samengedrukte tekst definitief hersteld met schone Segoe UI typografie, ruime regelafstand, moderne kaartweergave en volledige ondersteuning voor Dark Mode.
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section class="notes-section gh-release">
+    <h3>Spotnet 3.0.6.8 <span class="gh-date">4 september 2026</span></h3>
+    <div class="gh-body">
+        <ul class="section-items tagged">
+            <li>
+                <b class="tag tag-fixed">[Opgelost]</b>
+                <b>Release notes openen direct in Spotnet:</b> Het klikken op <i>Wat is er nieuw in deze versie</i> in het updatevenster opent nu direct het Release Notes-tabblad binnen Spotnet (net als Help &gt; Release Notes) in plaats van een externe browser te starten.
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section class="notes-section gh-release">
+    <h3>Spotnet 3.0.6.7 <span class="gh-date">4 september 2026</span></h3>
+    <div class="gh-body">
+        <p>Deze release brengt zes veelgevraagde functies uit de gebruikerscommunity naar Spotnet, inclusief optimalisaties voor Windows 11.</p>
+        <ul class="section-items tagged">
+            <li>
+                <b class="tag tag-new">[Nieuw]</b>
+                <b>Archiefwachtwoorden automatisch detecteren:</b> Spotnet leest wachtwoorden zelfstandig uit de NZB-metadata of spotbeschrijving en draagt deze direct over aan UnRAR of 7-Zip. U hoeft alleen een wachtwoord in te voeren wanneer er geen gevonden is of het wachtwoord onjuist blijkt.
+            </li>
+            <li>
+                <b class="tag tag-new">[Nieuw]</b>
+                <b>Snelle eerste synchronisatie:</b> Kies bij een nieuwe installatie zelf hoe ver u terug wilt synchroniseren (de laatste 30 dagen, 90 dagen, een jaar of alles). Een nieuwe installatie is hierdoor binnen enkele minuten gereed voor gebruik.
+            </li>
+            <li>
+                <b class="tag tag-new">[Nieuw]</b>
+                <b>Bureaubladnotificaties:</b> Windows-meldingen wanneer een download gereed en uitgepakt is, of wanneer een databasereparatie klaar is.
+            </li>
+            <li>
+                <b class="tag tag-fixed">[Opgelost]</b>
+                <b>Webkoppelingen in spotbeschrijvingen:</b> Links in spots openen nu betrouwbaar in uw standaardbrowser of een Spotnet-tabblad. Interne Spotnet-koppelingen blijven binnen het programma.
+            </li>
+            <li>
+                <b class="tag tag-fixed">[Opgelost]</b>
+                <b>Thema-consistentie in dialoogvensters:</b> Elk venster volgt nu consistent het gekozen thema in Modern Donker, Modern Licht en Klassiek.
+            </li>
+            <li>
+                <b class="tag tag-fixed">[Opgelost]</b>
+                <b>Par2-verificatie in Windows FIPS-modus:</b> Spotnet gebruikt nu hashing-algoritmen die compatibel zijn met de beveiligingsrichtlijnen van Windows FIPS-modus.
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section class="notes-section gh-release">
+    <h3>Spotnet 3.0.6.6 <span class="gh-date">4 september 2026</span></h3>
+    <div class="gh-body">
+        <ul class="section-items tagged">
+            <li>
+                <b class="tag tag-fixed">[Opgelost]</b>
+                <b>Herstel van corrupte downloads door yEnc dot-stuffing:</b> Oplossing voor een ernstig probleem waarbij binaire downloads subtiel beschadigd konden raken doordat de decoder server-side dot-stuffing (regels die beginnen met payload byte 0x04) dubbel verwerkte. Bestanden worden nu byte-voor-byte foutloos gedecodeerd.
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section class="notes-section gh-release">
+    <h3>Spotnet 3.0.6.5 <span class="gh-date">2 september 2026</span></h3>
+    <div class="gh-body">
+        <ul class="section-items tagged">
+            <li>
+                <b class="tag tag-fixed">[Verbeterd]</b>
+                <b>Directe in-place updates:</b> Het updaten van Spotnet behoudt de database direct op zijn plek zonder onnodige kopieën van gigabytes naar de Backups-map te maken. Updates voltooien in 1-2 seconden zonder schijfruimteverspilling.
+            </li>
+            <li>
+                <b class="tag tag-fixed">[Verbeterd]</b>
+                <b>Profielmigratie:</b> Het kopiëren en verifiëren van het profiel is nu strikt gereserveerd voor initiële migraties vanaf Spotnet 2.0.
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section class="notes-section gh-release">
+    <h3>Spotnet 3.0.6.4 <span class="gh-date">2 september 2026</span></h3>
+    <div class="gh-body">
+        <ul class="section-items tagged">
+            <li>
+                <b class="tag tag-fixed">[Verbeterd]</b>
+                <b>Voortgangsindicatie bij stille update-voorbereiding:</b> Setup toont nu een live status en voortgangsbalk ("Spotnet wordt veilig afgesloten; wachten tot databasebewerkingen gereed zijn...") in plaats van een leeg scherm tijdens het voorbereiden van bestanden.
+            </li>
+            <li>
+                <b class="tag tag-fixed">[Verbeterd]</b>
+                <b>Snelle procesoverdracht:</b> Het afsluiten van Spotnet en overdragen naar Setup verloopt in circa 1 seconde.
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section class="notes-section gh-release">
+    <h3>Spotnet 3.0.6.3 <span class="gh-date">2 september 2026</span></h3>
+    <div class="gh-body">
+        <ul class="section-items tagged">
+            <li>
+                <b class="tag tag-fixed">[Verbeterd]</b>
+                <b>Snelle updater-overdracht:</b> Lost het ~30 seconden durende lege scherm op bij het voorbereiden van installaties. Spotnet sluit nu direct netjes af.
+            </li>
+            <li>
+                <b class="tag tag-new">[Nieuw]</b>
+                <b>In-app Release Notes:</b> De <i>Wat is er nieuw</i> pagina toont nu direct de releasenotities met offline caching.
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section class="notes-section gh-release">
+    <h3>Spotnet 3.0.6.1 &amp; 3.0.6.2 <span class="gh-date">2 september 2026</span></h3>
+    <div class="gh-body">
+        <ul class="section-items tagged">
+            <li>
+                <b class="tag tag-new">[Nieuw]</b>
+                <b>Ingebouwde auto-updater:</b> Spotnet controleert bij het opstarten automatisch op nieuwe versies via GitHub en biedt deze aan met downloadvoortgang, SHA-256 verificatie en automatische installatie.
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section class="notes-section gh-release">
+    <h3>Spotnet 3.0.6.0 <span class="gh-date">2 september 2026</span></h3>
+    <div class="gh-body">
+        <ul class="section-items tagged">
+            <li>
+                <b class="tag tag-new">[Nieuw]</b>
+                <b>Overstap naar .NET 8:</b> Spotnet draait nu volledig op het moderne 64-bit .NET 8 platform.
+            </li>
+            <li>
+                <b class="tag tag-new">[Nieuw]</b>
+                <b>Microsoft Edge WebView2:</b> Spots en reacties renderen nu via WebView2; de oude Internet Explorer-browserengine is definitief verwijderd.
+            </li>
+            <li>
+                <b class="tag tag-new">[Nieuw]</b>
+                <b>SQLite FTS5 zoeken:</b> Zoeken gebruikt nu SQLite Full-Text Search (FTS5) voor directe en geavanceerde zoekresultaten.
+            </li>
+            <li>
+                <b class="tag tag-new">[Nieuw]</b>
+                <b>Weergave-opties in menu:</b> Schakelen tussen lijstweergave, details en miniaturen is verplaatst naar <i>Bewerken &gt; Weergave</i>.
+            </li>
+            <li>
+                <b class="tag tag-fixed">[Opgelost]</b>
+                <b>Wachtwoorden langer dan 16 tekens:</b> Opgeslagen wachtwoorden en sleutels worden niet langer afgekapt bij 16 karakters.
+            </li>
+            <li>
+                <b class="tag tag-fixed">[Opgelost]</b>
+                <b>Schonere installatie:</b> Setup verwijdert oude programmabestanden grondig om crashes te voorkomen.
+            </li>
+            <li>
+                <b class="tag tag-changed">[Verwijderd]</b>
+                <b>VPN Nederland integratie:</b> Externe commerciële VPN-knoppen en pop-ups zijn volledig verwijderd.
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section class="notes-section gh-release">
+    <h3>Spotnet 3.0.5 <span class="gh-date">1 september 2026</span></h3>
+    <div class="gh-body">
+        <ul class="section-items tagged">
+            <li>
+                <b class="tag tag-fixed">[Opgelost]</b>
+                <b>Database initialisatiefout:</b> Oplossing voor de foutmelding <code>SQL logic error: no such table: spots</code> bij schone installaties na het invoeren van nieuwsserver-gegevens.
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section class="notes-section gh-release">
+    <h3>Spotnet 3.0.4 <span class="gh-date">1 september 2026</span></h3>
+    <div class="gh-body">
+        <ul class="section-items tagged">
+            <li>
+                <b class="tag tag-fixed">[Opgelost]</b>
+                <b>Nieuwsserver-dialoogvenster:</b> Het venster past nu netjes op schermen met lage resolutie en Windows-schaling (vanaf 480x360). Zoeken in de providerlijst werkt soepel zonder crashes of verspringende tekst.
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section class="notes-section gh-release">
+    <h3>Spotnet 3.0.3 <span class="gh-date">1 september 2026</span></h3>
+    <div class="gh-body">
+        <ul class="section-items tagged">
+            <li>
+                <b class="tag tag-fixed">[Opgelost]</b>
+                <b>Nederlandse taalweergave:</b> De Nederlandse vertaling van de interface werkt nu overal doordat de ontbrekende satelliet-assemblies opnieuw worden opgebouwd.
+            </li>
+            <li>
+                <b class="tag tag-changed">[Verbeterd]</b>
+                <b>Bijgewerkte providerlijst:</b> Gestopte servers (zoals KPN) zijn verwijderd; actuele Nederlandse en internationale nieuwsservers zijn toegevoegd met veilige SSL-poorten (563).
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section class="notes-section gh-release">
+    <h3>Spotnet 3.0.2 <span class="gh-date">1 september 2026</span></h3>
+    <div class="gh-body">
+        <ul class="section-items tagged">
+            <li>
+                <b class="tag tag-fixed">[Opgelost]</b>
+                <b>Nederlandstalige setup:</b> Het installatieprogramma toont nu alle stappen, welkomstteksten en opties in het Nederlands wanneer Nederlands wordt geselecteerd.
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section class="notes-section gh-release">
+    <h3>Spotnet 3.0.1 <span class="gh-date">31 augustus 2026</span></h3>
+    <div class="gh-body">
+        <ul class="section-items tagged">
+            <li>
+                <b class="tag tag-fixed">[Opgelost]</b>
+                <b>Menu-contrast:</b> Menu's en contextmenu's (rechtermuisknop) tonen nu altijd scherpe, leesbare tekst met minimaal 4.5:1 contrast in zowel Modern Donker als Klassiek Licht.
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section class="notes-section gh-release">
+    <h3>Spotnet 3.0.0 <span class="gh-date">31 augustus 2026</span></h3>
+    <div class="gh-body">
+        <p>Eerste officiële installatieversie van de gemoderniseerde 64-bit (x64) Spotnet client.</p>
+        <ul class="section-items tagged">
+            <li>
+                <b class="tag tag-new">[Nieuw]</b>
+                <b>Moderne 64-bit architectuur:</b> Native x64 applicatie met vernieuwde bibliotheken, SQLite WAL betrouwbaarheid en snelle managed yEnc-decodering.
+            </li>
+            <li>
+                <b class="tag tag-new">[Nieuw]</b>
+                <b>Veilige installatie &amp; migratie:</b> Probleemloze detectie en overzetting van bestaande Spotnet 2.x profielen en instellingen.
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section class="notes-section gh-archive">
+    <details>
+        <summary>Oudere versies (Spotnet 2.0 geschiedenis)</summary>
+        <br><h5>2.0.0.275</h5>
+        <ul class="section-items tagged">
+            <li>
+                <b class="tag tag-fixed">[Opgelost]</b>
+                Oplossing voor downloadproblemen op specifieke processors.
+            </li>
+        </ul>
+        <br><h5>2.0.0.272</h5>
+        <ul class="section-items tagged">
+            <li>
+                <b class="tag tag-new">[Nieuw]</b>
+                Prestatieverbeteringen voor decoder; SSE2 CPU-instructies worden standaard gebruikt.
+            </li>
+            <li>
+                <b class="tag tag-fixed">[Opgelost]</b>
+                Downloadvoortgang en -snelheid van par2-bestanden zichtbaar tijdens herstelproces.
+            </li>
+            <li>
+                <b class="tag tag-fixed">[Opgelost]</b>
+                Downloadsnelheid verbeterd bij 430-foutmeldingen van de server.
+            </li>
+            <li>
+                <b class="tag tag-fixed">[Opgelost]</b>
+                Bestandsnaambepaling in interne downloader hersteld.
+            </li>
+        </ul>
+        <br><h5>2.0.0.265</h5>
+        <ul class="section-items tagged">
+            <li>
+                <b class="tag tag-fixed">[Opgelost]</b>
+                Categoriekleur van spots hersteld bij zoekopdrachten.
+            </li>
+            <li>
+                <b class="tag tag-fixed">[Opgelost]</b>
+                Favorietenlijst verplaatst van bestand naar database ter ondersteuning van grote lijsten (&gt;1000).
+            </li>
+            <li>
+                <b class="tag tag-changed">[Verbeterd]</b>
+                Volledige spotgrootte zichtbaar in downloads-tabblad met initiële voortgang.
+            </li>
+        </ul>
+        <br><h5>2.0.0.250</h5>
+        <ul class="section-items tagged">
+            <li>
+                <b class="tag tag-new">[Nieuw]</b>
+                Nieuwe downloadsnelheidslimiet instellingen en scheduler.
+            </li>
+            <li>
+                <b class="tag tag-fixed">[Opgelost]</b>
+                Geheugengebruik geoptimaliseerd bij het laden van grote lijsten met reacties.
+            </li>
+        </ul>
+    </details>
+</section>

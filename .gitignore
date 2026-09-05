@@ -1,4 +1,4 @@
-# Build output
+﻿# Build output
 /artifacts/
 **/bin/
 **/obj/
@@ -19,6 +19,6 @@ build_diag.txt
 # Anyone reproducing the reconstruction fetches them from the 2.0 release instead.
 /spotnet-git/
 /spotnet-2.0.0.284-binary/
-/spotnet-2.0.0.284-packages/
+/reference/spotnet-2.0.0.284-packages/
 /decompiled_200/
-/reconstructed/Spotnet2/lib/Spotnet.exe
+/src/Spotnet/lib/Spotnet.exe

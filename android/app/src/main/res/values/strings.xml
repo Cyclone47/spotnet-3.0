@@ -1,0 +1,49 @@
+<resources>
+    <string name="app_name">Spotnet Companion</string>
+    <string name="connect_title">Verbinden met Spotnet</string>
+    <string name="connect_subtitle">Bedien Spotnet en ontvang meldingen van nieuwe spots</string>
+    
+    <!-- Tab titles -->
+    <string name="tab_discovery">Netwerk Zoeken</string>
+    <string name="tab_qr">Scan QR</string>
+    <string name="tab_pin">Inloggen / Code</string>
+    <string name="nav_spots">Spots</string>
+    <string name="nav_notifications">Meldingen</string>
+    <string name="nav_settings">Instellingen</string>
+
+    <!-- Discovery Screen -->
+    <string name="discovery_scanning">Bezig met zoeken naar Spotnet op het netwerk…</string>
+    <string name="discovery_found_title">Gevonden op lokaal netwerk:</string>
+    <string name="discovery_no_servers">Nog geen Spotnet-client gevonden.\nZorg dat Spotnet open staat op uw computer en dat ‘Spotnet Remote’ is ingeschakeld (onder Extra > Instellingen > Remote).</string>
+    <string name="discovery_btn_scan">Opnieuw Zoeken</string>
+
+    <!-- QR Screen -->
+    <string name="qr_instructions">Open in Spotnet op uw pc het menu ‘Koppelen met mobiel’ en richt uw camera op de QR-code.</string>
+    <string name="qr_btn_scan">Start Camera Scanner</string>
+
+    <!-- Login / PIN Screen -->
+    <string name="login_title">Inloggen met Gebruikersnaam &amp; Wachtwoord</string>
+    <string name="login_instructions">Log direct in met uw Spotnet gebruikersnaam en wachtwoord:</string>
+    <string name="pin_instructions">Of voer de 6-cijferige koppelcode in:</string>
+    <string name="pin_hint">Bijv. 123 456</string>
+    <string name="host_hint">Server IP / Host (bijv. 192.168.1.150)</string>
+    <string name="port_hint">Poort (standaard 8770)</string>
+    <string name="pin_btn_connect">Koppelen &amp; Verbinden</string>
+
+    <!-- Status & Alerts -->
+    <string name="status_connected">Verbonden met %1$s</string>
+    <string name="status_disconnected">Niet verbonden</string>
+    <string name="notif_channel_name">Spotnet Meldingen</string>
+    <string name="notif_channel_desc">Notificaties voor nieuwe spots op basis van filters en trefwoorden</string>
+    <string name="notif_empty">Geen nieuwe meldingen</string>
+    <string name="notif_clear_all">Alles wissen</string>
+    <string name="notif_mark_all_read">Alles markeren als gelezen</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Instellingen</string>
+    <string name="settings_notifications">Achtergrondnotificaties</string>
+    <string name="settings_notifications_desc">Ontvang Android-notificaties voor trefwoord- en filteralerts</string>
+    <string name="settings_interval">Controlefrequentie</string>
+    <string name="settings_sound">Geluid &amp; Trilling</string>
+    <string name="settings_disconnect">Ontkoppelen van PC</string>
+</resources>

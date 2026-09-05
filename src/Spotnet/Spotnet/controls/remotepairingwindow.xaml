@@ -1,0 +1,52 @@
+<metro:MetroWindow x:Class="Spotnet.Controls.RemotePairingWindow"
+                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls"
+                    Title="Koppel Mobiel Apparaat - Spotnet Remote"
+                    Height="530" Width="480"
+                    ResizeMode="NoResize"
+                    WindowStartupLocation="CenterOwner"
+                    ShowTitleBar="True"
+                    ShowIconOnTitleBar="False"
+                    GlowBrush="{DynamicResource HighlightBrush}"
+                    Background="{DynamicResource DialogBackgroundBrush}"
+                    WindowTitleBrush="{DynamicResource WindowTitleColorBrush}"
+                    TitleForeground="{DynamicResource WindowTitleForegroundBrush}"
+                    NonActiveWindowTitleBrush="{DynamicResource NonActiveWindowTitleBrush}">
+  <Grid Margin="20">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <!-- Header -->
+    <StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,0,0,14">
+      <TextBlock Text="Koppel je smartphone of tablet" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center" />
+      <TextBlock Text="Scan de onderstaande QR-code met je camera om direct te verbinden." Opacity="0.8" FontSize="12" Margin="0,4,0,0" HorizontalAlignment="Center" />
+    </StackPanel>
+
+    <!-- QR Code & PIN Card -->
+    <Border Grid.Row="1" Background="{DynamicResource DialogPanelBackgroundBrush}" CornerRadius="10" Padding="16" BorderBrush="{DynamicResource HighlightBrush}" BorderThickness="1">
+      <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Border BorderThickness="4" BorderBrush="White" CornerRadius="8" Background="White" HorizontalAlignment="Center" Margin="0,0,0,14">
+          <Image Name="QrCodeImage" Width="200" Height="200" Stretch="Uniform" />
+        </Border>
+
+        <TextBlock Text="Of voer deze 6-cijferige koppelcode handmatig in:" FontSize="12" Opacity="0.75" HorizontalAlignment="Center" Margin="0,0,0,4" />
+        <TextBlock Name="PinCodeTextBlock" Text="--- ---" FontSize="26" FontWeight="ExtraBold" Foreground="{DynamicResource HighlightBrush}" HorizontalAlignment="Center" />
+        <TextBlock Name="ExpiryTextBlock" Text="Code is nog 5:00 minuten geldig" FontSize="11" Opacity="0.6" HorizontalAlignment="Center" Margin="0,4,0,0" />
+
+        <Border Name="PairedSuccessBanner" Background="#10B981" CornerRadius="6" Padding="8" Margin="0,10,0,0" Visibility="Collapsed">
+          <TextBlock Name="PairedSuccessText" Text="✓ Apparaat succesvol gekoppeld!" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" />
+        </Border>
+      </StackPanel>
+    </Border>
+
+    <!-- Bottom Actions -->
+    <DockPanel Grid.Row="2" Margin="0,16,0,0">
+      <Button Name="CopyLinkButton" Content="Kopieer Koppelingslink" DockPanel.Dock="Left" Padding="12,6" Click="CopyLinkButton_Click" />
+      <Button Name="CloseButton" Content="Sluiten" DockPanel.Dock="Right" HorizontalAlignment="Right" Width="90" Padding="12,6" IsDefault="True" Click="CloseButton_Click" />
+    </DockPanel>
+  </Grid>
+</metro:MetroWindow>

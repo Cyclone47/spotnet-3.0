@@ -28,8 +28,8 @@ dotnet new install Avalonia.Templates
 ### 1.3. Verify Core Libraries Build Cleanly on Mac
 The platform-neutral core libraries can be built immediately on macOS:
 ```bash
-dotnet build reconstructed/Spotnet2/Spotnet.Enc/Spotnet.Enc.csproj
-dotnet build reconstructed/Spotnet2/Spotnet.Core/Spotnet.Core.csproj
+dotnet build src/Spotnet/Spotnet.Enc/Spotnet.Enc.csproj
+dotnet build src/Spotnet/Spotnet.Core/Spotnet.Core.csproj
 ```
 Both projects target `net8.0` (AnyCPU) and have zero Windows/WPF dependencies.
 
@@ -38,7 +38,7 @@ Both projects target `net8.0` (AnyCPU) and have zero Windows/WPF dependencies.
 ## 2. Solution Architecture
 
 ```
-reconstructed/Spotnet2/
+src/Spotnet/
 ├── Spotnet.Core/                 <-- Platform-neutral core shared by Windows & macOS
 │   ├── Abstractions/             <-- Core interfaces: IAppPaths, ISecretStore, IUiDispatcher, IUserSettings
 │   ├── Model/                    <-- ServerInfo, NntpSettings, SpeedCalculator, Spot rows & counters
@@ -59,12 +59,12 @@ reconstructed/Spotnet2/
 ## 3. macOS Implementation Directives
 
 ### 3.1. Project Structure
-Create the Avalonia client under `reconstructed/Spotnet2/Spotnet.Mac/`:
+Create the Avalonia client under `src/Spotnet/Spotnet.Mac/`:
 ```bash
-dotnet new avalonia.app -n Spotnet.Mac -o reconstructed/Spotnet2/Spotnet.Mac
-dotnet sln reconstructed/Spotnet2/Spotnet.sln add reconstructed/Spotnet2/Spotnet.Mac/Spotnet.Mac.csproj
-dotnet add reconstructed/Spotnet2/Spotnet.Mac/Spotnet.Mac.csproj reference reconstructed/Spotnet2/Spotnet.Core/Spotnet.Core.csproj
-dotnet add reconstructed/Spotnet2/Spotnet.Mac/Spotnet.Mac.csproj reference reconstructed/Spotnet2/Spotnet.Enc/Spotnet.Enc.csproj
+dotnet new avalonia.app -n Spotnet.Mac -o src/Spotnet/Spotnet.Mac
+dotnet sln src/Spotnet/Spotnet.sln add src/Spotnet/Spotnet.Mac/Spotnet.Mac.csproj
+dotnet add src/Spotnet/Spotnet.Mac/Spotnet.Mac.csproj reference src/Spotnet/Spotnet.Core/Spotnet.Core.csproj
+dotnet add src/Spotnet/Spotnet.Mac/Spotnet.Mac.csproj reference src/Spotnet/Spotnet.Enc/Spotnet.Enc.csproj
 ```
 
 ### 3.2. Directory Paths on macOS
@@ -187,7 +187,7 @@ The first task to execute on macOS is a self-contained spike verifying four crit
 ### Standalone Self-Contained App:
 For Intel (x86_64):
 ```bash
-dotnet publish reconstructed/Spotnet2/Spotnet.Mac/Spotnet.Mac.csproj \
+dotnet publish src/Spotnet/Spotnet.Mac/Spotnet.Mac.csproj \
   -c Release \
   -r osx-x64 \
   --self-contained true \
@@ -196,7 +196,7 @@ dotnet publish reconstructed/Spotnet2/Spotnet.Mac/Spotnet.Mac.csproj \
 
 For Apple Silicon (ARM64):
 ```bash
-dotnet publish reconstructed/Spotnet2/Spotnet.Mac/Spotnet.Mac.csproj \
+dotnet publish src/Spotnet/Spotnet.Mac/Spotnet.Mac.csproj \
   -c Release \
   -r osx-arm64 \
   --self-contained true \

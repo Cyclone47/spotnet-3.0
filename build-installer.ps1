@@ -115,20 +115,22 @@ if (-not $CompilerPath -or -not (Test-Path -LiteralPath $CompilerPath)) {
 Push-Location $repoRoot
 try {
     if (-not $SkipBuild) {
-        & dotnet build reconstructed/Spotnet2/Spotnet.sln -c Release -v minimal
+        & dotnet build src/Spotnet/Spotnet.sln -c Release -v minimal
         if ($LASTEXITCODE -ne 0) { throw 'Application build failed.' }
-        & dotnet test reconstructed/Spotnet2/Spotnet.Tests/Spotnet.Tests.csproj -c Release --no-build -v minimal
+        & dotnet test src/Spotnet/Spotnet.Tests/Spotnet.Tests.csproj -c Release --no-build -v minimal
         if ($LASTEXITCODE -ne 0) { throw 'Tests failed; refusing to package.' }
     }
     & dotnet build tools/Spotnet.SetupHelper/Spotnet.SetupHelper.csproj -c Release -v minimal
     if ($LASTEXITCODE -ne 0) { throw 'Migration helper build failed.' }
-    $appOutput = Join-Path $repoRoot 'reconstructed\Spotnet2\Spotnet\bin\Release\net8.0-windows'
+    $appOutput = Join-Path $artifactRoot ('publish-' + [Guid]::NewGuid().ToString('N'))
+    & dotnet publish src/Spotnet/Spotnet/Spotnet.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -p:PublishTrimmed=false -o $appOutput
+    if ($LASTEXITCODE -ne 0) { throw 'Self-contained application publish failed.' }
     $helperOutput = Join-Path $repoRoot 'tools\Spotnet.SetupHelper\bin\Release\net472'
     # Nothing 32-bit or ARM may reach an x64 package. Native payloads have to be AMD64
     # outright; a managed assembly may also be AnyCPU, which is what the platform-neutral
     # libraries are built as so the future macOS client can share them. AnyCPU and a
     # 32-bit native DLL both report I386, so the CLI header is what tells them apart.
-    foreach ($binary in @('Spotnet.exe', 'runtimes\win-x64\native\WebView2Loader.dll', 'runtimes\win-x64\native\SQLite.Interop.dll', 'libvlc\win-x64\libvlc.dll')) {
+    foreach ($binary in @('Spotnet.exe', 'WebView2Loader.dll', 'SQLite.Interop.dll', 'coreclr.dll', 'libvlc\win-x64\libvlc.dll')) {
         if ((Get-BinaryArchitecture (Join-Path $appOutput $binary)) -ne 'amd64') { throw "Not an AMD64 binary: $binary" }
     }
     foreach ($binary in @('Spotnet.dll', 'Spotnet.Enc.dll')) {
@@ -138,7 +140,7 @@ try {
     # A fresh staging directory prevents stale DLLs or personal runtime data entering the package.
     $payload = Join-Path $artifactRoot ('payload-' + [Guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory -Path $payload | Out-Null
-    $trackedAssets = @(git ls-files -- reconstructed/Spotnet2/Spotnet/Data reconstructed/Spotnet2/Spotnet/Resources/ReleaseNotes)
+    $trackedAssets = @(git ls-files -- src/Spotnet/Spotnet/Data src/Spotnet/Spotnet/Resources/ReleaseNotes)
     if ($LASTEXITCODE -ne 0) { throw 'Cannot enumerate tracked application assets.' }
     foreach ($file in Get-ChildItem -LiteralPath $appOutput -File) {
         if ($file.Extension -in @('.dll', '.exe', '.json') -or $file.Name -in @('Spotnet.dll.config', 'NLog.config')) {
@@ -157,7 +159,7 @@ try {
         Copy-Item -LiteralPath (Join-Path $appOutput $directory) -Destination $target -Recurse
     }
     foreach ($asset in $trackedAssets) {
-        $relative = $asset.Substring('reconstructed/Spotnet2/Spotnet/'.Length)
+        $relative = $asset.Substring('src/Spotnet/Spotnet/'.Length)
         $destination = Join-Path $payload $relative
         New-Item -ItemType Directory -Force -Path (Split-Path $destination -Parent) | Out-Null
         Copy-Item -LiteralPath (Join-Path $repoRoot $asset) -Destination $destination
@@ -202,12 +204,14 @@ try {
         $cultureDir = Join-Path $appOutput $culture
         if (Test-Path -LiteralPath $cultureDir) { Copy-Item -LiteralPath $cultureDir -Destination $payload -Recurse }
     }
+    # Preserve Spotnet Remote web assets
+    $webDir = Join-Path $appOutput 'Web'
+    if (Test-Path -LiteralPath $webDir) {
+        Copy-Item -LiteralPath $webDir -Destination (Join-Path $payload 'Web') -Recurse
+    }
     $webview = Join-Path $toolRoot 'MicrosoftEdgeWebview2Setup.exe'
     Get-SignedDownload 'https://go.microsoft.com/fwlink/p/?LinkId=2124703' $webview 'O=Microsoft Corporation'
-    # The application targets .NET 8, which Windows does not ship. Setup installs the
-    # Desktop Runtime the same way it installs WebView2.
-    $dotnet = Join-Path $toolRoot 'windowsdesktop-runtime-8-win-x64.exe'
-    Get-SignedDownload 'https://aka.ms/dotnet/8.0/windowsdesktop-runtime-win-x64.exe' $dotnet 'O=Microsoft Corporation'
+    # .NET 10 is included in the published payload, not installed as a shared runtime.
 
     # Render the wizard's style previews from the application's own theme dictionaries,
     # so a palette change shows up in Setup instead of leaving a stale picture behind.
@@ -216,8 +220,8 @@ try {
     New-Item -ItemType Directory -Force -Path $previewDir | Out-Null
     & dotnet build $previewProject -c Release -v quiet --nologo
     if ($LASTEXITCODE -ne 0) { throw 'Building the style preview renderer failed.' }
-    $previewExe = Join-Path $repoRoot 'tools\Spotnet.ThemePreview\bin\Release\net8.0-windows\Spotnet.ThemePreview.exe'
-    $filterIcons = Join-Path $repoRoot 'reconstructed\Spotnet2\Spotnet\Data\Filters.v2\Images'
+    $previewExe = Join-Path $repoRoot 'tools\Spotnet.ThemePreview\bin\Release\net10.0-windows\Spotnet.ThemePreview.exe'
+    $filterIcons = Join-Path $repoRoot 'src\Spotnet\Spotnet\Data\Filters.v2\Images'
     & $previewExe --output $previewDir --icons $filterIcons
     if ($LASTEXITCODE -ne 0) { throw 'Rendering the style previews failed.' }
     foreach ($tile in @('style-modern-light.bmp', 'style-modern-dark.bmp', 'style-classic.bmp')) {
@@ -227,7 +231,7 @@ try {
     # Sign what this repository produces. The third-party assemblies arrive signed by
     # their own publishers and are left alone.
     $signTemplate = Get-SignTemplate
-    $compilerArguments = @('/Q', ('/DPayloadDir=' + $payload), ('/DHelperDir=' + $helperOutput), ('/DWebViewBootstrapper=' + $webview), ('/DDotNetBootstrapper=' + $dotnet), ('/DOutputDir=' + $artifactRoot), ('/DPreviewDir=' + $previewDir))
+    $compilerArguments = @('/Q', '/DSelfContained', ('/DPayloadDir=' + $payload), ('/DHelperDir=' + $helperOutput), ('/DWebViewBootstrapper=' + $webview), ('/DOutputDir=' + $artifactRoot), ('/DPreviewDir=' + $previewDir))
     if ($signTemplate) {
         $ourBinaries = @('Spotnet.exe', 'Spotnet.Enc.dll') |
             ForEach-Object { Join-Path $payload $_ }

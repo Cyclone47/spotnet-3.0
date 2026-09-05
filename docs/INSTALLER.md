@@ -4,7 +4,12 @@ The installer is built with Inno Setup 7 and installs **for the current Windows 
 
 ## Run Setup
 
-[Download Setup and its checksum from the GitHub release](https://github.com/Cyclone47/spotnet-3.0/releases/tag/v3.0.4). Local build output: `artifacts/installer/Spotnet-3.0-x64-Setup.exe`.
+[Download Setup and its checksum from the latest GitHub release](https://github.com/Cyclone47/spotnet-3.0/releases/latest). Local build output: `artifacts/installer/Spotnet-3.0-x64-Setup.exe`.
+
+From 3.0.8.0, .NET 10 is included inside the application folder. It is not installed
+as a shared runtime and does not appear separately in Windows Installed Apps.
+Existing .NET 8 installations may remain for other applications. Upgrades preserve
+the Spotnet profile in place without making full database backups.
 
 1. Run Setup under the Windows account that owns the old Spotnet profile; do not switch to a different administrator account.
 2. Confirm the installation folder, normally `%LOCALAPPDATA%\Programs\Spotnet3`.

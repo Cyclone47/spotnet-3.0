@@ -1,0 +1,49 @@
+<Project>
+
+  <!--
+    Shared build settings for every project in the solution.
+
+    Analyzers are on but deliberately NOT escalated to errors: this is a reconstructed
+    codebase with a long tail of pre-existing findings (undisposed IDisposables, empty
+    catch blocks, sync-over-async). The point is to turn that tail into a visible,
+    machine-checkable backlog rather than to block the build on it. Escalate categories
+    to errors as they get cleaned up, so they cannot regress.
+  -->
+  <!--
+    Target frameworks, in one place.
+
+    WindowsTargetFramework is for the WPF client and anything that binds Windows APIs.
+    PortableTargetFramework is for the platform-neutral libraries that the macOS client
+    will share with it: no -windows suffix, so the compiler rejects WPF, WinForms,
+    Registry and System.Management outright instead of failing later on a Mac.
+
+    The Windows client moved to net10.0 in 3.0.8.0, which ships the runtime inside the
+    setup. The portable libraries stay on net8.0 until a .NET 10 SDK is installed on the
+    macOS side; a net8.0 library is referenceable from net10.0-windows, so the two can
+    differ. Lifting Portable to net10.0 is a one-value edit here plus that SDK install,
+    and the .NET 8 support window closes 2026-11-10, so it is scheduled, not optional.
+  -->
+  <PropertyGroup>
+    <WindowsTargetFramework>net10.0-windows</WindowsTargetFramework>
+    <PortableTargetFramework>net8.0</PortableTargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <!-- Reproducible output: identical sources produce an identical assembly. -->
+    <Deterministic>true</Deterministic>
+    <!-- Surface NuGet advisories on restore once packages replace the loose lib/ DLLs. -->
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
+  </PropertyGroup>
+
+  <!-- PackageReferences stage multi-architecture native payloads by default. Spotnet 3.0
+       is x64-only, so keep Release/Debug output free of unused x86 and ARM64 runtimes. -->
+  <Target Name="RemoveNonX64RuntimeAssets" AfterTargets="Build"
+          Condition="'$(PlatformTarget)' == 'x64'">
+    <RemoveDir Directories="$(OutDir)x86;$(OutDir)runtimes\win-x86;$(OutDir)runtimes\win-arm64;$(OutDir)libvlc\win-x86;$(OutDir)libvlc\win-arm64" />
+  </Target>
+
+</Project>
