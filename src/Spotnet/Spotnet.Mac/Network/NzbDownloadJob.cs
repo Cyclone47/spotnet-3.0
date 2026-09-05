@@ -33,7 +33,10 @@ public sealed record NzbDownloadOptions(
     int RetryIntervalSec = 10,
     int SpeedLimitKbps = -1,
     bool IsCachingEnabled = true,
-    int DownloaderCacheSizeMb = 20)
+    int DownloaderCacheSizeMb = 20,
+    bool ScheduleEnabled = false,
+    TimeSpan ScheduleStart = default,
+    TimeSpan ScheduleEnd = default)
 {
     /// <summary>Reads the current downloader settings out of the user preferences.</summary>
     public static NzbDownloadOptions FromPreferences(UserPreferences prefs)
@@ -44,7 +47,10 @@ public sealed record NzbDownloadOptions(
             RetryIntervalSec: prefs.DownloaderRetryIntervalSec > 0 ? prefs.DownloaderRetryIntervalSec : 10,
             SpeedLimitKbps: prefs.SpeedLimit,
             IsCachingEnabled: prefs.IsCachingEnabled,
-            DownloaderCacheSizeMb: prefs.DownloaderCacheSizeMb > 0 ? prefs.DownloaderCacheSizeMb : 20);
+            DownloaderCacheSizeMb: prefs.DownloaderCacheSizeMb > 0 ? prefs.DownloaderCacheSizeMb : 20,
+            ScheduleEnabled: prefs.DownloaderSchedule,
+            ScheduleStart: prefs.DownloaderStartTime.TimeOfDay,
+            ScheduleEnd: prefs.DownloaderEndTime.TimeOfDay);
     }
 }
 
@@ -68,6 +74,15 @@ public sealed class NzbDownloadJob
     private readonly UsenetConnection _connection;
     private readonly int _maxConnections;
     private readonly NzbDownloadOptions _options;
+    private readonly bool _scheduleEnabled;
+    private readonly TimeSpan _scheduleStart;
+    private readonly TimeSpan _scheduleEnd;
+
+    /// <summary>
+    /// Injectable clock for the download schedule, so tests can drive the window
+    /// without waiting on wall-clock time.
+    /// </summary>
+    public static Func<DateTime> ScheduleClock { get; set; } = () => DateTime.Now;
 
     /// <summary>
     /// The limiter this job throttles against. It is the app-wide <see cref="DownloadSpeedLimiter.Shared"/>
@@ -96,6 +111,9 @@ public sealed class NzbDownloadJob
         _options = options ?? new NzbDownloadOptions();
         SpeedLimiter = DownloadSpeedLimiter.Shared;
         SpeedLimiter.LimitKbps = _options.SpeedLimitKbps;
+        _scheduleEnabled = _options.ScheduleEnabled;
+        _scheduleStart = _options.ScheduleStart;
+        _scheduleEnd = _options.ScheduleEnd;
     }
 
     /// <summary>
@@ -211,6 +229,17 @@ public sealed class NzbDownloadJob
                     {
                         ct.ThrowIfCancellationRequested();
                         pauseGate?.Wait(ct);
+
+                        // The download schedule, as on Windows: a worker outside the
+                        // active window parks itself and re-checks once a minute.
+                        if (_scheduleEnabled &&
+                            !DownloadSchedule.IsDownloaderActiveTime(true, _scheduleStart, _scheduleEnd, ScheduleClock().TimeOfDay))
+                        {
+                            Log.Info("Downloads are outside the scheduled window ({0:hh\\:mm} - {1:hh\\:mm}); waiting.",
+                                _scheduleStart, _scheduleEnd);
+                            await DownloadSchedule.WaitUntilActiveAsync(
+                                _scheduleStart, _scheduleEnd, ScheduleClock, ct);
+                        }
 
                         var seg = segments[idx];
 

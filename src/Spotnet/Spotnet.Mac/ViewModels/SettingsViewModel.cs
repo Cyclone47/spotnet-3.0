@@ -201,6 +201,39 @@ public sealed class SettingsViewModel : ViewModelBase
         set => SetProperty(ref _downloaderCacheSizeMb, value);
     }
 
+    // ── Downloadschema (fase 3, item 2) ─────────────────────────────────────
+    private bool _downloaderSchedule;
+    /// <summary>Whether downloads only run inside the time window (Windows: DownloaderSchedule).</summary>
+    public bool DownloaderSchedule
+    {
+        get => _downloaderSchedule;
+        set
+        {
+            if (SetProperty(ref _downloaderSchedule, value))
+            {
+                OnPropertyChanged(nameof(IsScheduleInputEnabled));
+            }
+        }
+    }
+
+    public bool IsScheduleInputEnabled => _downloaderSchedule;
+
+    private string _downloaderStartTime = "00:00";
+    /// <summary>Start of the download window as HH:mm (Windows: DownloaderStartTime.TimeOfDay).</summary>
+    public string DownloaderStartTime
+    {
+        get => _downloaderStartTime;
+        set => SetProperty(ref _downloaderStartTime, value);
+    }
+
+    private string _downloaderEndTime = "00:00";
+    /// <summary>End of the download window as HH:mm (Windows: DownloaderEndTime.TimeOfDay).</summary>
+    public string DownloaderEndTime
+    {
+        get => _downloaderEndTime;
+        set => SetProperty(ref _downloaderEndTime, value);
+    }
+
     public List<string> DownloadModeList { get; } = new()
     {
         "Downloaden (ingebouwd)",
@@ -647,6 +680,13 @@ public sealed class SettingsViewModel : ViewModelBase
         _dataReceivingTimeout = prefs.DataReceivingTimeout > 0 ? prefs.DataReceivingTimeout : 60000;
         _isCachingEnabled = prefs.IsCachingEnabled;
         _downloaderCacheSizeMb = prefs.DownloaderCacheSizeMb > 0 ? prefs.DownloaderCacheSizeMb : 20;
+        _downloaderSchedule = prefs.DownloaderSchedule;
+        _downloaderStartTime = prefs.DownloaderSchedule
+            ? prefs.DownloaderStartTime.ToString("HH:mm")
+            : "00:00";
+        _downloaderEndTime = prefs.DownloaderSchedule
+            ? prefs.DownloaderEndTime.ToString("HH:mm")
+            : "00:00";
         _initialFetchDays = prefs.InitialFetchDays;
         ShowDesktopNotifications = prefs.ShowDesktopNotifications;
         ExternalBrowser = prefs.ExternalBrowser;
@@ -672,6 +712,10 @@ public sealed class SettingsViewModel : ViewModelBase
         OnPropertyChanged(nameof(DataReceivingTimeout));
         OnPropertyChanged(nameof(IsCachingEnabled));
         OnPropertyChanged(nameof(DownloaderCacheSizeMb));
+        OnPropertyChanged(nameof(DownloaderSchedule));
+        OnPropertyChanged(nameof(IsScheduleInputEnabled));
+        OnPropertyChanged(nameof(DownloaderStartTime));
+        OnPropertyChanged(nameof(DownloaderEndTime));
         OnPropertyChanged(nameof(DbAutoUpdateEnabled));
         OnPropertyChanged(nameof(DbAutoUpdateIntervalMin));
         OnPropertyChanged(nameof(RetentionEnabled));
@@ -756,6 +800,24 @@ public sealed class SettingsViewModel : ViewModelBase
             prefs.IsCachingEnabled = IsCachingEnabled;
             prefs.DownloaderCacheSizeMb = Math.Clamp(DownloaderCacheSizeMb, 1, 4096);
 
+            // Downloadschema — only saved when enabled, exactly like SettingsForDownload
+            // on Windows, which writes the times only under the enabled checkbox and
+            // requires both fields to parse as HH:mm before it saves anything.
+            prefs.DownloaderSchedule = DownloaderSchedule;
+            if (DownloaderSchedule
+                && TryParseHhMm(DownloaderStartTime, out var start)
+                && TryParseHhMm(DownloaderEndTime, out var end))
+            {
+                prefs.DownloaderStartTime = start;
+                prefs.DownloaderEndTime = end;
+            }
+            else if (!DownloaderSchedule)
+            {
+                // Keep the last valid window in the preferences so re-enabling the
+                // schedule restores what the user had, as Windows shows the stored
+                // times when the dialog reopens.
+            }
+
             // Apply the new limit to downloads that are already running, the way the
             // Windows ChangeDownloadSpeedLimitWindow calls Sys.Downloader
             // .UpdateDownloadSpeedLimit right after saving.
@@ -808,6 +870,15 @@ public sealed class SettingsViewModel : ViewModelBase
         {
             StatusMessage = $"Fout bij opslaan: {ex.Message}";
         }
+    }
+
+    /// <summary>Parses HH:mm as the Windows schedule fields do (ParseExact, invariant).</summary>
+    private static bool TryParseHhMm(string? text, out DateTime value)
+    {
+        value = DateTime.MinValue;
+        return !string.IsNullOrWhiteSpace(text)
+            && DateTime.TryParseExact(text.Trim(), "HH:mm", System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out value);
     }
 
     private static void SetOrUpdateServerElement(XElement root, Network.ServerRole role, string host, int port, bool ssl, int connections, string username)

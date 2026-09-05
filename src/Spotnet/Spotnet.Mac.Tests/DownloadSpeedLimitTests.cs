@@ -199,6 +199,69 @@ public sealed class DownloadSpeedLimitTests : IDisposable
         Assert.Equal(512, DownloadSpeedLimiter.Shared.LimitKbps);
     }
 
+    // ── Downloadschema (fase 3, item 2) — port of IsDownloaderActiveTime ──────
+
+    [Theory]
+    [InlineData("20:00", "06:00", "23:30", true)]   // overnight window, inside
+    [InlineData("20:00", "06:00", "03:00", true)]   // overnight window, after midnight
+    [InlineData("20:00", "06:00", "12:00", false)]  // overnight window, daytime gap
+    [InlineData("20:00", "06:00", "20:00", true)]   // start boundary is inclusive
+    [InlineData("20:00", "06:00", "06:00", true)]   // end boundary is inclusive
+    [InlineData("08:00", "18:00", "12:00", true)]   // daytime window, inside
+    [InlineData("08:00", "18:00", "07:59", false)]  // daytime window, before
+    [InlineData("08:00", "18:00", "18:00", true)]   // daytime window, at end
+    [InlineData("08:00", "18:00", "08:00", true)]   // daytime window, at start
+    [InlineData("00:00", "00:00", "03:00", true)]   // equal times = always active
+    public void Schedule_window_follows_the_windows_client_rules(
+        string start, string end, string now, bool expected)
+    {
+        TimeSpan T(string s) => TimeSpan.Parse(s);
+
+        bool active = DownloadSchedule.IsDownloaderActiveTime(true, T(start), T(end), T(now));
+        Assert.Equal(expected, active);
+    }
+
+    [Fact]
+    public void Schedule_off_means_always_active()
+    {
+        bool active = DownloadSchedule.IsDownloaderActiveTime(
+            false, new TimeSpan(20, 0, 0), new TimeSpan(6, 0, 0), new TimeSpan(12, 0, 0));
+        Assert.True(active);
+    }
+
+    [Fact]
+    public void Schedule_reads_out_of_preferences_with_the_time_of_day_only()
+    {
+        var prefs = new UserPreferences
+        {
+            DownloaderSchedule = true,
+            // Dates differ but both times are 22:00 and 06:00; the date part is
+            // ignored, exactly as Windows reads only .TimeOfDay.
+            DownloaderStartTime = new DateTime(2026, 1, 1, 22, 0, 0),
+            DownloaderEndTime = new DateTime(2020, 6, 15, 6, 0, 0)
+        };
+
+        Assert.True(DownloadSchedule.IsDownloaderActiveTime(prefs, new DateTime(2026, 9, 5, 23, 0, 0)));
+        Assert.False(DownloadSchedule.IsDownloaderActiveTime(prefs, new DateTime(2026, 9, 5, 12, 0, 0)));
+    }
+
+    [Fact]
+    public void Options_carry_the_schedule_settings()
+    {
+        var prefs = new UserPreferences
+        {
+            DownloaderSchedule = true,
+            DownloaderStartTime = new DateTime(2000, 1, 1, 22, 30, 0),
+            DownloaderEndTime = new DateTime(2000, 1, 1, 6, 0, 0)
+        };
+
+        var options = NzbDownloadOptions.FromPreferences(prefs);
+
+        Assert.True(options.ScheduleEnabled);
+        Assert.Equal(new TimeSpan(22, 30, 0), options.ScheduleStart);
+        Assert.Equal(new TimeSpan(6, 0, 0), options.ScheduleEnd);
+    }
+
     // ── Cache server gate (Windows CachingSystem.IsEnabled + provider check) ───
 
     [Theory]

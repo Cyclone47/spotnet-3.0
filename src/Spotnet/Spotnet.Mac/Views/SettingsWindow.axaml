@@ -154,6 +154,21 @@
                     </StackPanel>
                 </Grid>
 
+                <CheckBox IsChecked="{Binding DownloaderSchedule}"
+                          Content="Stel tijdsinterval voor het downloaden"
+                          ToolTip.Tip="Downloads zijn alleen actief binnen het opgegeven tijdsvenster"/>
+
+                <Grid ColumnDefinitions="*,16,*" IsVisible="{Binding DownloaderSchedule}">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="Starttijd (uu:mm):" FontWeight="Medium"/>
+                        <TextBox Text="{Binding DownloaderStartTime}" Watermark="22:00"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="4">
+                        <TextBlock Text="Eindtijd (uu:mm):" FontWeight="Medium"/>
+                        <TextBox Text="{Binding DownloaderEndTime}" Watermark="06:00"/>
+                    </StackPanel>
+                </Grid>
+
                 <Separator Margin="0,4"/>
                 <TextBlock Text="Database &amp; Synchronisatie" FontSize="14" FontWeight="SemiBold"/>
 

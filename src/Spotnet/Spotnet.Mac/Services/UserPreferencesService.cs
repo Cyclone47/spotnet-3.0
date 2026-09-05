@@ -254,11 +254,28 @@ public sealed class UserPreferences
     public int DownloaderCacheSizeMb { get; set; } = 20;
 
     /// <summary>
+    /// Whether downloads only run inside a time window. Matches Windows
+    /// Settings.Default.DownloaderSchedule (default false).
+    /// </summary>
+    public bool DownloaderSchedule { get; set; }
+
+    /// <summary>
+    /// Start of the download window, of which only the time of day is used.
+    /// Matches Windows Settings.Default.DownloaderStartTime.
+    /// </summary>
+    public DateTime DownloaderStartTime { get; set; } = new(2016, 10, 26, 14, 52, 0);
+
+    /// <summary>
+    /// End of the download window, of which only the time of day is used.
+    /// Matches Windows Settings.Default.DownloaderEndTime.
+    /// </summary>
+    public DateTime DownloaderEndTime { get; set; } = new(2016, 10, 26, 14, 52, 0);
+
+    /// <summary>
     /// A host is a provider cache server when it ends in one of these suffixes.
     /// Windows: CachingSystem.MasterHostnameSnelNl / MasterHostname5Euro.
     /// </summary>
     public static readonly string[] CacheHostSuffixes = { "cache.snelnl.com", "cache.usenetsys.com" };
-
     /// <summary>
     /// Whether this host is a provider cache server the built-in downloader may use.
     /// Windows gates that on IsCachingEnabled plus the provider being Snelnl or one of
