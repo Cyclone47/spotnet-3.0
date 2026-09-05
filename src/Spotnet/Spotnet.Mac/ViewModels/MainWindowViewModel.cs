@@ -279,6 +279,26 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public ICommand DeleteSelectedCommand { get; }
     public ICommand OpenReleaseNotesCommand { get; }
     public ICommand QuickRepairDbCommand { get; }
+    public ICommand ToggleSocksProxyCommand { get; }
+
+    public bool UseSocksProxy => _prefsService.Current.UseSocksProxy;
+    public string SocksProxyIcon => UseSocksProxy ? "🔒" : "🔓";
+    public string SocksProxyForeground => UseSocksProxy ? "#39A633" : "#888888";
+    public string SocksProxyToolTip
+    {
+        get
+        {
+            var prefs = _prefsService.Current;
+            if (!prefs.UseSocksProxy)
+            {
+                return "SOCKS5-proxy is uitgeschakeld (klik om in te schakelen)";
+            }
+            string host = !string.IsNullOrWhiteSpace(prefs.SocksProxyHost)
+                ? $"{prefs.SocksProxyHost}:{prefs.SocksProxyPort}"
+                : "geen host ingesteld";
+            return $"SOCKS5-proxy is ingeschakeld ({host}) — klik om uit te schakelen";
+        }
+    }
 
     /// <summary>Raised when a spot should open in its own window rather than a tab.</summary>
     public event Action<SpotDetailViewModel>? RequestOpenSpotWindow;
@@ -355,6 +375,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         CloseDetailCommand = new RelayCommand(() => SelectedSpot = null);
         OpenSettingsCommand = new RelayCommand(() => RequestOpenSettings?.Invoke());
         OpenOnboardingCommand = new RelayCommand(() => RequestOpenOnboarding?.Invoke());
+        ToggleSocksProxyCommand = new RelayCommand(ToggleSocksProxy);
 
         SetThemeCommand = new RelayCommand(param =>
         {
@@ -812,10 +833,33 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     /// </summary>
     public async void OnSettingsSaved()
     {
+        NotifySocksProxyChanged();
         StartAutoSyncTimer();
         await _dbService.UpdateDatabaseStatsAsync(_prefsService);
         await RefreshSpotsAsync();
         await UpdateFilterCountsAsync();
+    }
+
+    private void ToggleSocksProxy()
+    {
+        var prefs = _prefsService.Current;
+        if (!prefs.UseSocksProxy && string.IsNullOrWhiteSpace(prefs.SocksProxyHost))
+        {
+            RequestOpenSettings?.Invoke();
+            return;
+        }
+
+        prefs.UseSocksProxy = !prefs.UseSocksProxy;
+        _prefsService.Save(prefs);
+        NotifySocksProxyChanged();
+    }
+
+    public void NotifySocksProxyChanged()
+    {
+        OnPropertyChanged(nameof(UseSocksProxy));
+        OnPropertyChanged(nameof(SocksProxyIcon));
+        OnPropertyChanged(nameof(SocksProxyForeground));
+        OnPropertyChanged(nameof(SocksProxyToolTip));
     }
 
     // ── Filter Counts ─────────────────────────────────────────────────────────

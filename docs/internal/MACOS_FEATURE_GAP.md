@@ -243,7 +243,7 @@ Wat hiervan nog openstaat:
 2. Sorteren en kolommen serverside, met de keuze bewaard in `preferences.json`.
 3. Automatische sync-timer plus retentie/opruimbeleid.
 4. ~~Rolgebaseerde servers (Headers/Download/Upload).~~ Gedaan.
-5. `Socks5Client` aansluiten op `UsenetConnection` + statusindicator.
+5. ~~`Socks5Client` aansluiten op `UsenetConnection` + statusindicator.~~ Gedaan.
 6. ~~Providercatalogus uit `providers.json` in plaats van de vaste lijst.~~ Gedaan.
 
 ### Fase 2 — vertrouwensmodel *(2–3 weken)*

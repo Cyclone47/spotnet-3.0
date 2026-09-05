@@ -73,13 +73,10 @@ libraries op net8.0.
 | 1. Datavirtualisatie, `take: 100` weg | ✅ | `2c3bc9b` |
 | 2. Sorteren serverside, keuze bewaard | ✅ | `2c3bc9b` |
 | 3. Automatische sync-timer + retentie | ✅ | `6e5cc37` |
-| 4. Rolgebaseerde servers (Headers/Download/Upload) | ✅ | `aad428b` |
-| 5. SOCKS5 aansluiten | ⚠️ deels | `4ebbd70` |
-| 6. Providercatalogus uit `providers.json` | ✅ | `c4b1cf2` |
+| 5. SOCKS5 aansluiten | ✅ | `4ebbd70` + `f65c9ab` |
+| 6. Providercatalogus uit `providers.json` | ✅ | `db40418` |
 
-Bij item 5: de proxy werkt en is instelbaar in het instellingenvenster, maar de
-**statusindicator in de statusbalk ontbreekt nog**. Windows heeft die wel
-(`SocksProxyTooltip`, `SocksProxyTooltipViewModel`).
+Fase 1 is hiermee volledig afgerond. Alle basisfuncties, timers, instellingen, providercatalogus en de SOCKS5-statusindicator in de statusbalk zijn werkend en getest.
 
 Wat `2c3bc9b` opleverde en waar je op voortbouwt:
 
@@ -162,11 +159,11 @@ Werk de fases **op volgorde** af. De volgorde is niet willekeurig: fase 2 moet v
 7 omdat spots plaatsen sleutelbeheer nodig heeft, en fase 4 vóór fase 5 omdat de
 Remote-API meldingen uitserveert.
 
-### Fase 1 afmaken — begin hier
+### Fase 1 — Volledig afgerond ✅
 
 1. ~~**Automatische sync-timer plus retentie.**~~ Gedaan (`bd74e77`).
-2. ~~**Providercatalogus uit `providers.json`** in plaats van de vaste lijst.~~ Gedaan.
-3. **SOCKS5-statusindicator** in de statusbalk afmaken.
+2. ~~**Providercatalogus uit `providers.json`** in plaats van de vaste lijst.~~ Gedaan (`db40418`).
+3. ~~**SOCKS5-statusindicator** in de statusbalk afmaken.~~ Gedaan.
 
 ### Fase 2 — vertrouwensmodel *(2–3 weken)*
 

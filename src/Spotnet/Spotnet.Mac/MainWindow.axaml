@@ -567,7 +567,7 @@
             BorderBrush="{DynamicResource AppBorderBrush}"
             BorderThickness="0,1,0,0"
             Padding="12,4">
-      <Grid ColumnDefinitions="*,Auto,Auto">
+      <Grid ColumnDefinitions="*,Auto,Auto,Auto">
         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
           <TextBlock Text="{Binding StatusText}" FontSize="11" VerticalAlignment="Center"/>
           <ProgressBar IsVisible="{Binding IsSyncing}"
@@ -578,12 +578,22 @@
         </StackPanel>
         <Button Grid.Column="1"
                 Classes="StatusIcon"
+                Command="{Binding ToggleSocksProxyCommand}"
+                Margin="0,0,10,0"
+                ToolTip.Tip="{Binding SocksProxyToolTip}">
+          <TextBlock Text="{Binding SocksProxyIcon}"
+                     FontSize="12"
+                     Foreground="{Binding SocksProxyForeground}"
+                     VerticalAlignment="Center"/>
+        </Button>
+        <Button Grid.Column="2"
+                Classes="StatusIcon"
                 Command="{Binding RefreshCommand}"
                 IsEnabled="{Binding !IsLoading}"
                 Margin="0,0,10,0"
                 ToolTip.Tip="Nieuwe spots ophalen (Cmd+R)"
                 Content="&#x21BB;"/>
-        <TextBlock Grid.Column="2" Text="{Binding ArchitectureInfo}"
+        <TextBlock Grid.Column="3" Text="{Binding ArchitectureInfo}"
                    FontSize="11"
                    Foreground="{DynamicResource AppMutedTextBrush}"
                    VerticalAlignment="Center"/>
