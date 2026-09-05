@@ -84,7 +84,11 @@ public sealed class NzbService
                         ? prefs.MaxDownloadConnections
                         : 4;
 
-                    var job = new NzbDownloadJob(_connection, nzbFiles, downloadDir, maxConn);
+                    // Retries, retry interval, speed limit and cache size come from the
+                    // downloader preferences, the way Windows fills its queue from
+                    // Settings.Default when a spot is queued.
+                    var job = new NzbDownloadJob(_connection, nzbFiles, downloadDir, maxConn,
+                        NzbDownloadOptions.FromPreferences(prefs));
                     return (true, nzbPath,
                         $"⬇ Downloaden gestart ({nzbFiles.Count} bestanden) → {downloadDir}", job);
             }

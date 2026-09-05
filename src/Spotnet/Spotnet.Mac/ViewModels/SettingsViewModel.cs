@@ -127,6 +127,80 @@ public sealed class SettingsViewModel : ViewModelBase
     private int _maxDownloadConnections = 4;
     public int MaxDownloadConnections { get => _maxDownloadConnections; set => SetProperty(ref _maxDownloadConnections, value); }
 
+    // ── Downloader limits (fase 3, conform Windows) ───────────────────────────
+    private bool _speedLimitEnabled;
+    /// <summary>Whether a speed limit is in force. Windows: SpeedLimitCheckBox, where
+    /// unchecked stores SpeedLimit = -1 (unlimited).</summary>
+    public bool SpeedLimitEnabled
+    {
+        get => _speedLimitEnabled;
+        set
+        {
+            if (SetProperty(ref _speedLimitEnabled, value))
+            {
+                OnPropertyChanged(nameof(IsSpeedLimitInputEnabled));
+            }
+        }
+    }
+
+    public bool IsSpeedLimitInputEnabled => _speedLimitEnabled;
+
+    private int _speedLimit = 1024;
+    /// <summary>Download limit in KB/s. Windows validates 50 ≤ n &lt; 200000.</summary>
+    public int SpeedLimit
+    {
+        get => _speedLimit;
+        set => SetProperty(ref _speedLimit, value);
+    }
+
+    private int _downloaderRetries = 3;
+    /// <summary>Retry attempts per failed segment (Windows: DownloaderRetries).</summary>
+    public int DownloaderRetries
+    {
+        get => _downloaderRetries;
+        set => SetProperty(ref _downloaderRetries, value);
+    }
+
+    private int _downloaderRetryIntervalSec = 10;
+    /// <summary>Seconds between two retry attempts (Windows: DownloaderRetryIntervalSec).</summary>
+    public int DownloaderRetryIntervalSec
+    {
+        get => _downloaderRetryIntervalSec;
+        set => SetProperty(ref _downloaderRetryIntervalSec, value);
+    }
+
+    private int _connectionTimeout = 10000;
+    /// <summary>Connect timeout in milliseconds (Windows: ConnectionTimeout).</summary>
+    public int ConnectionTimeout
+    {
+        get => _connectionTimeout;
+        set => SetProperty(ref _connectionTimeout, value);
+    }
+
+    private int _dataReceivingTimeout = 60000;
+    /// <summary>Idle read timeout in milliseconds (Windows: DataReceivingTimeout).</summary>
+    public int DataReceivingTimeout
+    {
+        get => _dataReceivingTimeout;
+        set => SetProperty(ref _dataReceivingTimeout, value);
+    }
+
+    private bool _isCachingEnabled = true;
+    /// <summary>Use the provider cache servers when the provider has one (Windows: IsCachingEnabled).</summary>
+    public bool IsCachingEnabled
+    {
+        get => _isCachingEnabled;
+        set => SetProperty(ref _isCachingEnabled, value);
+    }
+
+    private int _downloaderCacheSizeMb = 20;
+    /// <summary>Cache buffer in megabytes (Windows: DownloaderCacheSizeMb).</summary>
+    public int DownloaderCacheSizeMb
+    {
+        get => _downloaderCacheSizeMb;
+        set => SetProperty(ref _downloaderCacheSizeMb, value);
+    }
+
     public List<string> DownloadModeList { get; } = new()
     {
         "Downloaden (ingebouwd)",
@@ -565,6 +639,14 @@ public sealed class SettingsViewModel : ViewModelBase
         _downloadMode = prefs.DownloadMode;
         DownloadFolder = string.IsNullOrWhiteSpace(prefs.DownloadFolder) ? _appPaths.DownloadsFolder : prefs.DownloadFolder;
         MaxDownloadConnections = prefs.MaxDownloadConnections > 0 ? prefs.MaxDownloadConnections : 4;
+        _speedLimitEnabled = prefs.SpeedLimit > 0;
+        _speedLimit = prefs.SpeedLimit > 0 ? prefs.SpeedLimit : 1024;
+        _downloaderRetries = prefs.DownloaderRetries > 0 ? prefs.DownloaderRetries : 3;
+        _downloaderRetryIntervalSec = prefs.DownloaderRetryIntervalSec > 0 ? prefs.DownloaderRetryIntervalSec : 10;
+        _connectionTimeout = prefs.ConnectionTimeout > 0 ? prefs.ConnectionTimeout : 10000;
+        _dataReceivingTimeout = prefs.DataReceivingTimeout > 0 ? prefs.DataReceivingTimeout : 60000;
+        _isCachingEnabled = prefs.IsCachingEnabled;
+        _downloaderCacheSizeMb = prefs.DownloaderCacheSizeMb > 0 ? prefs.DownloaderCacheSizeMb : 20;
         _initialFetchDays = prefs.InitialFetchDays;
         ShowDesktopNotifications = prefs.ShowDesktopNotifications;
         ExternalBrowser = prefs.ExternalBrowser;
@@ -581,6 +663,15 @@ public sealed class SettingsViewModel : ViewModelBase
 
         OnPropertyChanged(nameof(SelectedDownloadMode));
         OnPropertyChanged(nameof(SelectedInitialFetchRange));
+        OnPropertyChanged(nameof(SpeedLimitEnabled));
+        OnPropertyChanged(nameof(IsSpeedLimitInputEnabled));
+        OnPropertyChanged(nameof(SpeedLimit));
+        OnPropertyChanged(nameof(DownloaderRetries));
+        OnPropertyChanged(nameof(DownloaderRetryIntervalSec));
+        OnPropertyChanged(nameof(ConnectionTimeout));
+        OnPropertyChanged(nameof(DataReceivingTimeout));
+        OnPropertyChanged(nameof(IsCachingEnabled));
+        OnPropertyChanged(nameof(DownloaderCacheSizeMb));
         OnPropertyChanged(nameof(DbAutoUpdateEnabled));
         OnPropertyChanged(nameof(DbAutoUpdateIntervalMin));
         OnPropertyChanged(nameof(RetentionEnabled));
@@ -653,6 +744,22 @@ public sealed class SettingsViewModel : ViewModelBase
             prefs.DownloadMode = _downloadMode;
             prefs.DownloadFolder = DownloadFolder;
             prefs.MaxDownloadConnections = MaxDownloadConnections;
+
+            // Downloader limits — SpeedLimit -1 (off) or a value within the same bounds
+            // Windows validates (50 KB/s up to just under 200 MB/s).
+            bool speedLimitValid = SpeedLimit >= 50 && SpeedLimit < 200000;
+            prefs.SpeedLimit = SpeedLimitEnabled && speedLimitValid ? SpeedLimit : -1;
+            prefs.DownloaderRetries = Math.Clamp(DownloaderRetries, 1, 100);
+            prefs.DownloaderRetryIntervalSec = Math.Clamp(DownloaderRetryIntervalSec, 1, 3600);
+            prefs.ConnectionTimeout = Math.Clamp(ConnectionTimeout, 1000, 300000);
+            prefs.DataReceivingTimeout = Math.Clamp(DataReceivingTimeout, 5000, 600000);
+            prefs.IsCachingEnabled = IsCachingEnabled;
+            prefs.DownloaderCacheSizeMb = Math.Clamp(DownloaderCacheSizeMb, 1, 4096);
+
+            // Apply the new limit to downloads that are already running, the way the
+            // Windows ChangeDownloadSpeedLimitWindow calls Sys.Downloader
+            // .UpdateDownloadSpeedLimit right after saving.
+            Network.DownloadSpeedLimiter.Shared.LimitKbps = prefs.SpeedLimit;
             prefs.InitialFetchDays = _initialFetchDays;
             prefs.ShowDesktopNotifications = ShowDesktopNotifications;
             prefs.ExternalBrowser = ExternalBrowser;

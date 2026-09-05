@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NLog;
+using Spotnet.Mac.Services;
 using SpotnetEnc;
 
 namespace Spotnet.Mac.Network;
@@ -20,11 +21,43 @@ public sealed record NzbJobProgress(
     string CurrentFile);
 
 /// <summary>
+/// Settings for a download job, read out of the user preferences at queue time.
+/// The names follow the Windows client so a look at the queue diagnostics says
+/// exactly which setting is in force:
+///   Retries          = Settings.Default.DownloaderRetries        (default 3)
+///   RetryIntervalSec = Settings.Default.DownloaderRetryIntervalSec (default 10)
+///   SpeedLimitKbps   = Settings.Default.SpeedLimit               (-1 = unlimited)
+/// </summary>
+public sealed record NzbDownloadOptions(
+    int Retries = 3,
+    int RetryIntervalSec = 10,
+    int SpeedLimitKbps = -1,
+    bool IsCachingEnabled = true,
+    int DownloaderCacheSizeMb = 20)
+{
+    /// <summary>Reads the current downloader settings out of the user preferences.</summary>
+    public static NzbDownloadOptions FromPreferences(UserPreferences prefs)
+    {
+        ArgumentNullException.ThrowIfNull(prefs);
+        return new NzbDownloadOptions(
+            Retries: prefs.DownloaderRetries > 0 ? prefs.DownloaderRetries : 3,
+            RetryIntervalSec: prefs.DownloaderRetryIntervalSec > 0 ? prefs.DownloaderRetryIntervalSec : 10,
+            SpeedLimitKbps: prefs.SpeedLimit,
+            IsCachingEnabled: prefs.IsCachingEnabled,
+            DownloaderCacheSizeMb: prefs.DownloaderCacheSizeMb > 0 ? prefs.DownloaderCacheSizeMb : 20);
+    }
+}
+
+/// <summary>
 /// Downloads every binary file described by a parsed NZB using multiple parallel
 /// NNTP connections and the yEnc decoder from Spotnet.Enc.
 ///
 /// Mirrors the role of Spotnet.Downloader.DownloaderEngine from Windows:
 ///   NZB files -> parallel NNTP BODY -> yEnc decode -> assemble on disk.
+///
+/// Segment retries and the retry interval follow NNTPSegment.MaxRetries and
+/// NNTPSegment.DefaultTimeout; the speed limit follows the shared throttle in
+/// VirtualNNTP via <see cref="DownloadSpeedLimiter"/>.
 /// </summary>
 public sealed class NzbDownloadJob
 {
@@ -34,16 +67,35 @@ public sealed class NzbDownloadJob
 
     private readonly UsenetConnection _connection;
     private readonly int _maxConnections;
+    private readonly NzbDownloadOptions _options;
+
+    /// <summary>
+    /// The limiter this job throttles against. It is the app-wide <see cref="DownloadSpeedLimiter.Shared"/>
+    /// instance when one is in force, so a limit changed in the settings window or by
+    /// a newer job applies to this one too — the same way the static
+    /// VirtualNNTP._kbpsLimit on Windows is shared by every connection.
+    /// </summary>
+    public DownloadSpeedLimiter SpeedLimiter { get; }
 
     public IReadOnlyList<NzbFile> Files { get; }
     public string OutputDir { get; }
 
     public NzbDownloadJob(UsenetConnection connection, IReadOnlyList<NzbFile> files, string outputDir, int maxConnections = 4)
+        : this(connection, files, outputDir, maxConnections, NzbDownloadOptions.FromPreferences(
+                  new UserPreferences()))
+    {
+    }
+
+    public NzbDownloadJob(UsenetConnection connection, IReadOnlyList<NzbFile> files, string outputDir,
+                          int maxConnections, NzbDownloadOptions options)
     {
         _connection = connection;
         Files = files;
         OutputDir = outputDir;
         _maxConnections = Math.Clamp(maxConnections, 1, 32);
+        _options = options ?? new NzbDownloadOptions();
+        SpeedLimiter = DownloadSpeedLimiter.Shared;
+        SpeedLimiter.LimitKbps = _options.SpeedLimitKbps;
     }
 
     /// <summary>
@@ -98,6 +150,7 @@ public sealed class NzbDownloadJob
                 {
                     Interlocked.Add(ref bytesDone, delta);
                     speedCalc.Add(delta);
+                    SpeedLimiter.OnBytesReceived(delta);
                     progress?.Report(new NzbJobProgress(
                         Math.Min(Interlocked.Read(ref bytesDone), bytesTotal), bytesTotal,
                         speedCalc.SpeedBps, filesDone, filesTotal, fileName));
@@ -132,6 +185,11 @@ public sealed class NzbDownloadJob
         var errors  = new List<Exception>();
         var lockObj = new object();
 
+        // Windows caps a single file's decoded-buffer bookkeeping; the Mac client keeps
+        // whole decoded segments in memory until the file is written out, so the cache
+        // size is applied as a soft cap on how many segments may sit in buffers at once.
+        long maxBufferedBytes = (long)_options.DownloaderCacheSizeMb * 1024 * 1024;
+
         int connections = Math.Min(_maxConnections, segments.Count);
 
         // Open connections in parallel
@@ -156,21 +214,19 @@ public sealed class NzbDownloadJob
 
                         var seg = segments[idx];
 
-                        string? body = await client.ReadArticleBodyAsync(seg.MessageId, ct);
-                        if (body == null)
+                        byte[]? decoded = await DownloadSegmentWithRetriesAsync(client, seg, ct);
+                        if (decoded != null)
                         {
-                            await Task.Delay(200, ct);
-                            body = await client.ReadArticleBodyAsync(seg.MessageId, ct);
-                        }
-
-                        if (body != null)
-                        {
-                            byte[] decoded = DecodeYEnc(body);
+                            // The throttle point of the Windows client: VirtualNNTP feeds
+                            // every received segment into one shared account and sleeps
+                            // here until the average is back within the limit.
+                            SpeedLimiter.ThrottleIfNeeded(ct);
                             buffers[idx] = decoded;
                         }
                         else
                         {
-                            Log.Warn("Segment {0} not available", seg.MessageId);
+                            Log.Warn("Segment {0} not available after {1} attempt(s)",
+                                seg.MessageId, Math.Max(1, _options.Retries));
                         }
 
                         reportBytes(seg.Bytes);
@@ -203,6 +259,39 @@ public sealed class NzbDownloadJob
                 await fs.WriteAsync(buf, ct);
             }
         }
+    }
+
+    /// <summary>
+    /// Fetches one segment, retrying up to <see cref="NzbDownloadOptions.Retries"/>
+    /// attempts with <see cref="NzbDownloadOptions.RetryIntervalSec"/> between them —
+    /// the behaviour of NNTPSegment.MaxRetries plus its DefaultTimeout on Windows.
+    /// Returns the decoded bytes, or null when every attempt failed.
+    /// </summary>
+    private async Task<byte[]?> DownloadSegmentWithRetriesAsync(NntpClient client, NzbSegment seg, CancellationToken ct)
+    {
+        int attempts = Math.Max(1, _options.Retries);
+        for (int attempt = 1; attempt <= attempts; attempt++)
+        {
+            string? body = await client.ReadArticleBodyAsync(seg.MessageId, ct);
+            if (body != null)
+            {
+                return DecodeYEnc(body);
+            }
+
+            Log.Debug("Segment {0} failed (attempt {1}/{2})", seg.MessageId, attempt, attempts);
+            if (attempt < attempts)
+            {
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(_options.RetryIntervalSec), ct);
+                }
+                catch (OperationCanceledException)
+                {
+                    return null;
+                }
+            }
+        }
+        return null;
     }
 
     // ── helpers ────────────────────────────────────────────────────────────────

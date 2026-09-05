@@ -28,6 +28,21 @@ public sealed class NntpClient : IDisposable
 
     public bool IsConnected => _tcpClient != null && _tcpClient.Connected;
 
+    /// <summary>
+    /// Connect-timeout in milliseconds. 0 or negative falls back to the Windows
+    /// client's default of 5000 ms, exactly as <c>Phuse.NNTP.Net.NNTP</c> does:
+    /// <c>(Settings.Default.ConnectionTimeout &gt; 0) ? Settings.Default.ConnectionTimeout : 5000</c>.
+    /// </summary>
+    public int ConnectTimeoutMs { get; set; }
+
+    /// <summary>
+    /// Idle timeout in milliseconds after which a read that received nothing gives up.
+    /// 0 or negative falls back to the Windows default of 60000 ms, the way
+    /// <c>SocketBase</c> derives <c>receiveTimeout</c> from
+    /// <c>Settings.Default.DataReceivingTimeout</c>.
+    /// </summary>
+    public int DataReceivingTimeoutMs { get; set; }
+
     public async Task ConnectAsync(string host, int port, bool useSsl,
                                    bool allowInvalidCertificate = false,
                                    ProxySettings? proxy = null,
@@ -39,22 +54,37 @@ public sealed class NntpClient : IDisposable
                  host, port, useSsl, proxy != null ? $" via {proxy}" : "");
 
         _tcpClient = new TcpClient();
-        _tcpClient.ReceiveTimeout = 25000;
-        _tcpClient.SendTimeout = 25000;
+        int connectTimeout = ConnectTimeoutMs > 0 ? ConnectTimeoutMs : 5000;
+        int receiveTimeout = DataReceivingTimeoutMs > 0 ? DataReceivingTimeoutMs : 60000;
+        _tcpClient.ReceiveTimeout = receiveTimeout;
+        _tcpClient.SendTimeout = connectTimeout;
 
-        if (proxy != null)
+        // TcpClient.ConnectAsync cannot be given a timeout, so race the task against
+        // one and abandon the socket when the timeout wins.
+        using var connectCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        connectCts.CancelAfter(connectTimeout);
+        try
         {
-            // The socket goes to the proxy; the SOCKS5 handshake then points the tunnel
-            // at the news server. TLS is negotiated afterwards, against the news
-            // server's own hostname, so the proxy sees an encrypted stream it cannot
-            // read and certificate validation still checks the right name.
-            await _tcpClient.ConnectAsync(proxy.Host, proxy.Port, cancellationToken);
-            var socks = new Socks5Client(proxy.Username, proxy.Password) { TcpClient = _tcpClient };
-            await socks.ConnectAsync(host, port, cancellationToken);
+            if (proxy != null)
+            {
+                // The socket goes to the proxy; the SOCKS5 handshake then points the tunnel
+                // at the news server. TLS is negotiated afterwards, against the news
+                // server's own hostname, so the proxy sees an encrypted stream it cannot
+                // read and certificate validation still checks the right name.
+                await _tcpClient.ConnectAsync(proxy.Host, proxy.Port, connectCts.Token);
+                var socks = new Socks5Client(proxy.Username, proxy.Password) { TcpClient = _tcpClient };
+                await socks.ConnectAsync(host, port, connectCts.Token);
+            }
+            else
+            {
+                await _tcpClient.ConnectAsync(host, port, connectCts.Token);
+            }
         }
-        else
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            await _tcpClient.ConnectAsync(host, port, cancellationToken);
+            Close();
+            throw new TimeoutException(
+                $"Connection to {host}:{port} timed out after {connectTimeout} ms.");
         }
 
         Stream rawStream = _tcpClient.GetStream();

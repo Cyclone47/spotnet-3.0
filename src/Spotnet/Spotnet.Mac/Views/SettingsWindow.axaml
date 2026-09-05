@@ -110,6 +110,50 @@
                 <TextBlock Text="Aantal downloadverbindingen:" FontWeight="Medium"/>
                 <NumericUpDown Value="{Binding MaxDownloadConnections}" Minimum="1" Maximum="32" FormatString="0"/>
 
+                <CheckBox IsChecked="{Binding SpeedLimitEnabled}" Content="Snelheidslimiet (KB/s)"/>
+                <NumericUpDown Value="{Binding SpeedLimit}" IsEnabled="{Binding IsSpeedLimitInputEnabled}"
+                               Minimum="50" Maximum="199999" FormatString="0"
+                               ToolTip.Tip="Maximale downloadsnelheid in kilobyte per seconde (50 t/m 199999)"/>
+
+                <Grid ColumnDefinitions="*,16,*">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="Aantal pogingen per segment:" FontWeight="Medium"/>
+                        <NumericUpDown Value="{Binding DownloaderRetries}" Minimum="1" Maximum="100" FormatString="0"
+                                       ToolTip.Tip="Hoe vaak een mislukt segment opnieuw wordt geprobeerd"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="4">
+                        <TextBlock Text="Tijd tussen pogingen (sec):" FontWeight="Medium"/>
+                        <NumericUpDown Value="{Binding DownloaderRetryIntervalSec}" Minimum="1" Maximum="3600" FormatString="0"
+                                       ToolTip.Tip="Seconden tussen twee pogingen van hetzelfde segment"/>
+                    </StackPanel>
+                </Grid>
+
+                <Grid ColumnDefinitions="*,16,*">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="Verbinding time-out (ms):" FontWeight="Medium"/>
+                        <NumericUpDown Value="{Binding ConnectionTimeout}" Minimum="1000" Maximum="300000" FormatString="0"
+                                       ToolTip.Tip="Milliseconden om verbinding te maken met de newsserver"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="4">
+                        <TextBlock Text="Data time-out (ms):" FontWeight="Medium"/>
+                        <NumericUpDown Value="{Binding DataReceivingTimeout}" Minimum="5000" Maximum="600000" FormatString="0"
+                                       ToolTip.Tip="Milliseconden zonder data waarna de verbinding wordt verbroken"/>
+                    </StackPanel>
+                </Grid>
+
+                <Grid ColumnDefinitions="*,16,*">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <CheckBox IsChecked="{Binding IsCachingEnabled}"
+                                  Content="Gebruik cache-servers (indien beschikbaar)"
+                                  ToolTip.Tip="Maak gebruik van de cacheservers van je provider als die die biedt"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="4">
+                        <TextBlock Text="Cachegrootte (MB):" FontWeight="Medium"/>
+                        <NumericUpDown Value="{Binding DownloaderCacheSizeMb}" Minimum="1" Maximum="4096" FormatString="0"
+                                       ToolTip.Tip="Buffer die per download wordt vastgehouden (standaard 20 MB)"/>
+                    </StackPanel>
+                </Grid>
+
                 <Separator Margin="0,4"/>
                 <TextBlock Text="Database &amp; Synchronisatie" FontSize="14" FontWeight="SemiBold"/>
 

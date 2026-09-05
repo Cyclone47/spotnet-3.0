@@ -46,12 +46,19 @@ public sealed class UsenetConnection
         }
 
         var client = new NntpClient();
+
+        // Connect and receive timeouts follow the Windows client: ConnectionTimeout
+        // (default 10000, floor 5000) and DataReceivingTimeout (default 60000).
+        var prefs = _preferences.Current;
+        client.ConnectTimeoutMs = prefs.ConnectionTimeout;
+        client.DataReceivingTimeoutMs = prefs.DataReceivingTimeout;
+
         try
         {
             await client.ConnectAsync(
                 server.Server, server.Port, server.SSL,
-                allowInvalidCertificate: _preferences.Current.AllowInvalidServerCertificate,
-                proxy: ProxySettings.FromPreferences(_preferences.Current, _secretStore),
+                allowInvalidCertificate: prefs.AllowInvalidServerCertificate,
+                proxy: ProxySettings.FromPreferences(prefs, _secretStore),
                 cancellationToken: cancellationToken);
 
             if (!string.IsNullOrEmpty(server.Username))

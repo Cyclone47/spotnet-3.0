@@ -204,6 +204,82 @@ public sealed class UserPreferences
     /// 0 or negative means never hide based on spam reports.
     /// </summary>
     public int NumOfSpamReportsToSpotHide { get; set; } = 5;
+
+    // ── Downloader (fase 3) — names and defaults follow the Windows client ────
+
+    /// <summary>
+    /// Download speed limit in KB/s. Matches Windows Settings.Default.SpeedLimit.
+    /// -1 or 0 means unlimited; a positive value is throttled in the downloader.
+    /// </summary>
+    public int SpeedLimit { get; set; } = -1;
+
+    /// <summary>
+    /// How often a failed segment is retried before it is marked as failed.
+    /// Matches Windows Settings.Default.DownloaderRetries (default 3).
+    /// </summary>
+    public int DownloaderRetries { get; set; } = 3;
+
+    /// <summary>
+    /// Seconds between two retry attempts on a failed segment.
+    /// Matches Windows Settings.Default.DownloaderRetryIntervalSec (default 10).
+    /// </summary>
+    public int DownloaderRetryIntervalSec { get; set; } = 10;
+
+    /// <summary>
+    /// Milliseconds to wait for a connection to the news server to come up.
+    /// Matches Windows Settings.Default.ConnectionTimeout (default 10000).
+    /// </summary>
+    public int ConnectionTimeout { get; set; } = 10000;
+
+    /// <summary>
+    /// Milliseconds without incoming data after which a read is considered dead.
+    /// Matches Windows Settings.Default.DataReceivingTimeout (default 60000).
+    /// </summary>
+    public int DataReceivingTimeout { get; set; } = 60000;
+
+    /// <summary>
+    /// Whether the cache servers of specific providers are used for downloads.
+    /// Matches Windows Settings.Default.IsCachingEnabled (default true). Those
+    /// providers use a host whose name ends in the cache suffixes below; for all
+    /// other providers the setting has no effect, as on Windows.
+    /// </summary>
+    public bool IsCachingEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Reserved cache buffer in megabytes for provider cache servers.
+    /// Matches Windows Settings.Default.DownloaderCacheSizeMb (default 20).
+    /// Windows only uses it for its own downloader bookkeeping; the Mac client
+    /// applies it as a soft cap on bytes buffered per download job.
+    /// </summary>
+    public int DownloaderCacheSizeMb { get; set; } = 20;
+
+    /// <summary>
+    /// A host is a provider cache server when it ends in one of these suffixes.
+    /// Windows: CachingSystem.MasterHostnameSnelNl / MasterHostname5Euro.
+    /// </summary>
+    public static readonly string[] CacheHostSuffixes = { "cache.snelnl.com", "cache.usenetsys.com" };
+
+    /// <summary>
+    /// Whether this host is a provider cache server the built-in downloader may use.
+    /// Windows gates that on IsCachingEnabled plus the provider being Snelnl or one of
+    /// the "5 euro" providers (CachingSystem.IsEnabled + DownloadQueue.IsCachingEnabled);
+    /// this is the same check in one place.
+    /// </summary>
+    public static bool IsCacheServer(string host, bool isCachingEnabled)
+    {
+        if (!isCachingEnabled || string.IsNullOrWhiteSpace(host))
+        {
+            return false;
+        }
+        foreach (string suffix in CacheHostSuffixes)
+        {
+            if (host.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 public sealed class UserPreferencesService
