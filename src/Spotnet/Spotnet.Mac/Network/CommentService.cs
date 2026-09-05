@@ -47,7 +47,7 @@ public sealed class CommentService
 
         try
         {
-            using var client = await _connection.OpenAsync(cancellationToken);
+            using var client = await _connection.OpenAsync(ServerRole.Headers, cancellationToken);
             if (client == null) return comments;
 
             await client.SelectGroupAsync(ReplyGroup, cancellationToken);
@@ -181,8 +181,9 @@ public sealed class CommentService
 
         try
         {
-            var serverInfo = _connection.LoadServerConfig();
-            if (serverInfo == null)
+            // Checked before the key work below, which is expensive enough to be worth
+            // skipping when there is nothing to post to.
+            if (_connection.LoadServerConfig(ServerRole.Upload) == null)
             {
                 return (false, null, "Geen Usenet server geconfigureerd in Instellingen.");
             }
@@ -196,12 +197,12 @@ public sealed class CommentService
             byte[] signatureBytes = rsa.SignData(msgIdBytes, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1);
             string signature = Convert.ToBase64String(signatureBytes);
 
-            // 2. Connect and authenticate
-            using var client = new NntpClient();
-            await client.ConnectAsync(serverInfo.Server, serverInfo.Port, serverInfo.SSL, cancellationToken);
-            if (!string.IsNullOrEmpty(serverInfo.Username))
+            // 2. Connect and authenticate. Posting goes to the upload server, which
+            // several providers run on a separate hostname from the reader.
+            using var client = await _connection.OpenAsync(ServerRole.Upload, cancellationToken);
+            if (client == null)
             {
-                await client.AuthenticateAsync(serverInfo.Username, serverInfo.Password, cancellationToken);
+                return (false, null, "Geen Usenet server geconfigureerd in Instellingen.");
             }
 
             // 3. Post to free.usenet

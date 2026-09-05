@@ -143,7 +143,7 @@ public sealed class NzbDownloadJob
                 NntpClient? client = null;
                 try
                 {
-                    client = await _connection.OpenAsync(ct);
+                    client = await _connection.OpenAsync(ServerRole.Download, ct);
                     if (client == null) return;
 
                     await client.SelectGroupAsync(nzbFile.Group.Length > 0

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Xml.Linq;
@@ -177,6 +178,19 @@ public sealed class SettingsViewModel : ViewModelBase
     }
 
     private bool _externalBrowser = true;
+    private bool _allowInvalidServerCertificate;
+
+    /// <summary>
+    /// Accept a TLS certificate that fails validation. Off by default, as on Windows.
+    /// Without this escape hatch a provider with a self-signed certificate would be
+    /// unreachable now that certificates are actually checked.
+    /// </summary>
+    public bool AllowInvalidServerCertificate
+    {
+        get => _allowInvalidServerCertificate;
+        set => SetProperty(ref _allowInvalidServerCertificate, value);
+    }
+
     public bool ExternalBrowser
     {
         get => _externalBrowser;
@@ -294,7 +308,9 @@ public sealed class SettingsViewModel : ViewModelBase
             Connections = Connections
         };
 
-        var (success, message) = await NntpClient.TestConnectionAsync(info);
+        // Test against the setting as it stands in the dialog, not the saved one, so the
+        // checkbox can be tried before committing it.
+        var (success, message) = await NntpClient.TestConnectionAsync(info, AllowInvalidServerCertificate);
         IsTesting = false;
         StatusMessage = success ? $"✓ {message}" : $"✗ Fout: {message}";
     }
@@ -332,6 +348,7 @@ public sealed class SettingsViewModel : ViewModelBase
         }
 
         var prefs = _prefsService.Current;
+        _allowInvalidServerCertificate = prefs.AllowInvalidServerCertificate;
         _downloadMode = prefs.DownloadMode;
         DownloadFolder = string.IsNullOrWhiteSpace(prefs.DownloadFolder) ? _appPaths.DownloadsFolder : prefs.DownloadFolder;
         MaxDownloadConnections = prefs.MaxDownloadConnections > 0 ? prefs.MaxDownloadConnections : 4;
@@ -354,18 +371,41 @@ public sealed class SettingsViewModel : ViewModelBase
             _appPaths.EnsureDirectoriesExist();
             string configPath = Path.Combine(_appPaths.DataFolder, "servers.xml");
 
-            var doc = new XDocument(
-                new XElement("Spotnet",
-                    new XElement("Server",
-                        new XAttribute("Type", "Headers"),
-                        new XAttribute("Server", Server),
-                        new XAttribute("Port", Port),
-                        new XAttribute("SSL", Ssl ? "1" : "0"),
-                        new XAttribute("Connections", Connections),
-                        new XAttribute("Username", Username)
-                    )
-                )
-            );
+            // This dialog edits one server: the reader Spotnet pulls headers from. A
+            // profile copied from Windows can also carry Download and Upload entries with
+            // different hostnames, and rewriting the file from scratch used to throw those
+            // away. Only the headers entry is replaced; everything else is kept.
+            XDocument doc;
+            XElement root;
+            try
+            {
+                doc = File.Exists(configPath) ? XDocument.Load(configPath) : new XDocument(new XElement("Spotnet"));
+                root = doc.Root ?? new XElement("Spotnet");
+                if (doc.Root == null) doc.Add(root);
+            }
+            catch (System.Xml.XmlException ex)
+            {
+                Log.Warn(ex, "servers.xml is unreadable and is being replaced: {0}", ex.Message);
+                root = new XElement("Spotnet");
+                doc = new XDocument(root);
+            }
+
+            var headersEntry = root.Elements("Server")
+                .FirstOrDefault(e => Network.ServerProfile.ParseRole((string?)e.Attribute("Type")) == Network.ServerRole.Headers);
+
+            if (headersEntry == null)
+            {
+                headersEntry = new XElement("Server");
+                root.Add(headersEntry);
+            }
+
+            headersEntry.SetAttributeValue("Type", Network.ServerProfile.RoleAttribute(Network.ServerRole.Headers));
+            headersEntry.SetAttributeValue("Server", Server);
+            headersEntry.SetAttributeValue("Port", Port);
+            headersEntry.SetAttributeValue("SSL", Ssl ? "1" : "0");
+            headersEntry.SetAttributeValue("Connections", Connections);
+            headersEntry.SetAttributeValue("Username", Username);
+
             doc.Save(configPath);
 
             // Store password in macOS Keychain securely
@@ -382,6 +422,7 @@ public sealed class SettingsViewModel : ViewModelBase
             prefs.InitialFetchDays = _initialFetchDays;
             prefs.ShowDesktopNotifications = ShowDesktopNotifications;
             prefs.ExternalBrowser = ExternalBrowser;
+            prefs.AllowInvalidServerCertificate = AllowInvalidServerCertificate;
             _prefsService.Save(prefs);
 
             StatusMessage = "Instellingen opgeslagen in Sleutelhanger (Keychain)!";

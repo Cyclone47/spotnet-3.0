@@ -46,6 +46,11 @@
 
                 <CheckBox IsChecked="{Binding Ssl}" Content="SSL / TLS versleuteling gebruiken (Aanbevolen, poort 563)"/>
 
+                <CheckBox IsChecked="{Binding AllowInvalidServerCertificate}"
+                          IsVisible="{Binding Ssl}"
+                          Content="Ongeldig servercertificaat toestaan"
+                          ToolTip.Tip="Alleen inschakelen als je provider een zelfondertekend certificaat gebruikt. Het haalt de bescherming weg tegen een andere machine die zich voordoet als de server."/>
+
                 <TextBlock Text="Gebruikersnaam:" FontWeight="Medium"/>
                 <TextBox Text="{Binding Username}" Watermark="Usenet gebruikersnaam"/>
 

@@ -88,12 +88,21 @@ Dit is echt af en getest; het hoeft niet opnieuw.
 
 Gesorteerd op hoe hard het pijn doet in dagelijks gebruik.
 
+> **Correctie op een eerdere versie van dit document.** Hier stond dat Windows
+> fill-servers met prioriteit en fallback heeft. Dat klopt niet. De Phuse-engine bevat
+> wel `ServerList`, `ServerPriority` en `VirtualServer`, maar de applicatie gebruikt ze
+> niet: `AppHelper.cs:1158` is de enige aanroep en registreert precies één server per
+> engine, met de standaardprioriteit. Wat Windows wél heeft zijn **rolgebaseerde
+> servers** — een aparte Headers-, Download- en Uploadserver — plus cache-servers voor
+> alleen SnelNL en 5Euro. Meerdere downloadservers met fallback zou dus een nieuwe
+> functie zijn, geen pariteit.
+
 ### 3.1 Blokkerend voor normaal gebruik
 
 | Onderwerp | Windows | macOS |
 |---|---|---|
 | **Datavirtualisatie** | `VirtualList` / `VirtualListItem`, pagineert over de hele database | `QueryByFilterAsync(take: 100)` — hard afgekapt op 100 spots, geen paginering, geen scroll-laden |
-| **Meerdere servers** | `ServerList`, `VirtualServer`, prioriteit, fill-servers, `HealthChecker` | één server uit `servers.xml`, geen fallback |
+| **Rolgebaseerde servers** | Aparte Headers-, Download- en Upload-server in `servers.xml` | ~~pakt blind het eerste `<Server>`-element~~ opgelost in `ServerProfile` |
 | **Automatische sync** | `DbAutoUpdateEnabled` + `DbAutoUpdateIntervalMin`, timer in de statusbalk | alleen handmatig "Spots Ophalen" |
 | **Retentie / opruimen** | `Retention`, `DatabaseMin/Max/Count`, database opnieuw opbouwen | niets; de database groeit onbeperkt |
 | **Sorteren en kolommen** | `SortColumn`, `SortDirection`, `Columns`, `ColumnsSize`, per tab bewaard | DataGrid sorteert in-memory over de geladen 100, niets wordt bewaard |
@@ -233,7 +242,7 @@ Wat hiervan nog openstaat:
    `take: 100` moet weg.
 2. Sorteren en kolommen serverside, met de keuze bewaard in `preferences.json`.
 3. Automatische sync-timer plus retentie/opruimbeleid.
-4. Meerdere servers met prioriteit en fallback (`ServerList`-model uit `Spotnet.Core`).
+4. ~~Rolgebaseerde servers (Headers/Download/Upload).~~ Gedaan.
 5. `Socks5Client` aansluiten op `UsenetConnection` + statusindicator.
 6. Providercatalogus uit `providers.json` in plaats van de vaste lijst.
 

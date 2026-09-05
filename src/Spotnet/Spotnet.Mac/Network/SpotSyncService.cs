@@ -55,7 +55,8 @@ public sealed class SpotSyncService
             ProgressChanged?.Invoke(0, 100, $"Verbinden met {serverInfo.Server}...");
 
             using var client = new NntpClient();
-            await client.ConnectAsync(serverInfo.Server, serverInfo.Port, serverInfo.SSL, cancellationToken);
+            await client.ConnectAsync(serverInfo.Server, serverInfo.Port, serverInfo.SSL,
+                                      _preferences.Current.AllowInvalidServerCertificate, cancellationToken);
 
             if (!string.IsNullOrEmpty(serverInfo.Username))
             {

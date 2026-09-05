@@ -86,6 +86,14 @@ public sealed class UserPreferences
 
     /// <summary>"ASC" or "DESC". Newest first by default, as on Windows.</summary>
     public string SortDirection { get; set; } = DAL.SpotSort.DefaultDirection;
+
+    /// <summary>
+    /// Accept a news server's TLS certificate even when it fails validation. Off by
+    /// default, as on Windows. Only turn this on for a provider using a self-signed
+    /// certificate: it removes the protection against another machine impersonating the
+    /// server and reading the credentials sent in AUTHINFO.
+    /// </summary>
+    public bool AllowInvalidServerCertificate { get; set; }
 }
 
 public sealed class UserPreferencesService

@@ -27,7 +27,9 @@ public sealed class NntpClient : IDisposable
 
     public bool IsConnected => _tcpClient != null && _tcpClient.Connected;
 
-    public async Task ConnectAsync(string host, int port, bool useSsl, CancellationToken cancellationToken = default)
+    public async Task ConnectAsync(string host, int port, bool useSsl,
+                                   bool allowInvalidCertificate = false,
+                                   CancellationToken cancellationToken = default)
     {
         Close();
 
@@ -41,7 +43,8 @@ public sealed class NntpClient : IDisposable
 
         if (useSsl)
         {
-            var sslStream = new SslStream(rawStream, leaveInnerStreamOpen: false, (sender, certificate, chain, errors) => errors == SslPolicyErrors.None || true);
+            var sslStream = new SslStream(rawStream, leaveInnerStreamOpen: false,
+                (_, _, _, errors) => ValidateCertificate(host, errors, allowInvalidCertificate));
             await sslStream.AuthenticateAsClientAsync(host);
             _stream = sslStream;
         }
@@ -61,6 +64,33 @@ public sealed class NntpClient : IDisposable
         {
             throw new InvalidOperationException($"Server rejected connection with response: {greeting}");
         }
+    }
+
+    /// <summary>
+    /// Decides whether to accept the server's TLS certificate. Mirrors the Windows
+    /// client's SSLSocket: valid certificates pass, an invalid one is refused unless the
+    /// user has explicitly turned that protection off for a provider with a self-signed
+    /// certificate.
+    ///
+    /// This client used to accept every certificate unconditionally — the callback ended
+    /// in <c>|| true</c> — which meant any machine able to intercept the connection could
+    /// present its own certificate and read the account credentials sent in AUTHINFO.
+    /// </summary>
+    internal static bool ValidateCertificate(string host, SslPolicyErrors errors, bool allowInvalid)
+    {
+        if (errors == SslPolicyErrors.None) return true;
+
+        if (allowInvalid)
+        {
+            Log.Warn("Certificate for {0} failed validation ({1}) but was accepted because " +
+                     "'ongeldig servercertificaat toestaan' is on.", host, errors);
+            return true;
+        }
+
+        Log.Error("Certificate for {0} failed validation: {1}. If this provider uses a self-signed " +
+                  "certificate, enable 'ongeldig servercertificaat toestaan' in the connection settings.",
+                  host, errors);
+        return false;
     }
 
     public async Task AuthenticateAsync(string username, string password, CancellationToken cancellationToken = default)
@@ -251,12 +281,12 @@ public sealed class NntpClient : IDisposable
         return (false, postResult ?? "Fout bij verzenden van reactie naar server.");
     }
 
-    public static async Task<(bool success, string message)> TestConnectionAsync(ServerInfo server, CancellationToken cancellationToken = default)
+    public static async Task<(bool success, string message)> TestConnectionAsync(ServerInfo server, bool allowInvalidCertificate = false, CancellationToken cancellationToken = default)
     {
         try
         {
             using var client = new NntpClient();
-            await client.ConnectAsync(server.Server, server.Port, server.SSL, cancellationToken);
+            await client.ConnectAsync(server.Server, server.Port, server.SSL, allowInvalidCertificate, cancellationToken);
             if (!string.IsNullOrEmpty(server.Username))
             {
                 await client.AuthenticateAsync(server.Username, server.Password, cancellationToken);

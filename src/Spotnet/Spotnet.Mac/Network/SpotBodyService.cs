@@ -35,7 +35,7 @@ public sealed class SpotBodyService
     {
         try
         {
-            using var client = await _connection.OpenAsync(cancellationToken);
+            using var client = await _connection.OpenAsync(ServerRole.Headers, cancellationToken);
             if (client == null) return null;
 
             await client.SelectGroupAsync("free.pt", cancellationToken);

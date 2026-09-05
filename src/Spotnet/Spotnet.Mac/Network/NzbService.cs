@@ -102,7 +102,8 @@ public sealed class NzbService
     private async Task<(string? xml, string? path, string message)>
         FetchAndSaveNzbAsync(SpotItem spot, CancellationToken ct)
     {
-        using var client = await _connection.OpenAsync(ct);
+        // The NZB itself is an article in free.pt, so it comes off the headers server.
+        using var client = await _connection.OpenAsync(ServerRole.Headers, ct);
         if (client == null)
             return (null, null, "Geen Usenet-server geconfigureerd.");
 
