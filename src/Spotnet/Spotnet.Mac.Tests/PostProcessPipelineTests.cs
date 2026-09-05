@@ -226,9 +226,9 @@ public sealed class PostProcessPipelineTests : IDisposable
         File.WriteAllBytes(P("film.zip"), damaged);
 
         var stages = new List<DownloadStage>();
-        var progress = new Progress<PostProcessProgress>(p =>
+        var progress = new InlineProgress<PostProcessProgress>(p =>
         {
-            lock (stages) { if (stages.Count == 0 || stages[^1] != p.Stage) stages.Add(p.Stage); }
+            if (stages.Count == 0 || stages[^1] != p.Stage) stages.Add(p.Stage);
         });
 
         PostProcessOutcome outcome =
@@ -284,7 +284,7 @@ public sealed class PostProcessPipelineTests : IDisposable
             new[] { new Par2Fixture.InputFile("film.zip", zipBytes) }, recoveryBlocks: 2);
 
         var stages = new List<DownloadStage>();
-        var progress = new Progress<PostProcessProgress>(p => { lock (stages) stages.Add(p.Stage); });
+        var progress = new InlineProgress<PostProcessProgress>(p => stages.Add(p.Stage));
 
         Assert.Equal(PostProcessOutcome.Success,
             await new PostProcessCoordinator(_work, Tools(), progress, Ignore).RunAsync(""));
@@ -368,4 +368,26 @@ public sealed class PostProcessPipelineTests : IDisposable
 
     private static byte[] Le16(int v) => new[] { (byte)(v & 0xFF), (byte)((v >> 8) & 0xFF) };
     private static byte[] Le32(long v) => BitConverter.GetBytes((uint)v);
+}
+
+/// <summary>
+/// Reports on the thread that called <see cref="IProgress{T}.Report"/>, in order.
+///
+/// <see cref="Progress{T}"/> cannot be used to record a sequence in a test: with no
+/// SynchronizationContext to capture — which is the case under the xUnit runner — it
+/// posts every callback to the thread pool. Two stages reported in quick succession can
+/// then be recorded out of order, or after the assertion has already run. That made
+/// the stage-order test fail roughly one run in four, whatever the pipeline did.
+/// </summary>
+internal sealed class InlineProgress<T> : IProgress<T>
+{
+    private readonly Action<T> _handler;
+    private readonly object _gate = new();
+
+    public InlineProgress(Action<T> handler) => _handler = handler;
+
+    public void Report(T value)
+    {
+        lock (_gate) _handler(value);
+    }
 }

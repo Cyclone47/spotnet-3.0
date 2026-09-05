@@ -274,6 +274,18 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// Takes over sorting from the grid. The grid would order the rows it happens to
+    /// hold, which with a virtualised list is a handful of pages out of the whole
+    /// result; cancelling here and re-running the query puts the ORDER BY in SQL where
+    /// it covers everything.
+    /// </summary>
+    private void OnSpotsSorting(object? sender, DataGridColumnEventArgs e)
+    {
+        e.Handled = true;
+        _ = _viewModel.ApplySortAsync(e.Column?.SortMemberPath);
+    }
+
     private void OnSpotsKeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Key == Key.Delete || e.Key == Key.Back)

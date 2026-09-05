@@ -398,6 +398,7 @@
                       SelectedItem="{Binding $parent[Window].DataContext.SelectedSpot}"
                       DoubleTapped="OnSpotDoubleTapped"
                       KeyDown="OnSpotsKeyDown"
+                      Sorting="OnSpotsSorting"
                       AutoGenerateColumns="False"
                       IsReadOnly="True"
                       GridLinesVisibility="Horizontal"
@@ -408,7 +409,9 @@
                       RowBackground="{DynamicResource AppRowBackground}"
                       HorizontalGridLinesBrush="{DynamicResource AppGridLineBrush}">
               <DataGrid.Columns>
-                <DataGridTemplateColumn Header="Formaat" Width="72" CanUserSort="False">
+                <!-- SortMemberPath names the property the column shows; SpotSort maps it
+                     onto the database column the ORDER BY runs on. -->
+                <DataGridTemplateColumn Header="Formaat" Width="72" SortMemberPath="FormatLabel">
                   <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate DataType="models:SpotItem">
                       <Border Classes="FmtBadge" Margin="4,2" HorizontalAlignment="Left"
@@ -420,11 +423,11 @@
                     </DataTemplate>
                   </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn Header="Titel"    Binding="{Binding Subject}"       Width="*" MinWidth="200"/>
-                <DataGridTextColumn Header="Genre"    Binding="{Binding GenreLabel}"    Width="90"/>
-                <DataGridTextColumn Header="Afzender" Binding="{Binding SenderName}"    Width="150"/>
-                <DataGridTextColumn Header="Leeftijd" Binding="{Binding Age}"           Width="150"/>
-                <DataGridTextColumn Header="Omvang"   Binding="{Binding FormattedSize}" Width="100"/>
+                <DataGridTextColumn Header="Titel"    Binding="{Binding Subject}"       Width="*" MinWidth="200" SortMemberPath="Subject"/>
+                <DataGridTextColumn Header="Genre"    Binding="{Binding GenreLabel}"    Width="90"  SortMemberPath="GenreLabel"/>
+                <DataGridTextColumn Header="Afzender" Binding="{Binding SenderName}"    Width="150" SortMemberPath="SenderName"/>
+                <DataGridTextColumn Header="Leeftijd" Binding="{Binding Age}"           Width="150" SortMemberPath="Age"/>
+                <DataGridTextColumn Header="Omvang"   Binding="{Binding FormattedSize}" Width="100" SortMemberPath="FormattedSize"/>
               </DataGrid.Columns>
             </DataGrid>
           </DataTemplate>

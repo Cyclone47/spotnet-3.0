@@ -183,7 +183,8 @@ public sealed class SpotDatabaseService
         string? searchText = null,
         int skip = 0,
         int take = 100,
-        string sortDirection = "DESC")
+        string sortDirection = "DESC",
+        string sortColumn = SpotSort.DefaultColumn)
     {
         var spots = new List<SpotItem>();
         using var conn = _db.OpenConnection(readOnly: true);
@@ -193,7 +194,7 @@ public sealed class SpotDatabaseService
         string where = BuildFilterWhere(filterQuery, searchText, cmd);
 
         cmd.CommandText =
-            $"SELECT {FilterQueryBuilder.SpotColumns} FROM spots{where} ORDER BY date {order} LIMIT @take OFFSET @skip;";
+            $"SELECT {FilterQueryBuilder.SpotColumns} FROM spots{where} ORDER BY {SpotSort.ToSqlColumn(sortColumn)} {order}, rowid {order} LIMIT @take OFFSET @skip;";
         cmd.Parameters.AddWithValue("@take", take);
         cmd.Parameters.AddWithValue("@skip", skip);
 

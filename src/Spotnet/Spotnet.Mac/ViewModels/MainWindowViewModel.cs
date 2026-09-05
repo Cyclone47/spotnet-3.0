@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using NLog;
 using Spotnet.Mac.DAL;
+using Spotnet.Mac.DataVirtualization;
 using Spotnet.Mac.Models;
 using Spotnet.Mac.Network;
 using Spotnet.Mac.Platform;
@@ -28,6 +29,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private readonly CustomFilterService _customFilterService;
     private readonly CommentService _commentService;
     private readonly SpotBodyService _bodyService;
+    private readonly IUiDispatcher _dispatcher;
 
     // ── State ─────────────────────────────────────────────────────────────────
     private FilterItem? _selectedFilter;
@@ -40,7 +42,74 @@ public sealed class MainWindowViewModel : ViewModelBase
     private int _syncProgress;
 
     // ── Collections ───────────────────────────────────────────────────────────
-    public ObservableCollection<SpotItem> Spots { get; } = new();
+
+    private VirtualSpotCollection? _spots;
+
+    /// <summary>
+    /// The spot list. Reports the full number of matches but only holds the pages the
+    /// grid has actually scrolled through — see <see cref="VirtualSpotCollection"/>.
+    /// A new filter, search or sort order replaces the instance rather than refilling it.
+    /// </summary>
+    public VirtualSpotCollection? Spots
+    {
+        get => _spots;
+        private set => SetProperty(ref _spots, value);
+    }
+
+    /// <summary>Fetches one page for the current query. Passed to the virtual list as its loader.</summary>
+    private async Task<IReadOnlyList<SpotItem>> LoadSpotPageAsync(
+        string? filterQuery, string? keyword, int skip, int take, string sortColumn, string sortDirection)
+    {
+        try
+        {
+            return await _dbService.QueryByFilterAsync(
+                filterQuery: filterQuery,
+                searchText: keyword,
+                skip: skip,
+                take: take,
+                sortDirection: sortDirection,
+                sortColumn: sortColumn);
+        }
+        catch (Exception ex)
+        {
+            // One unreadable page must not take the window down; the rows stay
+            // placeholders and scrolling past and back retries.
+            Log.Error(ex, "Could not load spots {0}..{1}: {2}", skip, skip + take, ex.Message);
+            return Array.Empty<SpotItem>();
+        }
+    }
+
+    // ── Sorting ───────────────────────────────────────────────────────────────
+
+    /// <summary>Which column the list is ordered by; persisted between sessions.</summary>
+    public string SortColumn => SpotSort.NormalizeColumn(_prefsService.Current.SortColumn);
+
+    /// <summary>"ASC" or "DESC"; persisted between sessions.</summary>
+    public string SortDirection => SpotSort.NormalizeDirection(_prefsService.Current.SortDirection);
+
+    /// <summary>
+    /// Orders the list by a grid column. Clicking the column that is already active
+    /// flips the direction, which is what both the Windows client and the platform
+    /// convention do. The order is applied in SQL, so it covers the whole result set and
+    /// not just the pages in memory.
+    /// </summary>
+    public async Task ApplySortAsync(string? sortMemberPath)
+    {
+        string column = SpotSort.NormalizeColumn(sortMemberPath);
+        string direction = column.Equals(SortColumn, StringComparison.OrdinalIgnoreCase)
+            ? (SortDirection == "ASC" ? "DESC" : "ASC")
+            : SpotSort.DefaultDirection;
+
+        var prefs = _prefsService.Current;
+        prefs.SortColumn = column;
+        prefs.SortDirection = direction;
+        _prefsService.Save(prefs);
+
+        OnPropertyChanged(nameof(SortColumn));
+        OnPropertyChanged(nameof(SortDirection));
+
+        await RefreshSpotsAsync();
+    }
 
     /// <summary>The tab strip: the overview, plus one tab per opened spot.</summary>
     public ObservableCollection<WorkspaceTabViewModel> Tabs { get; } = new();
@@ -221,9 +290,11 @@ public sealed class MainWindowViewModel : ViewModelBase
     public Func<int, long, Task<(bool confirmed, bool deleteFiles)>>? RequestConfirmClearDownloads;
 
     // ── Constructor ───────────────────────────────────────────────────────────
-    public MainWindowViewModel(IAppPaths appPaths, ISecretStore secretStore, SpotDatabaseService dbService, UserPreferencesService? prefsService = null)
+    public MainWindowViewModel(IAppPaths appPaths, ISecretStore secretStore, SpotDatabaseService dbService,
+                               UserPreferencesService? prefsService = null, IUiDispatcher? dispatcher = null)
     {
         _appPaths = appPaths;
+        _dispatcher = dispatcher ?? new AvaloniaUiDispatcher();
         _secretStore = secretStore;
         _dbService = dbService;
         _prefsService = prefsService ?? new UserPreferencesService(_appPaths);
@@ -343,11 +414,12 @@ public sealed class MainWindowViewModel : ViewModelBase
             {
                 DownloadsTab.RemoveCommand.Execute(DownloadsTab.Selected);
             }
-            else if (SelectedTab is OverviewTabViewModel && SelectedSpot != null)
-            {
-                Spots.Remove(SelectedSpot);
-                SelectedSpot = null;
-            }
+
+            // Delete on the spot list used to drop the row from the in-memory copy,
+            // which put it straight back on the next refresh. The list is now a view
+            // over the database, so there is nothing local to drop. Hiding a spot for
+            // real is the blacklist, which Windows implements too and which this client
+            // does not have yet.
         });
 
         DownloadsTab.RequestOpenSpotInfo += async msgId =>
@@ -592,16 +664,23 @@ public sealed class MainWindowViewModel : ViewModelBase
             // typing in the box narrows the filter rather than replacing it.
             string? keyword = string.IsNullOrWhiteSpace(SearchText) ? filter?.KeywordFilter : SearchText;
 
-            var items = await _dbService.QueryByFilterAsync(
-                filterQuery: filter?.Query,
-                searchText: keyword,
-                take: 100);
+            string? filterQuery = filter?.Query;
+            string sortColumn = SortColumn;
+            string sortDirection = SortDirection;
 
-            TotalSpotsCount = await _dbService.CountByFilterAsync(filter?.Query, keyword);
+            // The count comes first: it is what the virtual list reports as its size, so
+            // the grid can size its scrollbar to the whole result rather than to the one
+            // page that happens to be in memory.
+            TotalSpotsCount = await _dbService.CountByFilterAsync(filterQuery, keyword);
 
-            Spots.Clear();
-            foreach (var item in items)
-                Spots.Add(item);
+            var previous = Spots;
+            Spots = new VirtualSpotCollection(
+                (skip, take, _) => LoadSpotPageAsync(filterQuery, keyword, skip, take, sortColumn, sortDirection),
+                TotalSpotsCount,
+                _dispatcher);
+            previous?.Dispose();
+
+            SelectedSpot = null;
 
             string filterName = filter?.Name ?? "Alle spots";
             StatusText = $"{TotalSpotsCount} spots gevonden in {filterName}";

@@ -1,9 +1,53 @@
 using System;
+using System.ComponentModel;
 
 namespace Spotnet.Mac.Models;
 
-public sealed class SpotItem
+public sealed class SpotItem : INotifyPropertyChanged
 {
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    /// <summary>
+    /// True while this row is a stand-in for a spot the virtual list has not fetched
+    /// yet. The grid binds it to show an em dash instead of an empty row.
+    /// </summary>
+    public bool IsPlaceholder { get; private set; }
+
+    /// <summary>
+    /// Creates the placeholder a <see cref="DataVirtualization.VirtualSpotCollection"/>
+    /// hands out for a row whose page is still loading.
+    /// </summary>
+    public static SpotItem Placeholder() => new() { IsPlaceholder = true };
+
+    /// <summary>
+    /// Copies the stored columns out of <paramref name="source"/> and announces the
+    /// change. Every displayed property is computed from those thirteen fields, so one
+    /// null-named PropertyChanged — the .NET convention for "all properties" — refreshes
+    /// the whole row. Filling in place rather than replacing the instance keeps the
+    /// grid's selection and scroll position intact while pages arrive.
+    /// </summary>
+    public void Fill(SpotItem source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        Id = source.Id;
+        Key = source.Key;
+        Category = source.Category;
+        Subcat = source.Subcat;
+        Extcat = source.Extcat;
+        Date = source.Date;
+        Filesize = source.Filesize;
+        Cats = source.Cats;
+        Sender = source.Sender;
+        Tag = source.Tag;
+        Subject = source.Subject;
+        MsgId = source.MsgId;
+        Modulus = source.Modulus;
+        IsPlaceholder = false;
+
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+    }
+
     public long Id { get; set; }
     public int Key { get; set; }
     public int Category { get; set; }

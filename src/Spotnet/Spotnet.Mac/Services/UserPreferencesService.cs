@@ -75,6 +75,17 @@ public sealed class UserPreferences
     /// Whether desktop notifications are shown when downloads complete or db repairs finish.
     /// </summary>
     public bool ShowDesktopNotifications { get; set; } = true;
+
+    /// <summary>
+    /// Which spot-list column the list is ordered by, as the grid column's
+    /// SortMemberPath. Validated against <see cref="DAL.SpotSort"/> on read, so an
+    /// unknown value from another build falls back to the default rather than failing.
+    /// Windows keeps the same two settings (SortColumn, SortDirection).
+    /// </summary>
+    public string SortColumn { get; set; } = DAL.SpotSort.DefaultColumn;
+
+    /// <summary>"ASC" or "DESC". Newest first by default, as on Windows.</summary>
+    public string SortDirection { get; set; } = DAL.SpotSort.DefaultDirection;
 }
 
 public sealed class UserPreferencesService
