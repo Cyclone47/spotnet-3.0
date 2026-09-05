@@ -72,7 +72,7 @@ libraries op net8.0.
 |---|---|---|
 | 1. Datavirtualisatie, `take: 100` weg | ✅ | `2c3bc9b` |
 | 2. Sorteren serverside, keuze bewaard | ✅ | `2c3bc9b` |
-| 3. Automatische sync-timer + retentie | ❌ **open** | — |
+| 3. Automatische sync-timer + retentie | ✅ | `6e5cc37` |
 | 4. Rolgebaseerde servers (Headers/Download/Upload) | ✅ | `aad428b` |
 | 5. SOCKS5 aansluiten | ⚠️ deels | `4ebbd70` |
 | 6. Providercatalogus uit `providers.json` | ❌ **open** | — |

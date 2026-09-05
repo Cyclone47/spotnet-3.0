@@ -16,6 +16,7 @@ using Spotnet.Platform;
 
 namespace Spotnet.Mac;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "Avalonia Window disposes view model on Closed event")]
 public partial class MainWindow : Window
 {
     private readonly MainWindowViewModel _viewModel;
@@ -47,6 +48,7 @@ public partial class MainWindow : Window
 
         DataContext = _viewModel;
         Loaded += OnWindowLoaded;
+        Closed += (s, e) => _viewModel.Dispose();
     }
 
     private async void OnWindowLoaded(object? sender, RoutedEventArgs e)
@@ -74,9 +76,10 @@ public partial class MainWindow : Window
 
     private async void ShowSettingsWindow()
     {
-        var settingsVm = new SettingsViewModel(_secretStore, _appPaths, new UserPreferencesService(_appPaths), _dbService);
+        var settingsVm = new SettingsViewModel(_secretStore, _appPaths, _viewModel.PreferencesService, _dbService);
         var window = new SettingsWindow(settingsVm);
         await window.ShowDialog(this);
+        _viewModel.OnSettingsSaved();
     }
 
     private async void ShowReleaseNotesWindow()

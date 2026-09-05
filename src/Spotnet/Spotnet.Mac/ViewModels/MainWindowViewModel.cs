@@ -16,7 +16,7 @@ using Spotnet.Platform;
 
 namespace Spotnet.Mac.ViewModels;
 
-public sealed class MainWindowViewModel : ViewModelBase
+public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 {
     private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
@@ -30,6 +30,9 @@ public sealed class MainWindowViewModel : ViewModelBase
     private readonly CommentService _commentService;
     private readonly SpotBodyService _bodyService;
     private readonly IUiDispatcher _dispatcher;
+
+    public UserPreferencesService PreferencesService => _prefsService;
+    private System.Threading.Timer? _autoSyncTimer;
 
     // ── State ─────────────────────────────────────────────────────────────────
     private FilterItem? _selectedFilter;
@@ -634,10 +637,11 @@ public sealed class MainWindowViewModel : ViewModelBase
         {
             await _dbService.EnsureCreatedAsync();
             await _dbService.LoadRowNewAsync();
+            await _dbService.UpdateDatabaseStatsAsync(_prefsService);
 
             await RefreshSpotsAsync();
             await UpdateFilterCountsAsync();
-            StatusText = $"Gereed - {TotalSpotsCount} spots geladen";
+            StartAutoSyncTimer();
         }
         catch (Exception ex)
         {
@@ -682,8 +686,7 @@ public sealed class MainWindowViewModel : ViewModelBase
 
             SelectedSpot = null;
 
-            string filterName = filter?.Name ?? "Alle spots";
-            StatusText = $"{TotalSpotsCount} spots gevonden in {filterName}";
+            UpdateSpotsListStatusMessage();
         }
         catch (Exception ex)
         {
@@ -694,6 +697,125 @@ public sealed class MainWindowViewModel : ViewModelBase
         {
             IsLoading = false;
         }
+    }
+
+    /// <summary>
+    /// Formats the status bar spot count message to match Windows StatusBarViewModel.SetDefaultSpotsListStatusMessage.
+    /// Uses Dutch thousand-separator dots and reports total in database vs filtered query count.
+    /// </summary>
+    private void UpdateSpotsListStatusMessage()
+    {
+        long databaseCount = _prefsService.Current.DatabaseCount;
+        var nfi = new System.Globalization.CultureInfo("nl-NL");
+        string formattedDbCount = databaseCount.ToString("#,##0", nfi);
+
+        if (databaseCount < 1)
+        {
+            StatusText = "Geen spots in de database";
+            return;
+        }
+
+        if (TotalSpotsCount < 1)
+        {
+            StatusText = "Geen spots gevonden";
+            return;
+        }
+
+        bool isAllSpots = _selectedFilter == null
+            || string.IsNullOrWhiteSpace(_selectedFilter.Query)
+            || _selectedFilter.Id == "def_Overzicht";
+
+        if (isAllSpots && string.IsNullOrWhiteSpace(SearchText))
+        {
+            StatusText = databaseCount != 1
+                ? $"{formattedDbCount} spots in de database"
+                : "1 spot in de database";
+        }
+        else
+        {
+            string formattedQueryCount = TotalSpotsCount.ToString("#,##0", nfi);
+            StatusText = TotalSpotsCount != 1
+                ? $"{formattedQueryCount} spots (van de {formattedDbCount})"
+                : $"1 spot (van de {formattedDbCount})";
+        }
+    }
+
+    /// <summary>
+    /// Starts the automatic background synchronization timer if enabled (Windows: DbUpdateTimerStart).
+    /// </summary>
+    public void StartAutoSyncTimer()
+    {
+        StopAutoSyncTimer();
+
+        var prefs = _prefsService.Current;
+        if (!prefs.DbAutoUpdateEnabled || prefs.DbAutoUpdateIntervalMin <= 0)
+        {
+            return;
+        }
+
+        var interval = TimeSpan.FromMinutes(Math.Max(1, prefs.DbAutoUpdateIntervalMin));
+        _autoSyncTimer = new System.Threading.Timer(async _ =>
+        {
+            await OnAutoSyncTimerElapsedAsync();
+        }, null, interval, interval);
+    }
+
+    /// <summary>
+    /// Stops the automatic background synchronization timer (Windows: DbUpdateTimerStop).
+    /// </summary>
+    public void StopAutoSyncTimer()
+    {
+        _autoSyncTimer?.Dispose();
+        _autoSyncTimer = null;
+    }
+
+    private async Task OnAutoSyncTimerElapsedAsync()
+    {
+        var prefs = _prefsService.Current;
+        if (!prefs.DbAutoUpdateEnabled || prefs.DbAutoUpdateIntervalMin <= 0)
+        {
+            StopAutoSyncTimer();
+            return;
+        }
+
+        if (IsSyncing || IsLoading)
+        {
+            Log.Debug("Auto-sync skipped: a sync or load is already in progress.");
+            return;
+        }
+
+        await _dispatcher.InvokeAsync(async () =>
+        {
+            if (IsSyncing || IsLoading) return;
+            try
+            {
+                Log.Info("Auto-sync timer elapsed; starting automated sync.");
+                IsSyncing = true;
+                await _syncService.SyncSpotsAsync();
+                IsSyncing = false;
+                await RefreshSpotsAsync();
+                await UpdateFilterCountsAsync();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Auto-sync failed: {0}", ex.Message);
+            }
+            finally
+            {
+                IsSyncing = false;
+            }
+        });
+    }
+
+    /// <summary>
+    /// Invoked when settings are saved to refresh auto-sync timer, database statistics, and views.
+    /// </summary>
+    public async void OnSettingsSaved()
+    {
+        StartAutoSyncTimer();
+        await _dbService.UpdateDatabaseStatsAsync(_prefsService);
+        await RefreshSpotsAsync();
+        await UpdateFilterCountsAsync();
     }
 
     // ── Filter Counts ─────────────────────────────────────────────────────────
@@ -727,5 +849,10 @@ public sealed class MainWindowViewModel : ViewModelBase
         {
             await UpdateCountsForGroupAsync(child);
         }
+    }
+
+    public void Dispose()
+    {
+        StopAutoSyncTimer();
     }
 }

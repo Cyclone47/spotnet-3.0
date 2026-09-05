@@ -103,8 +103,8 @@ Gesorteerd op hoe hard het pijn doet in dagelijks gebruik.
 |---|---|---|
 | **Datavirtualisatie** | `VirtualList` / `VirtualListItem`, pagineert over de hele database | `QueryByFilterAsync(take: 100)` — hard afgekapt op 100 spots, geen paginering, geen scroll-laden |
 | **Rolgebaseerde servers** | Aparte Headers-, Download- en Upload-server in `servers.xml` | ~~pakt blind het eerste `<Server>`-element~~ opgelost in `ServerProfile` |
-| **Automatische sync** | `DbAutoUpdateEnabled` + `DbAutoUpdateIntervalMin`, timer in de statusbalk | alleen handmatig "Spots Ophalen" |
-| **Retentie / opruimen** | `Retention`, `DatabaseMin/Max/Count`, database opnieuw opbouwen | niets; de database groeit onbeperkt |
+| **Automatische sync** | `DbAutoUpdateEnabled` + `DbAutoUpdateIntervalMin`, timer in de statusbalk | `DbAutoUpdateEnabled` + `DbAutoUpdateIntervalMin` met achtergrondtimer |
+| **Retentie / opruimen** | `Retention`, `DatabaseMin/Max/Count`, database opnieuw opbouwen | `Retention` in `SpotDatabaseService` en `SpotSyncService`, `DatabaseMin/Max/Count` bijgehouden |
 | **Sorteren en kolommen** | `SortColumn`, `SortDirection`, `Columns`, `ColumnsSize`, per tab bewaard | DataGrid sorteert in-memory over de geladen 100, niets wordt bewaard |
 | **SOCKS5-proxy** | `UseSocksProxy` + statusindicator in de statusbalk | `Socks5Client` zit al in `Spotnet.Core` maar is nergens aangesloten |
 

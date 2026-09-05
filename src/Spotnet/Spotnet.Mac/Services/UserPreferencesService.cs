@@ -106,6 +106,33 @@ public sealed class UserPreferences
     public int SocksProxyPort { get; set; } = 1080;
 
     public string SocksProxyUsername { get; set; } = "";
+
+    /// <summary>
+    /// Whether automatic periodic background synchronization is enabled.
+    /// Matches Windows DbAutoUpdateEnabled (default true).
+    /// </summary>
+    public bool DbAutoUpdateEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Interval in minutes between automatic periodic synchronizations.
+    /// Matches Windows DbAutoUpdateIntervalMin (default 10).
+    /// </summary>
+    public int DbAutoUpdateIntervalMin { get; set; } = 10;
+
+    /// <summary>
+    /// Spot retention period in days. Matches Windows Retention (default -1).
+    /// -1 or 0 means unlimited (keep all spots); >= 1 removes spots older than this many days.
+    /// </summary>
+    public int Retention { get; set; } = -1;
+
+    /// <summary>Minimum rowid in the spots table (Windows: DatabaseMin).</summary>
+    public long DatabaseMin { get; set; }
+
+    /// <summary>Maximum rowid in the spots table (Windows: DatabaseMax).</summary>
+    public long DatabaseMax { get; set; }
+
+    /// <summary>Total spots count in the database (Windows: DatabaseCount).</summary>
+    public long DatabaseCount { get; set; }
 }
 
 public sealed class UserPreferencesService

@@ -170,6 +170,42 @@ public sealed class SettingsViewModel : ViewModelBase
         }
     }
 
+    private bool _dbAutoUpdateEnabled = true;
+    public bool DbAutoUpdateEnabled
+    {
+        get => _dbAutoUpdateEnabled;
+        set => SetProperty(ref _dbAutoUpdateEnabled, value);
+    }
+
+    private int _dbAutoUpdateIntervalMin = 10;
+    public int DbAutoUpdateIntervalMin
+    {
+        get => _dbAutoUpdateIntervalMin;
+        set => SetProperty(ref _dbAutoUpdateIntervalMin, value);
+    }
+
+    private bool _retentionEnabled;
+    public bool RetentionEnabled
+    {
+        get => _retentionEnabled;
+        set
+        {
+            if (SetProperty(ref _retentionEnabled, value))
+            {
+                OnPropertyChanged(nameof(IsRetentionInputEnabled));
+            }
+        }
+    }
+
+    private int _retention = 30;
+    public int Retention
+    {
+        get => _retention;
+        set => SetProperty(ref _retention, value);
+    }
+
+    public bool IsRetentionInputEnabled => _retentionEnabled;
+
     private bool _showDesktopNotifications = true;
     public bool ShowDesktopNotifications
     {
@@ -402,8 +438,18 @@ public sealed class SettingsViewModel : ViewModelBase
         _initialFetchDays = prefs.InitialFetchDays;
         ShowDesktopNotifications = prefs.ShowDesktopNotifications;
         ExternalBrowser = prefs.ExternalBrowser;
+        _dbAutoUpdateEnabled = prefs.DbAutoUpdateEnabled;
+        _dbAutoUpdateIntervalMin = prefs.DbAutoUpdateIntervalMin > 0 ? prefs.DbAutoUpdateIntervalMin : 10;
+        _retentionEnabled = prefs.Retention >= 1;
+        _retention = prefs.Retention >= 1 ? prefs.Retention : 30;
+
         OnPropertyChanged(nameof(SelectedDownloadMode));
         OnPropertyChanged(nameof(SelectedInitialFetchRange));
+        OnPropertyChanged(nameof(DbAutoUpdateEnabled));
+        OnPropertyChanged(nameof(DbAutoUpdateIntervalMin));
+        OnPropertyChanged(nameof(RetentionEnabled));
+        OnPropertyChanged(nameof(Retention));
+        OnPropertyChanged(nameof(IsRetentionInputEnabled));
 
         if (string.IsNullOrEmpty(Server))
         {
@@ -462,6 +508,9 @@ public sealed class SettingsViewModel : ViewModelBase
             }
 
             var prefs = _prefsService.Current;
+            int oldRetention = prefs.Retention;
+            int newRetention = RetentionEnabled && Retention >= 1 ? Retention : -1;
+
             prefs.ThemeStyle = _selectedTheme;
             prefs.DownloadMode = _downloadMode;
             prefs.DownloadFolder = DownloadFolder;
@@ -474,7 +523,26 @@ public sealed class SettingsViewModel : ViewModelBase
             prefs.SocksProxyHost = SocksProxyHost;
             prefs.SocksProxyPort = SocksProxyPort;
             prefs.SocksProxyUsername = SocksProxyUsername;
+            prefs.DbAutoUpdateEnabled = DbAutoUpdateEnabled;
+            prefs.DbAutoUpdateIntervalMin = DbAutoUpdateIntervalMin > 0 ? DbAutoUpdateIntervalMin : 10;
+            prefs.Retention = newRetention;
             _prefsService.Save(prefs);
+
+            if (newRetention >= 1 && (oldRetention < 1 || newRetention < oldRetention) && _dbService != null)
+            {
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await _dbService.RemoveOutOfRetentionSpotsAsync(newRetention);
+                        await _dbService.UpdateDatabaseStatsAsync(_prefsService);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "Failed to remove out-of-retention spots after settings change: {0}", ex.Message);
+                    }
+                });
+            }
 
             if (!string.IsNullOrEmpty(SocksProxyPassword))
             {

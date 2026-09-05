@@ -108,6 +108,24 @@
                           SelectedItem="{Binding SelectedInitialFetchRange}"
                           HorizontalAlignment="Stretch"/>
 
+                <CheckBox IsChecked="{Binding DbAutoUpdateEnabled}"
+                          Content="Database automatisch bijwerken"
+                          ToolTip.Tip="Nieuwe spots periodiek op de achtergrond ophalen"/>
+
+                <Grid ColumnDefinitions="Auto,8,80,*" Margin="24,0,0,0" IsVisible="{Binding DbAutoUpdateEnabled}">
+                    <TextBlock Grid.Column="0" Text="Interval (minuten):" VerticalAlignment="Center"/>
+                    <NumericUpDown Grid.Column="2" Value="{Binding DbAutoUpdateIntervalMin}" Minimum="1" Maximum="1440" FormatString="0"/>
+                </Grid>
+
+                <CheckBox IsChecked="{Binding RetentionEnabled}"
+                          Content="Retentie (dagen)"
+                          ToolTip.Tip="Spots ouder dan het opgegeven aantal dagen automatisch verwijderen"/>
+
+                <Grid ColumnDefinitions="Auto,8,80,*" Margin="24,0,0,0" IsVisible="{Binding RetentionEnabled}">
+                    <TextBlock Grid.Column="0" Text="Aantal dagen:" VerticalAlignment="Center"/>
+                    <NumericUpDown Grid.Column="2" Value="{Binding Retention}" Minimum="1" Maximum="9999" FormatString="0"/>
+                </Grid>
+
                 <TextBlock Text="Database onderhoud &amp; optimalisatie:" FontWeight="Medium"/>
                 <Button Content="Database controleren &amp; repareren"
                         Command="{Binding QuickRepairCommand}"

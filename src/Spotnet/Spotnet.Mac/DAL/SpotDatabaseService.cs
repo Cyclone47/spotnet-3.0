@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using NLog;
 using Spotnet.Mac.Models;
+using Spotnet.Mac.Services;
 
 namespace Spotnet.Mac.DAL;
 
@@ -665,5 +667,94 @@ public sealed class SpotDatabaseService
             Log.Warn(ex, "Database quick repair failed");
             return (false, $"Fout tijdens databaseherstel: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Computes exact database statistics: minimum rowid, maximum rowid, and total spot count.
+    /// Matches Windows SpotSaver.UpdateDatabaseSettings.
+    /// </summary>
+    public async Task<(long min, long max, long count)> GetDatabaseStatsAsync()
+    {
+        using var conn = _db.OpenConnection(readOnly: true);
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT IFNULL(MIN(rowid), 0), IFNULL(MAX(rowid), 0), COUNT(1) FROM spots;";
+
+        using var reader = await cmd.ExecuteReaderAsync();
+        if (await reader.ReadAsync())
+        {
+            long min = reader.GetInt64(0);
+            long max = reader.GetInt64(1);
+            long count = reader.GetInt64(2);
+            return (min, max, count);
+        }
+
+        return (0, 0, 0);
+    }
+
+    /// <summary>
+    /// Refreshes database statistics and updates <see cref="UserPreferences"/> (DatabaseMin, DatabaseMax, DatabaseCount).
+    /// </summary>
+    public async Task<(long min, long max, long count)> UpdateDatabaseStatsAsync(UserPreferencesService? preferences = null)
+    {
+        var stats = await GetDatabaseStatsAsync();
+        if (preferences != null)
+        {
+            var prefs = preferences.Current;
+            prefs.DatabaseMin = stats.min;
+            prefs.DatabaseMax = stats.max;
+            prefs.DatabaseCount = stats.count;
+            preferences.Save(prefs);
+        }
+        return stats;
+    }
+
+    /// <summary>
+    /// Removes spots older than <paramref name="retentionDays"/> days in batches of 2000 rows.
+    /// Matches Windows SpotSaver.RemoveOutOfRetentionSpots.
+    /// Returns the total number of spots removed.
+    /// </summary>
+    public async Task<int> RemoveOutOfRetentionSpotsAsync(int retentionDays, CancellationToken cancellationToken = default)
+    {
+        if (retentionDays < 1) return 0;
+
+        long cutoff = DateTimeOffset.UtcNow.AddDays(-retentionDays).ToUnixTimeSeconds();
+        int totalDeleted = 0;
+
+        using var conn = _db.OpenConnection(readOnly: false);
+
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            using var tx = conn.BeginTransaction();
+            using var cmd = conn.CreateCommand();
+            cmd.Transaction = tx;
+            cmd.CommandText = "DELETE FROM spots WHERE rowid IN (SELECT rowid FROM spots WHERE date < @cutoff LIMIT 2000);";
+            cmd.Parameters.AddWithValue("@cutoff", cutoff);
+
+            int deleted = await cmd.ExecuteNonQueryAsync(cancellationToken);
+            tx.Commit();
+
+            totalDeleted += deleted;
+            if (deleted < 2000)
+            {
+                break;
+            }
+
+            // Yield briefly to keep SQLite and other operations responsive
+            try
+            {
+                await Task.Delay(20, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+        }
+
+        if (totalDeleted > 0)
+        {
+            Log.Info("Out of retention spots removed: {0}", totalDeleted);
+        }
+
+        return totalDeleted;
     }
 }

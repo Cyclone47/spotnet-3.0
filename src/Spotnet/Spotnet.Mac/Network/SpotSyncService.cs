@@ -55,9 +55,10 @@ public sealed class SpotSyncService
             ProgressChanged?.Invoke(0, 100, $"Verbinden met {serverInfo.Server}...");
 
             using var client = new NntpClient();
+            var proxy = _preferences?.Current != null ? ProxySettings.FromPreferences(_preferences.Current, _secretStore) : null;
             await client.ConnectAsync(serverInfo.Server, serverInfo.Port, serverInfo.SSL,
-                                      _preferences.Current.AllowInvalidServerCertificate,
-                                      ProxySettings.FromPreferences(_preferences.Current, _secretStore),
+                                      _preferences?.Current.AllowInvalidServerCertificate ?? false,
+                                      proxy,
                                       cancellationToken);
 
             if (!string.IsNullOrEmpty(serverInfo.Username))
@@ -174,6 +175,20 @@ public sealed class SpotSyncService
                 currentStart = currentEnd + 1;
             }
 
+            // Retention cleanup: remove spots older than configured retention period (Windows: RemoveOutOfRetentionSpotsAsync)
+            if (_preferences != null && _preferences.Current.Retention >= 1)
+            {
+                ProgressChanged?.Invoke(95, 100, "Spots verwijderen...");
+                int removed = await _dbService.RemoveOutOfRetentionSpotsAsync(_preferences.Current.Retention, cancellationToken);
+                if (removed > 0)
+                {
+                    Log.Info("Out of retention spots removed: {0}", removed);
+                }
+            }
+
+            // Refresh database statistics (DatabaseMin, DatabaseMax, DatabaseCount)
+            await _dbService.UpdateDatabaseStatsAsync(_preferences);
+
             await IndexCommentsAsync(client, cancellationToken);
 
             ProgressChanged?.Invoke(100, 100, $"Klaar! {totalInserted} nieuwe spots binnengehaald.");
@@ -193,35 +208,8 @@ public sealed class SpotSyncService
 
     private ServerInfo? LoadServerConfig()
     {
-        string serversXmlPath = Path.Combine(_appPaths.DataFolder, "servers.xml");
-        if (!File.Exists(serversXmlPath)) return null;
-
-        try
-        {
-            var doc = XDocument.Load(serversXmlPath);
-            var serverEl = doc.Root?.Element("Server");
-            if (serverEl == null) return null;
-
-            string host = serverEl.Attribute("Server")?.Value ?? "";
-            int port = int.TryParse(serverEl.Attribute("Port")?.Value, out var p) ? p : 563;
-            bool ssl = (serverEl.Attribute("SSL")?.Value ?? "1") == "1";
-            string user = serverEl.Attribute("Username")?.Value ?? "";
-            string pass = _secretStore.GetSecret($"Spotnet_{host}_{user}") ?? "";
-
-            return new ServerInfo
-            {
-                Server = host,
-                Port = port,
-                SSL = ssl,
-                Username = user,
-                Password = pass
-            };
-        }
-        catch (Exception ex)
-        {
-            Log.Warn(ex, "Failed to parse servers.xml");
-            return null;
-        }
+        var profile = ServerProfile.Load(_appPaths, _secretStore);
+        return profile.Get(ServerRole.Headers);
     }
 
     /// <summary>
