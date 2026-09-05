@@ -272,6 +272,29 @@ public sealed class UserPreferences
     public DateTime DownloaderEndTime { get; set; } = new(2016, 10, 26, 14, 52, 0);
 
     /// <summary>
+    /// Whether the par2 recovery files are deleted after a successful download.
+    /// Matches Windows Settings.Default.RemovePar2FilesAfterDownload (default true).
+    /// </summary>
+    public bool RemovePar2FilesAfterDownload { get; set; } = true;
+
+    /// <summary>
+    /// What happens to the downloaded files when the user removes a row from the
+    /// download list. Matches Windows Settings.Default.RemoveFilesOnDownloadRemove:
+    /// -1 = ask every time (and remember a "don't ask again" answer),
+    ///  1 = always delete the files from disk,
+    ///  0 = always keep the files.
+    /// </summary>
+    public int RemoveFilesOnDownloadRemove { get; set; } = -1;
+
+    /// <summary>
+    /// Whether the computer is shut down when the last download has finished.
+    /// Windows keeps this in a static Sys.ShutdownPCAfterDownloads that the settings
+    /// screen loads into at startup; the Mac client reads the preference directly.
+    /// The dialog lets the user cancel within 60 seconds, as on Windows.
+    /// </summary>
+    public bool ShutdownPcAfterDownloads { get; set; }
+
+    /// <summary>
     /// A host is a provider cache server when it ends in one of these suffixes.
     /// Windows: CachingSystem.MasterHostnameSnelNl / MasterHostname5Euro.
     /// </summary>

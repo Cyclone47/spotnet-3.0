@@ -28,6 +28,7 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
 
     private readonly DownloadHistoryService _history;
     private readonly MacNotificationService _notificationService;
+    private readonly UserPreferencesService? _preferences;
 
     /// <summary>
     /// Optional external unpackers. Verification, repair and unpacking are all built
@@ -68,10 +69,27 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
     public Func<DownloadItem, Task<(bool confirmed, bool deleteFiles)>>? RequestConfirmRemove;
     public Func<int, long, Task<(bool confirmed, bool deleteFiles)>>? RequestConfirmClear;
 
+    /// <summary>
+    /// Raised when a download has finished and the "afsluiten na downloads" setting
+    /// is on: the view shows the countdown dialog the Windows ShutdownComputerDialog
+    /// fills in, and acts on the outcome.
+    /// </summary>
+    public event Action? RequestShutdownAfterDownloads;
+
+    /// <summary>
+    /// Asks the user whether removing the row should also delete the files, in the
+    /// style of the Windows RemoveFilesFromTheDiskDialog. Returns true for yes.
+    /// </summary>
+    public Func<DownloadItem, Task<bool>>? RequestAskRemoveFiles;
+
+    /// <summary>Whether the current remove dialog offered the remember-answer checkbox.</summary>
+    public Func<bool>? RequestRememberRemoveFilesAnswer;
+
 
     public DownloadsTabViewModel(DownloadHistoryService history, UserPreferencesService? preferences = null, MacNotificationService? notificationService = null)
     {
         _history = history;
+        _preferences = preferences;
         _notificationService = notificationService ?? new MacNotificationService(preferences);
 
         foreach (var item in _history.Load())
@@ -145,13 +163,8 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
             var item = param as DownloadItem ?? Selected;
             if (item != null)
             {
-                bool deleteFiles = false;
-                if (RequestConfirmRemove != null)
-                {
-                    var (confirmed, del) = await RequestConfirmRemove(item);
-                    if (!confirmed) return;
-                    deleteFiles = del;
-                }
+                var (confirmed, deleteFiles) = await DecideRemoveFilesAsync(item);
+                if (!confirmed) return;
 
                 item.JobCts?.Cancel();
                 item.PauseGate?.Set();
@@ -484,7 +497,12 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
         });
 
         var coordinator = new PostProcessCoordinator(dir, _tools, progress,
-            logSink: line => Log.Info("[{0}] {1}", item.Title, line));
+            logSink: line => Log.Info("[{0}] {1}", item.Title, line))
+        {
+            // Windows: Settings.Default.RemovePar2FilesAfterDownload gates
+            // parRecover.RemovePar2FilesAndWaitForDeleted() in PostProcessCoordinator.
+            RemovePar2Files = _preferences?.Current.RemovePar2FilesAfterDownload ?? true
+        };
 
         PostProcessOutcome outcome;
         try
@@ -539,6 +557,113 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
             }
             Persist();
         });
+
+        MaybeRequestShutdownAfterDownloads();
+    }
+
+    /// <summary>
+    /// Afsluiten na afloop, zoals Windows' ProcessShutdownPcAfterDownloads: zodra een
+    /// download klaar is en er niets meer in de wachtrij staat, krijgt de view het
+    /// teken het aftelvenster te tonen. De view beslist over het venster; hier staat
+    /// alleen de poortlogica, met een enkele afrader tegen dubbele vensters.
+    /// </summary>
+    private int _shutdownDialogShown;
+    internal void MaybeRequestShutdownAfterDownloads()
+    {
+        var prefs = _preferences?.Current;
+        if (prefs == null || !prefs.ShutdownPcAfterDownloads) return;
+        if (IsAnyActiveDownloads()) return;
+        if (Interlocked.CompareExchange(ref _shutdownDialogShown, 1, 0) != 0) return;
+
+        try
+        {
+            RequestShutdownAfterDownloads?.Invoke();
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _shutdownDialogShown, 0);
+        }
+    }
+
+    /// <summary>Windows: SpotnetDownloader.IsAnyActiveDownloads.</summary>
+    public bool IsAnyActiveDownloads() =>
+        Downloads.Any(d => d.IsDownloading || (d.JobCts != null && d.IsDownloading));
+
+    /// <summary>The remove-files preference as this tab sees it (testable seam).</summary>
+    public int EffectiveRemoveFilesPreference => _preferences?.Current.RemoveFilesOnDownloadRemove ?? -1;
+
+    /// <summary>
+    /// Runs the removal synchronously for callers that want to await it directly —
+    /// tests, and anything else that must see the row gone when it returns.
+    /// </summary>
+    public async System.Threading.Tasks.Task<(bool confirmed, bool deleteFiles)> RemoveWithCleanupAsync(DownloadItem item)
+    {
+        var result = await DecideRemoveFilesAsync(item);
+        if (!result.confirmed) return result;
+
+        item.JobCts?.Cancel();
+        item.PauseGate?.Set();
+
+        if (result.deleteFiles)
+        {
+            DeleteStoredFiles(item);
+        }
+
+        Downloads.Remove(item);
+        Renumber();
+        Persist();
+        return result;
+    }
+
+    /// <summary>
+    /// Verwijderen van een rij, inclusief de "bestanden ook van schijf?"-vraag zoals
+    /// DownloaderItems.RunRemoveFilesFromTheDiskDialog die stelt: bij voorkeur -1
+    /// alleen vragen als er bestanden zijn, en een opgeslagen antwoord niet meer
+    /// vragen. Geeft (verwijderen?, ook bestanden verwijderen?).
+    ///
+    /// Windows kent alleen die schijf-vraag; de Mac-client heeft daarvóór al een
+    /// bevestigingsvenster met een "ook bestanden verwijderen"-vinkje. Een expliciet
+    /// aangevinkt vinkje beslist dan ook meteen en de schijf-vraag komt niet tweemaal.
+    /// </summary>
+    private async System.Threading.Tasks.Task<(bool confirmed, bool deleteFiles)> DecideRemoveFilesAsync(DownloadItem item)
+    {
+        // Existing dialog hook (used by MainWindow) still wins when wired: it carries
+        // its own confirmation plus a delete-files checkbox.
+        bool confirmed = true;
+        bool? confirmHookDeleteFiles = null;
+        if (RequestConfirmRemove != null)
+        {
+            (confirmed, bool hookDelete) = await RequestConfirmRemove(item);
+            confirmHookDeleteFiles = hookDelete;
+            if (!confirmed) return (false, false);
+            if (confirmHookDeleteFiles == true) return (true, true);
+        }
+
+        int preference = _preferences?.Current.RemoveFilesOnDownloadRemove ?? -1;
+        bool filesOnDisk = DownloadItem.GetDiskSizeBytes(item) > 0;
+        Log.Debug("Remove '{0}': preference {1}, filesOnDisk {2}", item.Title, preference, filesOnDisk);
+
+        // QuestionOrDefault returns null exactly when the question may be asked
+        // (preference -1 with files on disk); a stored preference 1/0 decides
+        // without asking, like RunRemoveFilesFromTheDiskDialog.
+        RemoveFilesAnswer? stored = RemoveFilesDecision.QuestionOrDefault(preference, filesOnDisk);
+        if (stored == null)
+        {
+            var answered = await (RequestAskRemoveFiles?.Invoke(item) ??
+                System.Threading.Tasks.Task.FromResult(false));
+            var answer = answered ? RemoveFilesAnswer.Yes : RemoveFilesAnswer.No;
+
+            if (RequestRememberRemoveFilesAnswer?.Invoke() == true && _preferences != null)
+            {
+                _preferences.Current.RemoveFilesOnDownloadRemove =
+                    RemoveFilesDecision.Remember(preference, answer);
+                _preferences.Save(_preferences.Current);
+            }
+
+            return (true, RemoveFilesDecision.DeletesFiles(answer));
+        }
+
+        return (true, RemoveFilesDecision.DeletesFiles(stored.Value));
     }
 
     private void Renumber()

@@ -234,6 +234,53 @@ public sealed class SettingsViewModel : ViewModelBase
         set => SetProperty(ref _downloaderEndTime, value);
     }
 
+    // ── Bestanden & afsluiten (fase 3, item 3) ─────────────────────────────
+    private bool _removePar2FilesAfterDownload = true;
+    /// <summary>Delete par2 recovery files after a successful download
+    /// (Windows: RemovePar2FilesAfterDownload).</summary>
+    public bool RemovePar2FilesAfterDownload
+    {
+        get => _removePar2FilesAfterDownload;
+        set => SetProperty(ref _removePar2FilesAfterDownload, value);
+    }
+
+    public List<string> RemoveFilesModeList { get; } = new()
+    {
+        "Bestanden van de schijf verwijderen",
+        "Bestanden op de schijf laten staan",
+        "Altijd vragen"
+    };
+
+    /// <summary>Selected row of the remove-files combo, in Windows' combo order
+    /// (1 = delete, 0 = keep, -1 = ask).</summary>
+    public string SelectedRemoveFilesMode
+    {
+        get => _removeFilesOnDownloadRemove switch
+        {
+            1 => RemoveFilesModeList[0],
+            0 => RemoveFilesModeList[1],
+            _ => RemoveFilesModeList[2]
+        };
+        set
+        {
+            _removeFilesOnDownloadRemove = value == RemoveFilesModeList[0] ? 1
+                : value == RemoveFilesModeList[1] ? 0
+                : -1;
+            OnPropertyChanged();
+        }
+    }
+
+    private int _removeFilesOnDownloadRemove = -1;
+
+    private bool _shutdownPcAfterDownloads;
+    /// <summary>Shut the machine down when the last download finishes
+    /// (Windows: Sys.ShutdownPCAfterDownloads, set from the settings screen).</summary>
+    public bool ShutdownPcAfterDownloads
+    {
+        get => _shutdownPcAfterDownloads;
+        set => SetProperty(ref _shutdownPcAfterDownloads, value);
+    }
+
     public List<string> DownloadModeList { get; } = new()
     {
         "Downloaden (ingebouwd)",
@@ -687,6 +734,9 @@ public sealed class SettingsViewModel : ViewModelBase
         _downloaderEndTime = prefs.DownloaderSchedule
             ? prefs.DownloaderEndTime.ToString("HH:mm")
             : "00:00";
+        _removePar2FilesAfterDownload = prefs.RemovePar2FilesAfterDownload;
+        _removeFilesOnDownloadRemove = prefs.RemoveFilesOnDownloadRemove;
+        _shutdownPcAfterDownloads = prefs.ShutdownPcAfterDownloads;
         _initialFetchDays = prefs.InitialFetchDays;
         ShowDesktopNotifications = prefs.ShowDesktopNotifications;
         ExternalBrowser = prefs.ExternalBrowser;
@@ -716,6 +766,9 @@ public sealed class SettingsViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsScheduleInputEnabled));
         OnPropertyChanged(nameof(DownloaderStartTime));
         OnPropertyChanged(nameof(DownloaderEndTime));
+        OnPropertyChanged(nameof(RemovePar2FilesAfterDownload));
+        OnPropertyChanged(nameof(SelectedRemoveFilesMode));
+        OnPropertyChanged(nameof(ShutdownPcAfterDownloads));
         OnPropertyChanged(nameof(DbAutoUpdateEnabled));
         OnPropertyChanged(nameof(DbAutoUpdateIntervalMin));
         OnPropertyChanged(nameof(RetentionEnabled));
@@ -817,6 +870,10 @@ public sealed class SettingsViewModel : ViewModelBase
                 // schedule restores what the user had, as Windows shows the stored
                 // times when the dialog reopens.
             }
+
+            prefs.RemovePar2FilesAfterDownload = RemovePar2FilesAfterDownload;
+            prefs.RemoveFilesOnDownloadRemove = _removeFilesOnDownloadRemove;
+            prefs.ShutdownPcAfterDownloads = ShutdownPcAfterDownloads;
 
             // Apply the new limit to downloads that are already running, the way the
             // Windows ChangeDownloadSpeedLimitWindow calls Sys.Downloader

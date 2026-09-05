@@ -169,6 +169,19 @@
                     </StackPanel>
                 </Grid>
 
+                <CheckBox IsChecked="{Binding RemovePar2FilesAfterDownload}"
+                          Content="Par2-bestanden verwijderen na download"
+                          ToolTip.Tip="Herstelbestanden (par2) worden na een geslaagde download van de schijf verwijderd"/>
+
+                <TextBlock Text="Bestanden verwijderen van de schijf bij download verwijdering" FontWeight="Medium"/>
+                <ComboBox ItemsSource="{Binding RemoveFilesModeList}"
+                          SelectedItem="{Binding SelectedRemoveFilesMode}"
+                          HorizontalAlignment="Stretch"/>
+
+                <CheckBox IsChecked="{Binding ShutdownPcAfterDownloads}"
+                          Content="Sluit mijn pc nadat alle downloads zijn voltooid"
+                          ToolTip.Tip="Na de laatste download verschijnt een venster dat na 60 seconden de computer afsluit, tenzij geannuleerd"/>
+
                 <Separator Margin="0,4"/>
                 <TextBlock Text="Database &amp; Synchronisatie" FontSize="14" FontWeight="SemiBold"/>
 

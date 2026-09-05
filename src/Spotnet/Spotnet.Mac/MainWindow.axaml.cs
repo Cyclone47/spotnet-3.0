@@ -47,6 +47,13 @@ public partial class MainWindow : Window
         _viewModel.RequestConfirmRemoveDownload = ShowConfirmRemoveDownloadDialog;
         _viewModel.RequestConfirmClearDownloads = ShowConfirmClearDownloadsDialog;
 
+        // Afsluiten na downloads (fase 3, item 3): de Downloads-tab geeft het teken,
+        // het venster toont het aftelvenster van Windows' ShutdownComputerDialog.
+        _viewModel.DownloadsTab.RequestShutdownAfterDownloads += () =>
+            _ = ShowShutdownAfterDownloadsDialogAsync();
+        _viewModel.DownloadsTab.RequestAskRemoveFiles = item => ShowRemoveFilesFromDiskDialogAsync(item);
+        _viewModel.DownloadsTab.RequestRememberRemoveFilesAnswer = () => _rememberRemoveFilesAnswer;
+
         DataContext = _viewModel;
         Loaded += OnWindowLoaded;
         Closed += (s, e) => _viewModel.Dispose();
@@ -388,6 +395,161 @@ public partial class MainWindow : Window
         if (folders.Count > 0 && folders[0].TryGetLocalPath() is string path && !string.IsNullOrWhiteSpace(path))
         {
             _viewModel.DownloadFolder = path;
+        }
+    }
+
+    private bool _rememberRemoveFilesAnswer;
+
+    /// <summary>
+    /// "Bestanden verwijderen van de schijf bij download verwijdering" — de Mac-versie
+    /// van RemoveFilesFromTheDiskDialog, met dezelfde knoppen en hetzelfde
+    /// "sla mijn antwoord op"-vinkje (tekst letterlijk uit Words.nl.resx).
+    /// </summary>
+    private async Task<bool> ShowRemoveFilesFromDiskDialogAsync(Models.DownloadItem item)
+    {
+        var messageBlock = new TextBlock
+        {
+            Text = $"Ook de bestanden van '{item.Title}' van de schijf verwijderen?",
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 0, 0, 12)
+        };
+
+        var rememberCheck = new CheckBox
+        {
+            Content = new TextBlock
+            {
+                Text = "Sla mijn antwoord op en vraag niet opnieuw (u kunt de optie later veranderen via het Menu: Bewerken / Instellingen / Bestanden verwijderen van de schijf bij download verwijdering)",
+                TextWrapping = TextWrapping.Wrap,
+                MaxWidth = 460
+            },
+            Margin = new Thickness(0, 0, 0, 14)
+        };
+
+        var noBtn = new Button { Content = "Nee" };
+        var yesBtn = new Button { Content = "Ja", Classes = { "accent" } };
+
+        var dialog = new Window
+        {
+            Title = "Bestanden verwijderen van de schijf",
+            Width = 520,
+            Height = 260,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            CanResize = false,
+            Content = new StackPanel
+            {
+                Margin = new Thickness(20),
+                Children = { messageBlock, rememberCheck,
+                    new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Spacing = 8,
+                        Children = { noBtn, yesBtn }
+                    } }
+            }
+        };
+
+        bool deleteFiles = false;
+        yesBtn.Click += (_, _) => { deleteFiles = true; dialog.Close(); };
+        noBtn.Click += (_, _) => dialog.Close();
+
+        // No is the default focus on Windows.
+        noBtn.Focus();
+
+        await dialog.ShowDialog(this);
+        _rememberRemoveFilesAnswer = rememberCheck.IsChecked == true;
+        return deleteFiles;
+    }
+
+    /// <summary>
+    /// Het aftelvenster van "sluit mijn pc nadat alle downloads zijn voltooid": 60
+    /// seconden aftellen, annuleren kan altijd, met dezelfde teksten als Windows'
+    /// ShutdownComputerDialog (uit Words.nl.resx).
+    /// </summary>
+    private async Task ShowShutdownAfterDownloadsDialogAsync()
+    {
+        const string message = "Alle downloads zijn voltooid, de PC wordt afgesloten.";
+        int secondsLeft = 60;
+
+        var messageBlock = new TextBlock
+        {
+            Text = message,
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 0, 0, 8)
+        };
+
+        var secondsBlock = new TextBlock
+        {
+            Text = "(60)",
+            FontSize = 22,
+            FontWeight = FontWeight.Bold,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Margin = new Thickness(0, 0, 0, 14)
+        };
+
+        var cancelBtn = new Button { Content = "Afsluiten annuleren" };
+        var nowBtn = new Button { Content = "NU AFSLUITEN", Classes = { "accent" } };
+
+        var dialog = new Window
+        {
+            Title = "Spotnet",
+            Width = 420,
+            Height = 230,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Topmost = true,
+            CanResize = false,
+            Content = new StackPanel
+            {
+                Margin = new Thickness(20),
+                Children = { messageBlock, secondsBlock,
+                    new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        Spacing = 12,
+                        Children = { cancelBtn, nowBtn }
+                    } }
+            }
+        };
+
+        bool proceed = false;
+        nowBtn.Click += (_, _) => { proceed = true; dialog.Close(); };
+        cancelBtn.Click += (_, _) => { proceed = false; dialog.Close(); };
+
+        // The countdown, as in ShutdownComputerDialog.TimerOnElapsed.
+        var timer = new System.Timers.Timer(1000) { AutoReset = true };
+        timer.Elapsed += (_, _) =>
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                secondsLeft--;
+                if (secondsLeft <= 0)
+                {
+                    timer.Stop();
+                    proceed = true;
+                    dialog.Close();
+                    return;
+                }
+                secondsBlock.Text = $"({secondsLeft})";
+            });
+        };
+
+        cancelBtn.Focus();
+
+        try
+        {
+            timer.Start();
+            await dialog.ShowDialog(this);
+        }
+        finally
+        {
+            timer.Stop();
+            timer.Dispose();
+        }
+
+        if (proceed)
+        {
+            Spotnet.Mac.Platform.MacPowerActions.ShutdownNow();
         }
     }
 
