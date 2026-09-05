@@ -133,6 +133,48 @@ public sealed class UserPreferences
 
     /// <summary>Total spots count in the database (Windows: DatabaseCount).</summary>
     public long DatabaseCount { get; set; }
+
+    /// <summary>
+    /// Whether spots from blacklisted posters or spots on the spot blacklist are hidden.
+    /// Matches Windows Settings.Default.HideBlacklistedSpots (default false).
+    /// </summary>
+    public bool HideBlacklistedSpots { get; set; }
+
+    /// <summary>
+    /// Whether only spots from whitelist or verified posters are shown.
+    /// Matches Windows MainWindowVm.ShowTrustedOnlyMode (default false).
+    /// </summary>
+    public bool ShowTrustedOnlyMode { get; set; }
+
+    /// <summary>
+    /// Whether erotica spots (category 9) are included in search results.
+    /// Matches Windows Settings.Default.ShowEroticaInSearchResults (default false).
+    /// </summary>
+    public bool ShowEroticaInSearchResults { get; set; }
+
+    /// <summary>
+    /// Whether external blacklist and whitelist lists should be updated from the net.
+    /// Matches Windows Settings.Default.DownloadExternalLists (default true).
+    /// </summary>
+    public bool DownloadExternalLists { get; set; } = true;
+
+    /// <summary>
+    /// Interval in minutes between downloads of external lists.
+    /// Matches Windows Settings.Default.ExternalListsUpdateInterval (default 60).
+    /// </summary>
+    public int ExternalListsUpdateInterval { get; set; } = 60;
+
+    /// <summary>URL for poster blacklist CSV.</summary>
+    public string BlacklistUrl { get; set; } = "http://spotcloud.spotnet.wf/spotnet/lists.new/blacklist.csv";
+
+    /// <summary>URL for poster whitelist CSV.</summary>
+    public string WhitelistUrl { get; set; } = "http://spotcloud.spotnet.wf/spotnet/lists.new/whitelist.csv";
+
+    /// <summary>URL for spot blacklist CSV.</summary>
+    public string SpotBlacklistUrl { get; set; } = "http://spotcloud.spotnet.wf/spotnet/lists.new/spot_blacklist.csv";
+
+    /// <summary>URL for spot whitelist CSV.</summary>
+    public string SpotWhitelistUrl { get; set; } = "http://spotcloud.spotnet.wf/spotnet/lists.new/spot_whitelist.csv";
 }
 
 public sealed class UserPreferencesService

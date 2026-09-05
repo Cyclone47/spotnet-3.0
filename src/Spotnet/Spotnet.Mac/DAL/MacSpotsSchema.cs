@@ -39,6 +39,14 @@ public static class MacSpotsSchema
     public const string CreateCommentIndex =
         "CREATE VIRTUAL TABLE IF NOT EXISTS commentindex USING fts5(msgid);";
 
+    /// <summary>Blacklist table: key is modulus (type=1) or msgid (type=2).</summary>
+    public const string CreateBlacklist =
+        "CREATE TABLE IF NOT EXISTS blacklist(key TEXT PRIMARY KEY, type INT);";
+
+    /// <summary>Whitelist table: key is modulus (type=1) or msgid (type=2).</summary>
+    public const string CreateWhitelist =
+        "CREATE TABLE IF NOT EXISTS whitelist(key TEXT PRIMARY KEY, type INT);";
+
     public static readonly string[] Tables =
     {
         CreateSpots,
@@ -48,7 +56,9 @@ public static class MacSpotsSchema
         CreateUserInfo,
         CreateUserKey,
         CreateComments,
-        CreateCommentIndex
+        CreateCommentIndex,
+        CreateBlacklist,
+        CreateWhitelist
     };
 
     public static readonly string[] Indexes =
@@ -56,10 +66,13 @@ public static class MacSpotsSchema
         "CREATE INDEX IF NOT EXISTS dateidx ON spots(date);",
         "CREATE INDEX IF NOT EXISTS catidx ON spots(cat);",
         "CREATE INDEX IF NOT EXISTS msgidx ON spots(msgid);",
+        "CREATE INDEX IF NOT EXISTS modidx ON spots(modulus);",
         "CREATE INDEX IF NOT EXISTS subjidx ON spots(subject);",
         "CREATE INDEX IF NOT EXISTS spammsgidx ON spamreports(msgid);",
         "CREATE INDEX IF NOT EXISTS spammodidx ON spamreports(modulus);",
-        "CREATE INDEX IF NOT EXISTS commentspotidx ON comments(spotmsgid);"
+        "CREATE INDEX IF NOT EXISTS commentspotidx ON comments(spotmsgid);",
+        "CREATE INDEX IF NOT EXISTS blacktypeidx ON blacklist(type);",
+        "CREATE INDEX IF NOT EXISTS whitetypeidx ON whitelist(type);"
     };
 
     public static readonly string[] SearchTriggers =

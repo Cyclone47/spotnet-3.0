@@ -186,14 +186,17 @@ public sealed class SpotDatabaseService
         int skip = 0,
         int take = 100,
         string sortDirection = "DESC",
-        string sortColumn = SpotSort.DefaultColumn)
+        string sortColumn = SpotSort.DefaultColumn,
+        bool hideBlacklisted = false,
+        bool showTrustedOnly = false,
+        bool showErotica = false)
     {
         var spots = new List<SpotItem>();
         using var conn = _db.OpenConnection(readOnly: true);
         using var cmd = conn.CreateCommand();
 
         string order = sortDirection.Equals("ASC", StringComparison.OrdinalIgnoreCase) ? "ASC" : "DESC";
-        string where = BuildFilterWhere(filterQuery, searchText, cmd);
+        string where = BuildFilterWhere(filterQuery, searchText, cmd, hideBlacklisted, showTrustedOnly, showErotica);
 
         cmd.CommandText =
             $"SELECT {FilterQueryBuilder.SpotColumns} FROM spots{where} ORDER BY {SpotSort.ToSqlColumn(sortColumn)} {order}, rowid {order} LIMIT @take OFFSET @skip;";
@@ -209,12 +212,17 @@ public sealed class SpotDatabaseService
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review CA2100 query string", Justification = "Filter text is compiled by FilterExpressionCompiler; literals are parameterized")]
-    public async Task<int> CountByFilterAsync(string? filterQuery, string? searchText = null)
+    public async Task<int> CountByFilterAsync(
+        string? filterQuery,
+        string? searchText = null,
+        bool hideBlacklisted = false,
+        bool showTrustedOnly = false,
+        bool showErotica = false)
     {
         using var conn = _db.OpenConnection(readOnly: true);
         using var cmd = conn.CreateCommand();
 
-        string where = BuildFilterWhere(filterQuery, searchText, cmd);
+        string where = BuildFilterWhere(filterQuery, searchText, cmd, hideBlacklisted, showTrustedOnly, showErotica);
         cmd.CommandText = $"SELECT COUNT(1) FROM spots{where};";
 
         var result = await cmd.ExecuteScalarAsync();
@@ -228,12 +236,16 @@ public sealed class SpotDatabaseService
     /// filter itself holds thousands of spots.
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review CA2100 query string", Justification = "Filter text is compiled by FilterExpressionCompiler; literals are parameterized")]
-    public async Task<int> CountNewByFilterAsync(string? filterQuery)
+    public async Task<int> CountNewByFilterAsync(
+        string? filterQuery,
+        bool hideBlacklisted = false,
+        bool showTrustedOnly = false,
+        bool showErotica = false)
     {
         using var conn = _db.OpenConnection(readOnly: true);
         using var cmd = conn.CreateCommand();
 
-        string where = BuildFilterWhere(filterQuery, null, cmd);
+        string where = BuildFilterWhere(filterQuery, null, cmd, hideBlacklisted, showTrustedOnly, showErotica);
         cmd.CommandText = $"SELECT COUNT(1) FROM spots{where} AND rowid > @rowNew;";
         cmd.Parameters.AddWithValue("@rowNew", RowNew);
 
@@ -242,21 +254,118 @@ public sealed class SpotDatabaseService
     }
 
     /// <summary>
+    /// Synchronizes the in-memory blacklists and whitelists into SQLite tables.
+    /// Uses a single transaction for maximum speed.
+    /// </summary>
+    public async Task SyncTrustListsAsync(
+        IReadOnlyCollection<string> blackModuli,
+        IReadOnlyCollection<string> blackMsgIds,
+        IReadOnlyCollection<string> whiteModuli,
+        IReadOnlyCollection<string> whiteMsgIds)
+    {
+        using var conn = _db.OpenConnection(readOnly: false);
+        using var tx = conn.BeginTransaction();
+        try
+        {
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.Transaction = tx;
+                cmd.CommandText = "DELETE FROM blacklist; DELETE FROM whitelist;";
+                await cmd.ExecuteNonQueryAsync();
+            }
+
+            if (blackModuli.Count > 0 || blackMsgIds.Count > 0)
+            {
+                using var insertBlack = conn.CreateCommand();
+                insertBlack.Transaction = tx;
+                insertBlack.CommandText = "INSERT OR IGNORE INTO blacklist (key, type) VALUES (@key, @type);";
+                var keyParam = insertBlack.Parameters.Add("@key", SqliteType.Text);
+                var typeParam = insertBlack.Parameters.Add("@type", SqliteType.Integer);
+
+                typeParam.Value = 1; // 1 = modulus
+                foreach (var mod in blackModuli)
+                {
+                    if (string.IsNullOrWhiteSpace(mod)) continue;
+                    keyParam.Value = mod;
+                    await insertBlack.ExecuteNonQueryAsync();
+                }
+
+                typeParam.Value = 2; // 2 = msgid
+                foreach (var msg in blackMsgIds)
+                {
+                    if (string.IsNullOrWhiteSpace(msg)) continue;
+                    keyParam.Value = msg;
+                    await insertBlack.ExecuteNonQueryAsync();
+                }
+            }
+
+            if (whiteModuli.Count > 0 || whiteMsgIds.Count > 0)
+            {
+                using var insertWhite = conn.CreateCommand();
+                insertWhite.Transaction = tx;
+                insertWhite.CommandText = "INSERT OR IGNORE INTO whitelist (key, type) VALUES (@key, @type);";
+                var keyParam = insertWhite.Parameters.Add("@key", SqliteType.Text);
+                var typeParam = insertWhite.Parameters.Add("@type", SqliteType.Integer);
+
+                typeParam.Value = 1; // 1 = modulus
+                foreach (var mod in whiteModuli)
+                {
+                    if (string.IsNullOrWhiteSpace(mod)) continue;
+                    keyParam.Value = mod;
+                    await insertWhite.ExecuteNonQueryAsync();
+                }
+
+                typeParam.Value = 2; // 2 = msgid
+                foreach (var msg in whiteMsgIds)
+                {
+                    if (string.IsNullOrWhiteSpace(msg)) continue;
+                    keyParam.Value = msg;
+                    await insertWhite.ExecuteNonQueryAsync();
+                }
+            }
+
+            tx.Commit();
+        }
+        catch (Exception ex)
+        {
+            tx.Rollback();
+            Log.Error(ex, "Failed to synchronize trust lists to database.");
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Composes the WHERE clause shared by <see cref="QueryByFilterAsync"/> and
     /// <see cref="CountByFilterAsync"/>, binding every literal as a parameter on
     /// <paramref name="cmd"/>. Returns "" when nothing constrains the query.
     /// </summary>
-    private string BuildFilterWhere(string? filterQuery, string? searchText, SqliteCommand cmd)
+    private string BuildFilterWhere(
+        string? filterQuery,
+        string? searchText,
+        SqliteCommand cmd,
+        bool hideBlacklisted = false,
+        bool showTrustedOnly = false,
+        bool showErotica = false)
     {
         var clauses = new List<string>();
         var values = new List<SqlValue>();
         long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
+        if (hideBlacklisted)
+        {
+            clauses.Add("(modulus NOT IN (SELECT key FROM blacklist WHERE type = 1) AND msgid NOT IN (SELECT key FROM blacklist WHERE type = 2))");
+        }
+
+        if (showTrustedOnly)
+        {
+            clauses.Add("(modulus IN (SELECT key FROM whitelist WHERE type = 1) OR msgid IN (SELECT key FROM whitelist WHERE type = 2) OR date < 1356998400)");
+        }
+
         if (!string.IsNullOrWhiteSpace(filterQuery))
         {
             try
             {
-                string? predicate = FilterQueryBuilder.BuildPredicate(filterQuery, now, RowNew, values);
+                string? predicate = FilterQueryBuilder.BuildPredicate(filterQuery, now, RowNew, values, showErotica: showErotica);
                 if (predicate != null)
                 {
                     clauses.Add(predicate);

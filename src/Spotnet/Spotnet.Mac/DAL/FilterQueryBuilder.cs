@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Spotnet.Mac.DAL;
 
@@ -33,6 +34,45 @@ public static class FilterQueryBuilder
             .Replace("[SN:DATE]", nowUnix.ToString(System.Globalization.CultureInfo.InvariantCulture))
             .Replace("[SN:NEW]", rowNew.ToString(System.Globalization.CultureInfo.InvariantCulture));
 
+    private static readonly System.Text.RegularExpressions.Regex PosterIdentRegex =
+        new(@"^PosterIdent\s+IN\s+\(([W|B|F|T|N|,|\s|V|O]+)\)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+    public static string? BuildPosterIdentSql(string tokens)
+    {
+        var letters = tokens
+            .Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => s.Trim().ToUpperInvariant())
+            .Distinct()
+            .ToList();
+
+        if (letters.Count == 0) return null;
+
+        var subclauses = new List<string>();
+        foreach (var letter in letters)
+        {
+            switch (letter)
+            {
+                case "W":
+                    subclauses.Add("modulus IN (SELECT key FROM whitelist WHERE type = 1)");
+                    break;
+                case "B":
+                    subclauses.Add("(modulus IN (SELECT key FROM blacklist WHERE type = 1) OR msgid IN (SELECT key FROM blacklist WHERE type = 2))");
+                    break;
+                case "V" or "T":
+                    subclauses.Add("(modulus IN (SELECT key FROM whitelist WHERE type = 1) OR msgid IN (SELECT key FROM whitelist WHERE type = 2) OR date < 1356998400)");
+                    break;
+                case "O" or "F":
+                    subclauses.Add("(modulus NOT IN (SELECT key FROM whitelist WHERE type = 1) AND modulus != '' AND modulus != 'none')");
+                    break;
+                case "N":
+                    subclauses.Add("(modulus NOT IN (SELECT key FROM blacklist WHERE type = 1) AND modulus NOT IN (SELECT key FROM whitelist WHERE type = 1) AND msgid NOT IN (SELECT key FROM blacklist WHERE type = 2) AND msgid NOT IN (SELECT key FROM whitelist WHERE type = 2) AND date >= 1356998400)");
+                    break;
+            }
+        }
+
+        return subclauses.Count > 0 ? $"({string.Join(" OR ", subclauses)})" : null;
+    }
+
     /// <summary>
     /// Builds the predicate for <paramref name="filter"/>, appending its parameters to
     /// <paramref name="values"/>. Returns null when the filter is empty.
@@ -50,6 +90,28 @@ public static class FilterQueryBuilder
             return null;
         }
 
+        string? posterIdentSql = null;
+        var match = PosterIdentRegex.Match(filter.Trim());
+        if (match.Success)
+        {
+            posterIdentSql = BuildPosterIdentSql(match.Groups[1].Value);
+            filter = filter.Trim()[match.Length..].Trim();
+            if (filter.StartsWith("AND ", StringComparison.OrdinalIgnoreCase))
+            {
+                filter = filter[4..].Trim();
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(filter))
+        {
+            if (posterIdentSql != null)
+            {
+                string spotsGuard = showErotica ? "" : "cat<9 AND ";
+                return $"({spotsGuard}{posterIdentSql})";
+            }
+            return null;
+        }
+
         bool isSearch = IsSearchFilter(filter);
         var compiled = FilterExpressionCompiler.Compile(ResolveMarkers(filter, nowUnix, rowNew));
         values.AddRange(compiled.Values);
@@ -59,14 +121,17 @@ public static class FilterQueryBuilder
             string guard = showErotica || filter.Contains("cats match ", StringComparison.OrdinalIgnoreCase)
                 ? ""
                 : "cats NOT LIKE '9 %' AND ";
-            return $"rowid IN (SELECT rowid FROM search WHERE ({guard}{compiled.CommandText}))";
+            string searchPredicate = $"rowid IN (SELECT rowid FROM search WHERE ({guard}{compiled.CommandText}))";
+            return posterIdentSql != null ? $"({posterIdentSql} AND {searchPredicate})" : searchPredicate;
         }
 
         string collapsed = filter.Replace(" ", "").ToLowerInvariant();
-        string spotsGuard = showErotica || collapsed.Contains("cat=", StringComparison.Ordinal)
-                                        || collapsed.Contains("cat<", StringComparison.Ordinal)
+        string spotsCatGuard = showErotica || collapsed.Contains("cat=", StringComparison.Ordinal)
+                                           || collapsed.Contains("cat<", StringComparison.Ordinal)
             ? ""
             : "cat<9 AND ";
-        return $"({spotsGuard}{compiled.CommandText})";
+
+        string compiledPredicate = $"({spotsCatGuard}{compiled.CommandText})";
+        return posterIdentSql != null ? $"({posterIdentSql} AND {compiledPredicate})" : compiledPredicate;
     }
 }

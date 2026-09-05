@@ -30,8 +30,10 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private readonly CommentService _commentService;
     private readonly SpotBodyService _bodyService;
     private readonly IUiDispatcher _dispatcher;
+    private readonly TrustService _trustService;
 
     public UserPreferencesService PreferencesService => _prefsService;
+    public TrustService TrustService => _trustService;
     private System.Threading.Timer? _autoSyncTimer;
 
     // ── State ─────────────────────────────────────────────────────────────────
@@ -65,13 +67,17 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     {
         try
         {
+            var prefs = _prefsService.Current;
             return await _dbService.QueryByFilterAsync(
                 filterQuery: filterQuery,
                 searchText: keyword,
                 skip: skip,
                 take: take,
                 sortDirection: sortDirection,
-                sortColumn: sortColumn);
+                sortColumn: sortColumn,
+                hideBlacklisted: prefs.HideBlacklistedSpots,
+                showTrustedOnly: prefs.ShowTrustedOnlyMode,
+                showErotica: prefs.ShowEroticaInSearchResults);
         }
         catch (Exception ex)
         {
@@ -281,6 +287,16 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public ICommand QuickRepairDbCommand { get; }
     public ICommand ToggleSocksProxyCommand { get; }
 
+    public ICommand AddSenderToBlacklistCommand { get; }
+    public ICommand RemoveSenderFromBlacklistCommand { get; }
+    public ICommand AddSenderToWhitelistCommand { get; }
+    public ICommand RemoveSenderFromWhitelistCommand { get; }
+    public ICommand AddSpotToBlacklistCommand { get; }
+    public ICommand RemoveSpotFromBlacklistCommand { get; }
+    public ICommand AddSpotToWhitelistCommand { get; }
+    public ICommand RemoveSpotFromWhitelistCommand { get; }
+    public ICommand DownloadExternalListsCommand { get; }
+
     public bool UseSocksProxy => _prefsService.Current.UseSocksProxy;
     public string SocksProxyIcon => UseSocksProxy ? "🔒" : "🔓";
     public string SocksProxyForeground => UseSocksProxy ? "#39A633" : "#888888";
@@ -314,7 +330,8 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     // ── Constructor ───────────────────────────────────────────────────────────
     public MainWindowViewModel(IAppPaths appPaths, ISecretStore secretStore, SpotDatabaseService dbService,
-                               UserPreferencesService? prefsService = null, IUiDispatcher? dispatcher = null)
+                               UserPreferencesService? prefsService = null, IUiDispatcher? dispatcher = null,
+                               TrustService? trustService = null)
     {
         _appPaths = appPaths;
         _dispatcher = dispatcher ?? new AvaloniaUiDispatcher();
@@ -322,6 +339,16 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         _dbService = dbService;
         _prefsService = prefsService ?? new UserPreferencesService(_appPaths);
         _customFilterService = new CustomFilterService(_appPaths);
+        _trustService = trustService ?? new TrustService(_appPaths, _prefsService);
+
+        _trustService.ListsChanged += () =>
+        {
+            _ = _dispatcher.InvokeAsync(async () =>
+            {
+                await _trustService.SyncToDatabaseAsync(_dbService);
+                await RefreshSpotsAsync();
+            });
+        };
 
         _nzbService = new NzbService(_appPaths, _secretStore, _prefsService);
         _syncService = new SpotSyncService(_appPaths, _secretStore, _dbService, _prefsService);
@@ -432,18 +459,103 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
         PickDownloadFolderCommand = new RelayCommand(() => RequestPickDownloadFolder?.Invoke());
 
-        DeleteSelectedCommand = new RelayCommand(() =>
+        DeleteSelectedCommand = new RelayCommand(async () =>
         {
             if (SelectedTab == DownloadsTab && DownloadsTab.Selected != null)
             {
                 DownloadsTab.RemoveCommand.Execute(DownloadsTab.Selected);
             }
+            else if (SelectedSpot != null && SelectedTab == null)
+            {
+                // Delete on the spot list adds the spot to the blacklist, exactly like Windows
+                if (!string.IsNullOrWhiteSpace(SelectedSpot.MsgId))
+                {
+                    _trustService.AddSpotBlack(SelectedSpot.MsgId);
+                    await _trustService.SyncToDatabaseAsync(_dbService);
+                    await RefreshSpotsAsync();
+                }
+            }
+        });
 
-            // Delete on the spot list used to drop the row from the in-memory copy,
-            // which put it straight back on the next refresh. The list is now a view
-            // over the database, so there is nothing local to drop. Hiding a spot for
-            // real is the blacklist, which Windows implements too and which this client
-            // does not have yet.
+        AddSenderToBlacklistCommand = new RelayCommand(async param =>
+        {
+            var spot = param as SpotItem ?? SelectedSpot;
+            if (spot == null || string.IsNullOrWhiteSpace(spot.Modulus)) return;
+            _trustService.AddBlack(spot.SenderName, spot.Modulus);
+            await _trustService.SyncToDatabaseAsync(_dbService);
+            await RefreshSpotsAsync();
+        });
+
+        RemoveSenderFromBlacklistCommand = new RelayCommand(async param =>
+        {
+            var spot = param as SpotItem ?? SelectedSpot;
+            if (spot == null || string.IsNullOrWhiteSpace(spot.Modulus)) return;
+            _trustService.RemoveBlack(spot.Modulus);
+            await _trustService.SyncToDatabaseAsync(_dbService);
+            await RefreshSpotsAsync();
+        });
+
+        AddSenderToWhitelistCommand = new RelayCommand(async param =>
+        {
+            var spot = param as SpotItem ?? SelectedSpot;
+            if (spot == null || string.IsNullOrWhiteSpace(spot.Modulus)) return;
+            _trustService.AddWhite(spot.SenderName, spot.Modulus);
+            await _trustService.SyncToDatabaseAsync(_dbService);
+            await RefreshSpotsAsync();
+        });
+
+        RemoveSenderFromWhitelistCommand = new RelayCommand(async param =>
+        {
+            var spot = param as SpotItem ?? SelectedSpot;
+            if (spot == null || string.IsNullOrWhiteSpace(spot.Modulus)) return;
+            _trustService.RemoveWhite(spot.Modulus);
+            await _trustService.SyncToDatabaseAsync(_dbService);
+            await RefreshSpotsAsync();
+        });
+
+        AddSpotToBlacklistCommand = new RelayCommand(async param =>
+        {
+            var spot = param as SpotItem ?? SelectedSpot;
+            if (spot == null || string.IsNullOrWhiteSpace(spot.MsgId)) return;
+            _trustService.AddSpotBlack(spot.MsgId);
+            await _trustService.SyncToDatabaseAsync(_dbService);
+            await RefreshSpotsAsync();
+        });
+
+        RemoveSpotFromBlacklistCommand = new RelayCommand(async param =>
+        {
+            var spot = param as SpotItem ?? SelectedSpot;
+            if (spot == null || string.IsNullOrWhiteSpace(spot.MsgId)) return;
+            _trustService.RemoveSpotBlack(spot.MsgId);
+            await _trustService.SyncToDatabaseAsync(_dbService);
+            await RefreshSpotsAsync();
+        });
+
+        AddSpotToWhitelistCommand = new RelayCommand(async param =>
+        {
+            var spot = param as SpotItem ?? SelectedSpot;
+            if (spot == null || string.IsNullOrWhiteSpace(spot.MsgId)) return;
+            _trustService.AddSpotWhite(spot.MsgId);
+            await _trustService.SyncToDatabaseAsync(_dbService);
+            await RefreshSpotsAsync();
+        });
+
+        RemoveSpotFromWhitelistCommand = new RelayCommand(async param =>
+        {
+            var spot = param as SpotItem ?? SelectedSpot;
+            if (spot == null || string.IsNullOrWhiteSpace(spot.MsgId)) return;
+            _trustService.RemoveSpotWhite(spot.MsgId);
+            await _trustService.SyncToDatabaseAsync(_dbService);
+            await RefreshSpotsAsync();
+        });
+
+        DownloadExternalListsCommand = new RelayCommand(async () =>
+        {
+            StatusText = "Externe lijsten downloaden...";
+            await _trustService.UpdateExternalListsAsync();
+            await _trustService.SyncToDatabaseAsync(_dbService);
+            await RefreshSpotsAsync();
+            StatusText = "Externe lijsten bijgewerkt";
         });
 
         DownloadsTab.RequestOpenSpotInfo += async msgId =>
@@ -659,6 +771,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             await _dbService.EnsureCreatedAsync();
             await _dbService.LoadRowNewAsync();
             await _dbService.UpdateDatabaseStatsAsync(_prefsService);
+            await _trustService.SyncToDatabaseAsync(_dbService);
 
             await RefreshSpotsAsync();
             await UpdateFilterCountsAsync();
@@ -693,10 +806,16 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             string sortColumn = SortColumn;
             string sortDirection = SortDirection;
 
+            var prefs = _prefsService.Current;
             // The count comes first: it is what the virtual list reports as its size, so
             // the grid can size its scrollbar to the whole result rather than to the one
             // page that happens to be in memory.
-            TotalSpotsCount = await _dbService.CountByFilterAsync(filterQuery, keyword);
+            TotalSpotsCount = await _dbService.CountByFilterAsync(
+                filterQuery,
+                keyword,
+                hideBlacklisted: prefs.HideBlacklistedSpots,
+                showTrustedOnly: prefs.ShowTrustedOnlyMode,
+                showErotica: prefs.ShowEroticaInSearchResults);
 
             var previous = Spots;
             Spots = new VirtualSpotCollection(
@@ -884,9 +1003,14 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     {
         if (!string.IsNullOrWhiteSpace(group.Query))
         {
+            var prefs = _prefsService.Current;
             // The badge is a "new since the last sync" count, as on Windows — not the
             // total the filter holds.
-            group.Count = await _dbService.CountNewByFilterAsync(group.Query);
+            group.Count = await _dbService.CountNewByFilterAsync(
+                group.Query,
+                hideBlacklisted: prefs.HideBlacklistedSpots,
+                showTrustedOnly: prefs.ShowTrustedOnlyMode,
+                showErotica: prefs.ShowEroticaInSearchResults);
         }
 
         foreach (var child in group.Children)
@@ -898,5 +1022,6 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public void Dispose()
     {
         StopAutoSyncTimer();
+        _trustService.Dispose();
     }
 }

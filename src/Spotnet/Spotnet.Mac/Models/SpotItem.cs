@@ -43,6 +43,7 @@ public sealed class SpotItem : INotifyPropertyChanged
         Subject = source.Subject;
         MsgId = source.MsgId;
         Modulus = source.Modulus;
+        PosterIdent = source.PosterIdent;
         IsPlaceholder = false;
 
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
@@ -61,6 +62,94 @@ public sealed class SpotItem : INotifyPropertyChanged
     public string Subject { get; set; } = string.Empty;
     public string MsgId { get; set; } = string.Empty;
     public string Modulus { get; set; } = string.Empty;
+
+    public static Func<string?, string?, string?, long, PosterIdentType>? GlobalPosterIdentResolver { get; set; }
+
+    private PosterIdentType _posterIdent = PosterIdentType.Unspecified;
+    public PosterIdentType PosterIdent
+    {
+        get
+        {
+            if (_posterIdent == PosterIdentType.Unspecified && GlobalPosterIdentResolver != null)
+            {
+                _posterIdent = GlobalPosterIdentResolver(Modulus, SenderName, MsgId, Date);
+            }
+            return _posterIdent;
+        }
+        set
+        {
+            if (_posterIdent != value)
+            {
+                _posterIdent = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PosterIdent)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PosterIdentLetter)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PosterIdentTooltip)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasPosterIdent)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PosterIdentBorderBrush)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PosterIdentBorderBackground)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PosterIdentForeground)));
+            }
+        }
+    }
+
+    /// <summary>Badge letter: B (Black), W (White), V (Verified/Trusted), O (Untrusted/Abuse).</summary>
+    public string PosterIdentLetter => PosterIdent switch
+    {
+        PosterIdentType.Black => "B",
+        PosterIdentType.White => "W",
+        PosterIdentType.Verified => "V",
+        PosterIdentType.Fake => "O",
+        PosterIdentType.SpotBlack => "B",
+        PosterIdentType.SpotWhite => "V",
+        _ => string.Empty
+    };
+
+    /// <summary>Tooltip text matching Spotnet.Properties.Words.nl.resx.</summary>
+    public string PosterIdentTooltip => PosterIdent switch
+    {
+        PosterIdentType.Black => "van Zwarte lijst poster",
+        PosterIdentType.White => "van Witte lijst poster",
+        PosterIdentType.Verified => "van Vertrouwde poster",
+        PosterIdentType.Fake => "van Onveilige poster",
+        PosterIdentType.SpotBlack => "van Zwarte lijst spot",
+        PosterIdentType.SpotWhite => "van Witte lijst spot",
+        _ => string.Empty
+    };
+
+    public bool HasPosterIdent => PosterIdent > PosterIdentType.None;
+
+    public string? PosterIdentBorderBrush => PosterIdent switch
+    {
+        PosterIdentType.Black => "#DCDCDC",
+        PosterIdentType.Fake => "#B4B4B4",
+        PosterIdentType.White => "#8CBE8C",
+        PosterIdentType.Verified => "#8CBE8C",
+        PosterIdentType.SpotBlack => "#DCDCDC",
+        PosterIdentType.SpotWhite => "#8CBE8C",
+        _ => null
+    };
+
+    public string? PosterIdentBorderBackground => PosterIdent switch
+    {
+        PosterIdentType.Black => "#F0F0F0",
+        PosterIdentType.Fake => "#D2D2D2",
+        PosterIdentType.White => "#AADCAA",
+        PosterIdentType.Verified => "#AADCAA",
+        PosterIdentType.SpotBlack => "#F0F0F0",
+        PosterIdentType.SpotWhite => "#AADCAA",
+        _ => null
+    };
+
+    public string? PosterIdentForeground => PosterIdent switch
+    {
+        PosterIdentType.Black => "#696969",
+        PosterIdentType.Fake => "#AA4646",
+        PosterIdentType.White => "#FFFFFF",
+        PosterIdentType.Verified => "#FFFFFF",
+        PosterIdentType.SpotBlack => "#696969",
+        PosterIdentType.SpotWhite => "#FFFFFF",
+        _ => null
+    };
 
     // Computed display properties
     public DateTime DateTime => DateTimeOffset.FromUnixTimeSeconds(Date).LocalDateTime;

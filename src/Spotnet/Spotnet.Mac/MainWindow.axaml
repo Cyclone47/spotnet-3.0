@@ -378,6 +378,36 @@
                       Foreground="{DynamicResource AppTextBrush}"
                       RowBackground="{DynamicResource AppRowBackground}"
                       HorizontalGridLinesBrush="{DynamicResource AppGridLineBrush}">
+              <DataGrid.ContextMenu>
+                <ContextMenu>
+                  <MenuItem Header="Toevoegen aan zwarte lijst"
+                            Command="{Binding $parent[Window].DataContext.AddSenderToBlacklistCommand}"
+                            CommandParameter="{Binding $parent[Window].DataContext.SelectedSpot}"
+                            IsEnabled="{Binding $parent[Window].DataContext.SelectedSpot, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                  <MenuItem Header="Verwijderen van zwarte lijst"
+                            Command="{Binding $parent[Window].DataContext.RemoveSenderFromBlacklistCommand}"
+                            CommandParameter="{Binding $parent[Window].DataContext.SelectedSpot}"
+                            IsEnabled="{Binding $parent[Window].DataContext.SelectedSpot, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                  <Separator/>
+                  <MenuItem Header="Toevoegen aan witte lijst"
+                            Command="{Binding $parent[Window].DataContext.AddSenderToWhitelistCommand}"
+                            CommandParameter="{Binding $parent[Window].DataContext.SelectedSpot}"
+                            IsEnabled="{Binding $parent[Window].DataContext.SelectedSpot, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                  <MenuItem Header="Verwijderen van witte lijst"
+                            Command="{Binding $parent[Window].DataContext.RemoveSenderFromWhitelistCommand}"
+                            CommandParameter="{Binding $parent[Window].DataContext.SelectedSpot}"
+                            IsEnabled="{Binding $parent[Window].DataContext.SelectedSpot, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                  <Separator/>
+                  <MenuItem Header="Spot toevoegen aan zwarte lijst"
+                            Command="{Binding $parent[Window].DataContext.AddSpotToBlacklistCommand}"
+                            CommandParameter="{Binding $parent[Window].DataContext.SelectedSpot}"
+                            IsEnabled="{Binding $parent[Window].DataContext.SelectedSpot, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                  <MenuItem Header="Spot toevoegen aan witte lijst"
+                            Command="{Binding $parent[Window].DataContext.AddSpotToWhitelistCommand}"
+                            CommandParameter="{Binding $parent[Window].DataContext.SelectedSpot}"
+                            IsEnabled="{Binding $parent[Window].DataContext.SelectedSpot, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                </ContextMenu>
+              </DataGrid.ContextMenu>
               <DataGrid.Columns>
                 <!-- SortMemberPath names the property the column shows; SpotSort maps it
                      onto the database column the ORDER BY runs on. -->
@@ -395,7 +425,32 @@
                 </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Titel"    Binding="{Binding Subject}"       Width="*" MinWidth="200" SortMemberPath="Subject"/>
                 <DataGridTextColumn Header="Genre"    Binding="{Binding GenreLabel}"    Width="90"  SortMemberPath="GenreLabel"/>
-                <DataGridTextColumn Header="Afzender" Binding="{Binding SenderName}"    Width="150" SortMemberPath="SenderName"/>
+                <DataGridTemplateColumn Header="Afzender" Width="160" SortMemberPath="SenderName">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate DataType="models:SpotItem">
+                      <Grid ColumnDefinitions="*,Auto" Margin="4,0" VerticalAlignment="Center">
+                        <TextBlock Grid.Column="0" Text="{Binding SenderName}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                        <Border Grid.Column="1"
+                                Margin="4,0,2,0"
+                                Padding="4,1"
+                                CornerRadius="2"
+                                BorderThickness="1"
+                                BorderBrush="{Binding PosterIdentBorderBrush}"
+                                Background="{Binding PosterIdentBorderBackground}"
+                                IsVisible="{Binding HasPosterIdent}"
+                                ToolTip.Tip="{Binding PosterIdentTooltip}">
+                          <TextBlock Text="{Binding PosterIdentLetter}"
+                                     FontSize="10"
+                                     FontWeight="Bold"
+                                     FontFamily="Courier New, Menlo, monospace"
+                                     Foreground="{Binding PosterIdentForeground}"
+                                     VerticalAlignment="Center"
+                                     HorizontalAlignment="Center"/>
+                        </Border>
+                      </Grid>
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Leeftijd" Binding="{Binding Age}"           Width="150" SortMemberPath="Age"/>
                 <DataGridTextColumn Header="Omvang"   Binding="{Binding FormattedSize}" Width="100" SortMemberPath="FormattedSize"/>
               </DataGrid.Columns>
