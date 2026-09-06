@@ -1,4 +1,4 @@
-<controls:SpotsContainer x:Class="Spotnet.Controls.SpotsListWithDetailsGrid" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:controls="clr-namespace:Spotnet.Controls" xmlns:vm="clr-namespace:Spotnet.ViewModel" xmlns:controls1="clr-namespace:Spotnet.Downloader.Controls" DataContext="{Binding SpotsList, Source={StaticResource Locator}}">
+<controls:SpotsContainer x:Class="Spotnet.Controls.SpotsListWithDetailsGrid" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:Spotnet.Localization" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:controls="clr-namespace:Spotnet.Controls" xmlns:vm="clr-namespace:Spotnet.ViewModel" xmlns:controls1="clr-namespace:Spotnet.Downloader.Controls" DataContext="{Binding SpotsList, Source={StaticResource Locator}}">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -26,7 +26,7 @@
                 <RowDefinition Height="Auto" />
               </Grid.RowDefinitions>
               <TextBlock Grid.Row="0" Text="" FontSize="20" Style="{StaticResource FontAwesome}" />
-              <TextBlock Grid.Row="1" Text="{x:Static p:Words.CannotLoad}" TextAlignment="Center" />
+              <TextBlock Grid.Row="1" Text="{loc:Loc CannotLoad}" TextAlignment="Center" />
             </Grid>
           </Grid>
         </DockPanel>
@@ -40,7 +40,7 @@
                 <RowDefinition Height="Auto" />
               </Grid.RowDefinitions>
               <TextBlock Grid.Row="0" Text="" FontSize="20" Style="{StaticResource FontAwesome}" />
-              <TextBlock Grid.Row="1" Text="{x:Static p:Words.CannotLoad}" TextAlignment="Center" />
+              <TextBlock Grid.Row="1" Text="{loc:Loc CannotLoad}" TextAlignment="Center" />
             </Grid>
           </Grid>
           <TextBlock Margin="15, 10, 5, 5" FontWeight="Normal" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" Text="{Binding Data.Description, Mode=OneWay}" />
@@ -85,7 +85,7 @@
   </FrameworkElement.Resources>
   <Grid>
     <DockPanel Name="Dock" Height="Auto" Width="Auto" HorizontalAlignment="Stretch" ClipToBounds="False" LastChildFill="True" Background="{DynamicResource WhiteColorBrush}">
-      <controls:WarningTip DockPanel.Dock="Top" Text="{x:Static p:Words.DbIsNotUpToDateWarning}" Focusable="False" Margin="0,1,0,1" Visibility="{Binding SpotsDbIsNotUpToDateWarningVisibility, Mode=TwoWay}" />
+      <controls:WarningTip DockPanel.Dock="Top" Text="{loc:Loc DbIsNotUpToDateWarning}" Focusable="False" Margin="0,1,0,1" Visibility="{Binding SpotsDbIsNotUpToDateWarningVisibility, Mode=TwoWay}" />
       <Grid DockPanel.Dock="Top">
         <DataGrid Name="MainDataGrid" CanUserAddRows="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsReadOnly="True" SelectionMode="Single" Focusable="True" GridLinesVisibility="None" HeadersVisibility="Column" AreRowDetailsFrozen="True" ColumnHeaderHeight="NaN" CanUserResizeRows="False" IsTextSearchEnabled="False" AutoGenerateColumns="False" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.ScrollUnit="Item" ScrollViewer.IsDeferredScrollingEnabled="True" RowHeaderWidth="0" CanUserSortColumns="True" RowStyle="{StaticResource SpotsListDataGridRowStyle}" CellStyle="{StaticResource SpotsListDataGridCellStyle}" Background="#00FFFFFF" ScrollViewer.HorizontalScrollBarVisibility="Disabled" RowDetailsTemplate="{StaticResource ThumbnailTemplate}" SelectedItem="{Binding SelectedItem, Mode=TwoWay}" RowDetailsVisibilityMode="{Binding SpotDetailsVisibilityMode}" PreviewKeyDown="Spots_PreviewKeyDown" PreviewMouseRightButtonUp="MainDataGrid_OnPreviewMouseRightButtonUp" PreviewMouseDown="Spots_PreviewMouseDown" ColumnReordered="Spots_ColumnReordered" Sorting="Spots_Sorting" LoadingRow="Spots_LoadingRow" MouseDoubleClick="Spots_MouseDoubleClick">
           <FrameworkElement.Resources>
@@ -94,7 +94,7 @@
             </ResourceDictionary>
           </FrameworkElement.Resources>
           <DataGrid.Columns>
-            <DataGridTemplateColumn Header="{x:Static p:Words.ColumnFormat}" MinWidth="50" Width="Auto" SortMemberPath="Data.Formaat">
+            <DataGridTemplateColumn Header="{loc:Loc ColumnFormat}" MinWidth="50" Width="Auto" SortMemberPath="Data.Formaat">
               <DataGridTemplateColumn.CellTemplate>
                 <DataTemplate>
                   <Grid>
@@ -108,7 +108,7 @@
                 </DataTemplate>
               </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
-            <DataGridTemplateColumn Header="{x:Static p:Words.ColumnSubject}" MinWidth="50" Width="*" SortMemberPath="Data.Titel">
+            <DataGridTemplateColumn Header="{loc:Loc ColumnSubject}" MinWidth="50" Width="*" SortMemberPath="Data.Titel">
               <DataGridTemplateColumn.CellTemplate>
                 <DataTemplate>
                   <Grid MinHeight="23">
@@ -148,8 +148,8 @@
                 </DataTemplate>
               </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
-            <DataGridTextColumn Header="{x:Static p:Words.ColumnGenre}" MinWidth="100" ElementStyle="{StaticResource ColumnElementStyle}" Binding="{Binding Data.Genre, Mode=OneWay}" />
-            <DataGridTemplateColumn Header="{x:Static p:Words.ColumnSender}" MinWidth="110" SortMemberPath="Data.Afzender">
+            <DataGridTextColumn Header="{loc:Loc ColumnGenre}" MinWidth="100" ElementStyle="{StaticResource ColumnElementStyle}" Binding="{Binding Data.Genre, Mode=OneWay}" />
+            <DataGridTemplateColumn Header="{loc:Loc ColumnSender}" MinWidth="110" SortMemberPath="Data.Afzender">
               <DataGridTemplateColumn.CellTemplate>
                 <DataTemplate>
                   <Grid MinHeight="23">
@@ -165,10 +165,10 @@
                 </DataTemplate>
               </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
-            <DataGridTextColumn Header="{x:Static p:Words.ColumnTag}" MinWidth="70" Visibility="Hidden" ElementStyle="{StaticResource ColumnElementStyle}" Binding="{Binding Data.Tag, Mode=OneWay}" />
-            <DataGridTextColumn Header="{x:Static p:Words.ColumnDate}" MinWidth="120" Visibility="Hidden" ElementStyle="{StaticResource ColumnElementStyle}" Binding="{Binding Data.Datum, Mode=OneWay}" />
-            <DataGridTextColumn Header="{x:Static p:Words.ColumnAge}" MinWidth="115" ElementStyle="{StaticResource ColumnElementStyle}" Binding="{Binding Data.Leeftijd, Mode=OneWay}" />
-            <DataGridTemplateColumn Header="{x:Static p:Words.ColumnSize}" MinWidth="70" SortMemberPath="Data.Omvang">
+            <DataGridTextColumn Header="{loc:Loc ColumnTag}" MinWidth="70" Visibility="Hidden" ElementStyle="{StaticResource ColumnElementStyle}" Binding="{Binding Data.Tag, Mode=OneWay}" />
+            <DataGridTextColumn Header="{loc:Loc ColumnDate}" MinWidth="120" Visibility="Hidden" ElementStyle="{StaticResource ColumnElementStyle}" Binding="{Binding Data.Datum, Mode=OneWay}" />
+            <DataGridTextColumn Header="{loc:Loc ColumnAge}" MinWidth="115" ElementStyle="{StaticResource ColumnElementStyle}" Binding="{Binding Data.Leeftijd, Mode=OneWay}" />
+            <DataGridTemplateColumn Header="{loc:Loc ColumnSize}" MinWidth="70" SortMemberPath="Data.Omvang">
               <DataGridTemplateColumn.CellTemplate>
                 <DataTemplate>
                   <Grid MinHeight="23">
@@ -177,8 +177,8 @@
                 </DataTemplate>
               </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
-            <DataGridTextColumn Header="{x:Static p:Words.ColumnMessageID}" MinWidth="120" Width="Auto" Visibility="Hidden" ElementStyle="{StaticResource ColumnElementStyle}" Binding="{Binding Data.SpotMessageId, Mode=OneWay}" />
-            <DataGridTextColumn Header="{x:Static p:Words.ColumnSenderId}" MinWidth="70" Visibility="Hidden" CanUserSort="False" ElementStyle="{StaticResource ColumnElementStyle}" Binding="{Binding Data.AfzenderId, Mode=OneWay}" />
+            <DataGridTextColumn Header="{loc:Loc ColumnMessageID}" MinWidth="120" Width="Auto" Visibility="Hidden" ElementStyle="{StaticResource ColumnElementStyle}" Binding="{Binding Data.SpotMessageId, Mode=OneWay}" />
+            <DataGridTextColumn Header="{loc:Loc ColumnSenderId}" MinWidth="70" Visibility="Hidden" CanUserSort="False" ElementStyle="{StaticResource ColumnElementStyle}" Binding="{Binding Data.AfzenderId, Mode=OneWay}" />
           </DataGrid.Columns>
         </DataGrid>
         <controls:WarningTip MouseDown="WarningTip_MouseDown" Grid.Row="0" Height="Auto" Width="Auto" Focusable="False" Margin="0,26,15,0" Opacity="0.95" VerticalAlignment="Top" HorizontalAlignment="Center" Text="{Binding NewSpotsBarText, Mode=OneWay}" Visibility="{Binding NewSpotsBarVisibility, Mode=TwoWay}" />

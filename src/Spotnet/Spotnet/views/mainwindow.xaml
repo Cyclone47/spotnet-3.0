@@ -1,4 +1,4 @@
-<metro:MetroWindow x:Class="Spotnet.Views.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:controls="clr-namespace:Spotnet.Controls" xmlns:vm="clr-namespace:Spotnet.ViewModel" xmlns:metro="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro" x:Name="MainWindowName" SizeToContent="Manual" Cursor="Wait" Style="{DynamicResource WindowBackground}" FontSize="{DynamicResource NormalFontSize}" ResizeMode="CanResizeWithGrip" MinWidth="400" MinHeight="300" Width="1120" Height="660" WindowStartupLocation="CenterScreen" SaveWindowPosition="True" WindowTransitionsEnabled="False" Icon="/Resources/ImagesInternal/spotnet.ico" ShowIconOnTitleBar="False" ShowTitleBar="True" WindowTitleBrush="{DynamicResource WindowTitleColorBrush}" TitleForeground="{DynamicResource WindowTitleForegroundBrush}" NonActiveWindowTitleBrush="{DynamicResource NonActiveWindowTitleBrush}" ShowActivated="True" SnapsToDevicePixels="True" GlowBrush="{DynamicResource HighlightBrush}" TextOptions.TextFormattingMode="Display" xmlns:views="clr-namespace:Spotnet.Views" DataContext="{Binding MainWindow, Source={StaticResource Locator}}" Loaded="MainWindow_OnLoaded">
+<metro:MetroWindow x:Class="Spotnet.Views.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:Spotnet.Localization" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:controls="clr-namespace:Spotnet.Controls" xmlns:vm="clr-namespace:Spotnet.ViewModel" xmlns:metro="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro" x:Name="MainWindowName" SizeToContent="Manual" Cursor="Wait" Style="{DynamicResource WindowBackground}" FontSize="{DynamicResource NormalFontSize}" ResizeMode="CanResizeWithGrip" MinWidth="400" MinHeight="300" Width="1120" Height="660" WindowStartupLocation="CenterScreen" SaveWindowPosition="True" WindowTransitionsEnabled="False" Icon="/Resources/ImagesInternal/spotnet.ico" ShowIconOnTitleBar="False" ShowTitleBar="True" WindowTitleBrush="{DynamicResource WindowTitleColorBrush}" TitleForeground="{DynamicResource WindowTitleForegroundBrush}" NonActiveWindowTitleBrush="{DynamicResource NonActiveWindowTitleBrush}" ShowActivated="True" SnapsToDevicePixels="True" GlowBrush="{DynamicResource HighlightBrush}" TextOptions.TextFormattingMode="Display" xmlns:views="clr-namespace:Spotnet.Views" DataContext="{Binding MainWindow, Source={StaticResource Locator}}" Loaded="MainWindow_OnLoaded">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
@@ -111,7 +111,7 @@
         <StatusBarItem DockPanel.Dock="Right" Margin="2,0">
           <Grid>
             <Popup Name="StatusBarSystemStatePopup" Placement="Top" VerticalOffset="-5" HorizontalOffset="-180" AllowsTransparency="True" PlacementTarget="{Binding ElementName=StatusBarSystemStateImage}" IsOpen="{Binding ElementName=StatusBarSystemStateTooltip, Path=TooltipIsVisible, UpdateSourceTrigger=PropertyChanged}">
-              <controls:SystemStatusTooltip x:Name="StatusBarSystemStateTooltip" Background="#00FFFFFF" TooltipTitle="{x:Static p:Words.StateReporter}" TooltipText="{Binding SystemStateText, Mode=OneWay}" TooltipType="{Binding SystemStateType, Mode=OneWay}" Visibility="{Binding Path=IsActive, ElementName=MainWindowName, Converter={StaticResource VisibilityConverter}, UpdateSourceTrigger=PropertyChanged}" />
+              <controls:SystemStatusTooltip x:Name="StatusBarSystemStateTooltip" Background="#00FFFFFF" TooltipTitle="{loc:Loc StateReporter}" TooltipText="{Binding SystemStateText, Mode=OneWay}" TooltipType="{Binding SystemStateType, Mode=OneWay}" Visibility="{Binding Path=IsActive, ElementName=MainWindowName, Converter={StaticResource VisibilityConverter}, UpdateSourceTrigger=PropertyChanged}" />
             </Popup>
             <Image Name="StatusBarSystemStateImage" Height="14" Width="14" Cursor="Hand" ToolTipService.HasDropShadow="True" ToolTipService.Placement="Top" Source="{Binding SystemStateImageSource, Mode=OneWay}" ToolTip="{Binding SystemStateText, Mode=OneWay}" MouseDown="SystemStateImage_MouseDown" IsMouseDirectlyOverChanged="StatusBarSystemStateImage_OnIsMouseDirectlyOverChanged" />
           </Grid>
@@ -143,7 +143,7 @@
         <HeaderedContentControl.Header>
           <StackPanel Orientation="Horizontal">
             <TextBlock Text="" Style="{StaticResource FontAwesomeTabs}" />
-            <TextBlock Text="{x:Static p:Words.TabSpots}" Margin="4,0,4,0" VerticalAlignment="Center" />
+            <TextBlock Text="{loc:Loc TabSpots}" Margin="4,0,4,0" VerticalAlignment="Center" />
           </StackPanel>
         </HeaderedContentControl.Header>
       </controls:UnCloseableTabItem>
@@ -151,7 +151,7 @@
         <HeaderedContentControl.Header>
           <StackPanel Orientation="Horizontal">
             <TextBlock Text="" Style="{StaticResource FontAwesomeTabs}" />
-            <TextBlock Text="{x:Static p:Words.TabDownloads}" Margin="4,0,4,0" VerticalAlignment="Center" />
+            <TextBlock Text="{loc:Loc TabDownloads}" Margin="4,0,4,0" VerticalAlignment="Center" />
           </StackPanel>
         </HeaderedContentControl.Header>
       </controls:UnCloseableTabItem>

@@ -96,6 +96,15 @@ internal class FilterCatViewModel : ViewModelBase
 
 	public static ReadOnlyCollection<FilterCatViewModel> RootCollection => LazyInitializer.EnsureInitialized(ref _rootCollection, () => new FilterCatViewModel("Empty").InitializeAsRoot());
 
+	/// <summary>
+	/// Drops the cached tree so the next reader rebuilds it. The node names come from
+	/// the Categories resources, so the cache is only valid for one language.
+	/// </summary>
+	public static void ResetCache()
+	{
+		_rootCollection = null;
+	}
+
 	private FilterCatViewModel(string name)
 	{
 		IsInitiallySelected = false;

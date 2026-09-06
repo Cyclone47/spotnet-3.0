@@ -1,6 +1,7 @@
 <UserControl x:Class="Spotnet.Controls.SettingsForIntegrations"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:loc="clr-namespace:Spotnet.Localization"
              FontSize="{Binding ElementName=VisibilityVmProxy, Path=DataContext.FontSize, Mode=OneWay}">
   <UserControl.Resources>
     <Style x:Key="FieldLabel" TargetType="TextBlock">
@@ -21,33 +22,33 @@
   </UserControl.Resources>
 
   <StackPanel Orientation="Vertical" Margin="4">
-    <TextBlock Text="Externe integraties" FontWeight="Bold" FontSize="15" Margin="0,0,0,4" />
-    <TextBlock Text="Optionele koppelingen met diensten van derden. Alles hieronder is standaard leeg: een integratie doet pas iets zodra u er zelf een adres of sleutel voor invult. Spots, reacties en downloads werken hier volledig los van."
+    <TextBlock Text="{loc:Loc IntegrTitle}" FontWeight="Bold" FontSize="15" Margin="0,0,0,4" />
+    <TextBlock Text="{loc:Loc IntegrIntro}"
                TextWrapping="Wrap" Opacity="0.8" Margin="0,0,0,12" />
 
     <!-- Newznab -->
     <Border Background="{DynamicResource DialogPanelBackgroundBrush}" CornerRadius="6" Padding="12,10" Margin="0,0,0,10">
       <StackPanel Orientation="Vertical">
         <DockPanel LastChildFill="False" Margin="0,0,0,6">
-          <TextBlock DockPanel.Dock="Left" Text="Newznab-indexer" FontWeight="SemiBold" VerticalAlignment="Center" />
-          <TextBlock Name="NewznabStatusTextBlock" DockPanel.Dock="Right" Text="Uitgeschakeld"
+          <TextBlock DockPanel.Dock="Left" Text="{loc:Loc IntegrNewznabHeader}" FontWeight="SemiBold" VerticalAlignment="Center" />
+          <TextBlock Name="NewznabStatusTextBlock" DockPanel.Dock="Right" Text="{loc:Loc IntegrDisabled}"
                      Opacity="0.75" FontSize="11" VerticalAlignment="Center" />
         </DockPanel>
-        <TextBlock Text="Een alternatieve spotbron naast Usenet. Vul zowel het serveradres als uw eigen API-sleutel in; zolang één van beide leeg is, wordt de indexer niet bevraagd en verschijnen er geen Newznab-categorieën in de filterlijst."
+        <TextBlock Text="{loc:Loc IntegrNewznabHint}"
                    TextWrapping="Wrap" Opacity="0.8" Margin="0,0,0,8" />
         <StackPanel Style="{StaticResource FieldRow}">
-          <TextBlock Text="Server:" Style="{StaticResource FieldLabel}" />
+          <TextBlock Text="{loc:Loc IntegrServerLabel}" Style="{StaticResource FieldLabel}" />
           <TextBox Name="NewznabUrlTextBox" Width="420" TextChanged="Field_Changed" />
         </StackPanel>
-        <TextBlock Text="Bijvoorbeeld https://mijn-indexer.example/. Gebruik bij voorkeur https."
+        <TextBlock Text="{loc:Loc IntegrServerHint}"
                    Style="{StaticResource Hint}" />
         <StackPanel Style="{StaticResource FieldRow}">
-          <TextBlock Text="API-sleutel:" Style="{StaticResource FieldLabel}" />
+          <TextBlock Text="{loc:Loc IntegrApiKeyLabel}" Style="{StaticResource FieldLabel}" />
           <TextBox Name="NewznabKeyTextBox" Width="300" IsReadOnly="True" TextChanged="Field_Changed" />
-          <Button Name="ReplaceNewznabKeyButton" Content="Vervangen" Margin="10,0,0,0" Padding="10,2"
+          <Button Name="ReplaceNewznabKeyButton" Content="{loc:Loc IntegrReplace}" Margin="10,0,0,0" Padding="10,2"
                   Click="ReplaceNewznabKeyButton_Click" />
         </StackPanel>
-        <TextBlock Text="De sleutel wordt afgeschermd weergegeven. Klik op Vervangen om een eigen sleutel in te voeren, of om hem te wissen."
+        <TextBlock Text="{loc:Loc IntegrKeyMaskedHint}"
                    Style="{StaticResource Hint}" />
       </StackPanel>
     </Border>
@@ -56,19 +57,19 @@
     <Border Background="{DynamicResource DialogPanelBackgroundBrush}" CornerRadius="6" Padding="12,10" Margin="0,0,0,10">
       <StackPanel Orientation="Vertical">
         <DockPanel LastChildFill="False" Margin="0,0,0,6">
-          <TextBlock DockPanel.Dock="Left" Text="OMDb (filminfo)" FontWeight="SemiBold" VerticalAlignment="Center" />
-          <TextBlock Name="OmdbStatusTextBlock" DockPanel.Dock="Right" Text="Uitgeschakeld"
+          <TextBlock DockPanel.Dock="Left" Text="{loc:Loc IntegrOmdbHeader}" FontWeight="SemiBold" VerticalAlignment="Center" />
+          <TextBlock Name="OmdbStatusTextBlock" DockPanel.Dock="Right" Text="{loc:Loc IntegrDisabled}"
                      Opacity="0.75" FontSize="11" VerticalAlignment="Center" />
         </DockPanel>
-        <TextBlock Text="Vult het film- en serie-informatieblok in de spotweergave met titel, jaar, kijkwijzer en poster. OMDb vereist sinds 2017 een eigen sleutel; zonder sleutel wordt het blok verborgen in plaats van leeg getoond."
+        <TextBlock Text="{loc:Loc IntegrOmdbHint}"
                    TextWrapping="Wrap" Opacity="0.8" Margin="0,0,0,8" />
         <StackPanel Style="{StaticResource FieldRow}">
-          <TextBlock Text="API-sleutel:" Style="{StaticResource FieldLabel}" />
+          <TextBlock Text="{loc:Loc IntegrApiKeyLabel}" Style="{StaticResource FieldLabel}" />
           <TextBox Name="OmdbKeyTextBox" Width="300" IsReadOnly="True" TextChanged="Field_Changed" />
-          <Button Name="ReplaceOmdbKeyButton" Content="Vervangen" Margin="10,0,0,0" Padding="10,2"
+          <Button Name="ReplaceOmdbKeyButton" Content="{loc:Loc IntegrReplace}" Margin="10,0,0,0" Padding="10,2"
                   Click="ReplaceOmdbKeyButton_Click" />
         </StackPanel>
-        <TextBlock Text="Een gratis sleutel is aan te vragen op omdbapi.com. De aanroep gaat over https."
+        <TextBlock Text="{loc:Loc IntegrOmdbKeyHint}"
                    Style="{StaticResource Hint}" />
       </StackPanel>
     </Border>

@@ -117,8 +117,8 @@ public partial class NotificationCenterWindow : MetroWindow
         NotificationsListBox.ItemsSource = notifs;
 
         int unread = notifs.Count(n => !n.IsRead);
-        NotificationsTab.Header = unread > 0 ? $"🔔 Meldingen ({unread})" : "🔔 Meldingen";
-        NotificationsHeaderTextBlock.Text = $"Recente Meldingen ({notifs.Count})";
+        NotificationsTab.Header = unread > 0 ? string.Format(Words.NcTabNotificationsCount, unread) : Words.NcTabNotifications;
+        NotificationsHeaderTextBlock.Text = string.Format(Words.NcRecentCount, notifs.Count);
 
         EmptyNotificationsPanel.Visibility = notifs.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         NotificationsListBox.Visibility = notifs.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -247,7 +247,7 @@ public partial class NotificationCenterWindow : MetroWindow
             string keywords = KeywordsTextBox.Text.Trim();
             if (string.IsNullOrWhiteSpace(keywords))
             {
-                MessageBox.Show("Voer één of meerdere trefwoorden in (bijv. F1, Formule 1).", "Trefwoorden vereist", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(Words.NcKeywordsRequired, Words.NcKeywordsRequiredTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
                 KeywordsTextBox.Focus();
                 return;
             }
@@ -284,9 +284,9 @@ public partial class NotificationCenterWindow : MetroWindow
         ResetRuleForm();
 
         string msg = isEditing
-            ? $"Melding '{rule.Name}' is succesvol bijgewerkt!"
-            : $"Melding '{rule.Name}' is succesvol opgeslagen en actief!";
-        string title = isEditing ? "Melding Gewijzigd" : "Melding Opgeslagen";
+            ? string.Format(Words.NcRuleUpdated, rule.Name)
+            : string.Format(Words.NcRuleSaved, rule.Name);
+        string title = isEditing ? Words.NcRuleUpdatedTitle : Words.NcRuleSavedTitle;
 
         MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Information);
         RefreshRules();
@@ -300,8 +300,8 @@ public partial class NotificationCenterWindow : MetroWindow
             if (rule == null) return;
 
             _editingRuleId = rule.Id;
-            RuleFormHeaderTextBlock.Text = "Melding Aanpassen";
-            SaveRuleButton.Content = "💾 Wijzigingen Opslaan";
+            RuleFormHeaderTextBlock.Text = Words.NcEditRuleHeader;
+            SaveRuleButton.Content = Words.NcSaveChanges;
             CancelEditRuleButton.Visibility = Visibility.Visible;
 
             RuleNameTextBox.Text = rule.Name ?? "";
@@ -383,8 +383,8 @@ public partial class NotificationCenterWindow : MetroWindow
     private void ResetRuleForm()
     {
         _editingRuleId = null;
-        RuleFormHeaderTextBlock.Text = "Nieuwe Melding Aanmaken";
-        SaveRuleButton.Content = "➕ Melding Opslaan";
+        RuleFormHeaderTextBlock.Text = Words.NcNewRule;
+        SaveRuleButton.Content = Words.NcSaveRule;
         CancelEditRuleButton.Visibility = Visibility.Collapsed;
 
         RuleNameTextBox.Text = "";
@@ -405,7 +405,7 @@ public partial class NotificationCenterWindow : MetroWindow
 
     private void ClearAllButton_Click(object sender, RoutedEventArgs e)
     {
-        if (MessageBox.Show("Weet je zeker dat je alle meldingen wilt wissen?", "Meldingen wissen", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+        if (MessageBox.Show(Words.NcClearAllQuestion, Words.NcClearAllTitle, MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
         {
             NotificationManager.Instance.ClearAllNotifications();
         }
@@ -442,7 +442,7 @@ public partial class NotificationCenterWindow : MetroWindow
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Kon spot niet openen: " + ex.Message, "Fout", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(Words.NcOpenSpotFailed + ex.Message, Words.Error, MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
     }
@@ -459,7 +459,7 @@ public partial class NotificationCenterWindow : MetroWindow
     {
         if (sender is Button btn && btn.Tag is string id)
         {
-            if (MessageBox.Show("Weet je zeker dat je deze melding wilt verwijderen?", "Melding verwijderen", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            if (MessageBox.Show(Words.NcDeleteRuleQuestion, Words.NcDeleteRuleTitle, MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
                 if (id == _editingRuleId)
                 {
@@ -477,13 +477,13 @@ public partial class NotificationCenterWindow : MetroWindow
             var notif = NotificationManager.Instance.TestRuleNow(id);
             if (notif != null)
             {
-                MessageBox.Show($"Test geslaagd! Er zijn {notif.SpotCount} spots gevonden en een melding is getoond.", "Test Resultaat", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(string.Format(Words.NcTestSucceeded, notif.SpotCount), Words.NcTestResultTitle, MessageBoxButton.OK, MessageBoxImage.Information);
                 RefreshNotifications();
                 MainTabControl.SelectedIndex = 0; // Switch to notifications tab
             }
             else
             {
-                MessageBox.Show("Er zijn momenteel geen recente spots gevonden die matchen met deze regel.", "Geen resultaten", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(Words.NcTestNoResults, Words.NcTestNoResultsTitle, MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
     }

@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using MahApps.Metro.Controls;
+using Spotnet.Properties;
 
 namespace Spotnet.Controls;
 
@@ -17,9 +18,9 @@ public partial class RemotePasswordWindow : MetroWindow
     internal static string ValidatePasswords(string password, string confirmation)
     {
         if (string.IsNullOrWhiteSpace(password) || password.Length < 6)
-            return "Gebruik een wachtwoord van minimaal 6 tekens.";
+            return Words.RemotePasswordTooShort;
         if (!string.Equals(password, confirmation, StringComparison.Ordinal))
-            return "De wachtwoorden zijn niet gelijk. Probeer het opnieuw.";
+            return Words.RemotePasswordMismatch;
         return null;
     }
 

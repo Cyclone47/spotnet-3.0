@@ -1,4 +1,4 @@
-<UserControl x:Class="Spotnet.Controls.SettingsForAdvancedDownload" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:controls="clr-namespace:Spotnet.Controls" FontSize="{Binding ElementName=VisibilityVmProxy, Path=DataContext.FontSize, Mode=OneWay}">
+<UserControl x:Class="Spotnet.Controls.SettingsForAdvancedDownload" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:Spotnet.Localization" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:controls="clr-namespace:Spotnet.Controls" FontSize="{Binding ElementName=VisibilityVmProxy, Path=DataContext.FontSize, Mode=OneWay}">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <Storyboard x:Key="FieldAnimationStoryboard">
@@ -13,7 +13,7 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
-    <RadioButton Name="ExternalNzbGetRadioButton" Grid.Row="0" Content="{x:Static p:Words.UseExternalNzbGet}" Margin="0,7" Click="ExternalNzbGetRadioButton_Click" />
+    <RadioButton Name="ExternalNzbGetRadioButton" Grid.Row="0" Content="{loc:Loc UseExternalNzbGet}" Margin="0,7" Click="ExternalNzbGetRadioButton_Click" />
     <Grid Name="ExternalNzbGetSection" Row="1" Margin="25,7,0,7">
       <Grid.RowDefinitions>
         <RowDefinition />
@@ -25,24 +25,24 @@
         <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
-      <Label Name="Label3" Grid.Row="0" Grid.Column="0" Content="{x:Static p:Words.Address}" />
-      <Label Name="Label4" Grid.Row="1" Grid.Column="0" Content="{x:Static p:Words.Port}" />
-      <Label Name="Label5" Grid.Row="2" Grid.Column="0" Content="{x:Static p:Words.Username}" />
-      <Label Name="Label6" Grid.Row="3" Grid.Column="0" Content="{x:Static p:Words.Password}" />
+      <Label Name="Label3" Grid.Row="0" Grid.Column="0" Content="{loc:Loc Address}" />
+      <Label Name="Label4" Grid.Row="1" Grid.Column="0" Content="{loc:Loc Port}" />
+      <Label Name="Label5" Grid.Row="2" Grid.Column="0" Content="{loc:Loc Username}" />
+      <Label Name="Label6" Grid.Row="3" Grid.Column="0" Content="{loc:Loc Password}" />
       <Border Name="AddressTextBoxBorder" Grid.Row="0" Grid.Column="1" BorderBrush="#00FFFFFF" BorderThickness="2">
-        <TextBox Name="AddressTextBox" TabIndex="1" ToolTip="{x:Static p:Words.EnterServerAddress}" TextChanged="AddressTextBox_TextChanged" />
+        <TextBox Name="AddressTextBox" TabIndex="1" ToolTip="{loc:Loc EnterServerAddress}" TextChanged="AddressTextBox_TextChanged" />
       </Border>
       <Border Name="PortComboBoxBorder" Grid.Row="1" Grid.Column="1" BorderBrush="#00FFFFFF" BorderThickness="2">
         <TextBox Name="PortTextBox" TabIndex="2" ToolTip="Port" TextChanged="PortTextBox_OnTextChanged" />
       </Border>
       <Border Name="UserNameTextBoxBorder" Grid.Row="2" Grid.Column="1" BorderBrush="#00FFFFFF" BorderThickness="2">
-        <TextBox Name="UserNameTextBox" TabIndex="3" ToolTip="{x:Static p:Words.EnterUsername}" TextChanged="UserNameTextBox_OnTextChanged" />
+        <TextBox Name="UserNameTextBox" TabIndex="3" ToolTip="{loc:Loc EnterUsername}" TextChanged="UserNameTextBox_OnTextChanged" />
       </Border>
       <Border Name="PasswordTextBoxBorder" Grid.Row="3" Grid.Column="1" BorderBrush="#00FFFFFF" BorderThickness="2">
-        <PasswordBox Name="PasswordTextBox" TabIndex="4" ToolTip="{x:Static p:Words.EnterPassword}" PasswordChanged="PasswordTextBox_OnPasswordChanged" />
+        <PasswordBox Name="PasswordTextBox" TabIndex="4" ToolTip="{loc:Loc EnterPassword}" PasswordChanged="PasswordTextBox_OnPasswordChanged" />
       </Border>
     </Grid>
-    <RadioButton Name="InternalNzbGetRadioButton" Grid.Row="2" Content="{x:Static p:Words.UseInternalDownloader}" Margin="0,7" Click="InternalDownloaderRadioButton_Click" />
+    <RadioButton Name="InternalNzbGetRadioButton" Grid.Row="2" Content="{loc:Loc UseInternalDownloader}" Margin="0,7" Click="InternalDownloaderRadioButton_Click" />
     <Grid Name="InternalNzbGetSection" Row="3" Margin="25,7,0,7">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
@@ -68,9 +68,9 @@
       <Label Grid.Row="0" Grid.Column="0" Content="DestDir" />
       <Label Grid.Row="1" Grid.Column="0" Content="InterDir" />
       <Label Grid.Row="2" Grid.Column="0" Content="QueueDir" />
-      <Button Grid.Row="0" Grid.Column="3" Content="{x:Static p:Words.Browse}" Margin="5,1,0,1" Click="DestDirBrowse_Click" />
-      <Button Grid.Row="1" Grid.Column="3" Content="{x:Static p:Words.Browse}" Margin="5,1,0,1" Click="InterDirBrowse_Click" />
-      <Button Grid.Row="2" Grid.Column="3" Content="{x:Static p:Words.Browse}" Margin="5,1,0,1" Click="QueueDirBrowse_Click" />
+      <Button Grid.Row="0" Grid.Column="3" Content="{loc:Loc Browse}" Margin="5,1,0,1" Click="DestDirBrowse_Click" />
+      <Button Grid.Row="1" Grid.Column="3" Content="{loc:Loc Browse}" Margin="5,1,0,1" Click="InterDirBrowse_Click" />
+      <Button Grid.Row="2" Grid.Column="3" Content="{loc:Loc Browse}" Margin="5,1,0,1" Click="QueueDirBrowse_Click" />
       <Label Grid.Row="5" Grid.Column="0" Content="Server1.Host" />
       <Label Grid.Row="6" Grid.Column="0" Content="Server1.Port" />
       <Label Grid.Row="7" Grid.Column="0" Content="Server1.Username" />

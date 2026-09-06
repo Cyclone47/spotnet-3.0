@@ -150,6 +150,40 @@ public sealed class MenuThemeTests
         finally { dialog.Close(); }
     }
 
+    /// <summary>
+    /// A language switch has to reach controls that are already built. This uses the real
+    /// compiled markup, switches the culture underneath a live control, and checks the
+    /// labels change without anything being reconstructed.
+    /// </summary>
+    private static void CheckLanguageSwitchRepaintsLiveControls()
+    {
+        System.Globalization.CultureInfo original = Spotnet.Properties.Words.Culture;
+        var config = new Spotnet.Remote.RemoteConfig { Enabled = false, RequireAuth = true };
+        try
+        {
+            Spotnet.Properties.Words.Culture = System.Globalization.CultureInfo.GetCultureInfo("nl");
+            Spotnet.Localization.TranslationSource.InvalidateAll();
+
+            var settings = new SettingsForRemote(config, () => null);
+            Layout(settings);
+            var enable = (CheckBox)settings.FindName("EnableRemoteCheckBox");
+            var port = (TextBlock)settings.FindName("PortLabel");
+            Assert.Equal("Spotnet Remote inschakelen", enable.Content);
+            Assert.Equal("Poort:", port.Text);
+
+            Spotnet.Properties.Words.Culture = System.Globalization.CultureInfo.GetCultureInfo("en");
+            Spotnet.Localization.TranslationSource.InvalidateAll();
+
+            Assert.Equal("Enable Spotnet Remote", enable.Content);
+            Assert.Equal("Port:", port.Text);
+        }
+        finally
+        {
+            Spotnet.Properties.Words.Culture = original;
+            Spotnet.Localization.TranslationSource.InvalidateAll();
+        }
+    }
+
     private static void CheckRow(MenuItem item, Brush background)
     {
         item.ApplyTemplate();
@@ -262,6 +296,7 @@ public sealed class MenuThemeTests
                 CheckSpotSurfaces(app);
                 CheckDeferredStartupWindow(app);
                 CheckRemotePasswordSetup();
+                CheckLanguageSwitchRepaintsLiveControls();
             }
             catch (Exception ex) { error = ex; }
             finally { app?.Shutdown(); }

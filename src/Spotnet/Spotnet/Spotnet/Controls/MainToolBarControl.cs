@@ -31,6 +31,7 @@ public partial class MainToolBarControl : UserControl
         InputManager.Current.LeaveMenuMode += OnLeaveMenuMode;
         UpdateDownloaderMenuItemsState();
         RefreshLanguageLabel();
+        UserLanguageHelper.LanguageChanged += OnLanguageChanged;
     }
 
     private void OnLeaveMenuMode(object sender, EventArgs e)
@@ -103,10 +104,11 @@ public partial class MainToolBarControl : UserControl
 
     private void LangDutch_Click(object sender, RoutedEventArgs e)
     {
-        if (MenuLangEnglish.IsChecked)
+        // Checking the English item here was a copy/paste slip: picking Dutch while
+        // English was active did nothing, because the click had already unchecked it.
+        if (MenuLangDutch.IsChecked)
         {
-            UserLanguageHelper.Initialize("nl", updateCulture: false);
-            RefreshLanguageLabel();
+            UserLanguageHelper.SetLanguage(UserLanguageHelper.Dutch);
         }
     }
 
@@ -114,8 +116,7 @@ public partial class MainToolBarControl : UserControl
     {
         if (MenuLangEnglish.IsChecked)
         {
-            UserLanguageHelper.Initialize("en", updateCulture: false);
-            RefreshLanguageLabel();
+            UserLanguageHelper.SetLanguage(UserLanguageHelper.English);
         }
     }
 
@@ -323,6 +324,13 @@ public partial class MainToolBarControl : UserControl
         {
             ToolBar.SetOverflowMode(item, OverflowMode.Never);
         }
+    }
+
+    /// <summary>The menu tooltips below are written in code, so they need a nudge.</summary>
+    private void OnLanguageChanged()
+    {
+        RefreshLanguageLabel();
+        UpdateDownloaderMenuItemsState();
     }
 
     private void RefreshLanguageLabel()

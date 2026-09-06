@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Threading;
 using MahApps.Metro.Controls;
 using Spotnet.Remote;
+using Spotnet.Properties;
 
 namespace Spotnet.Controls;
 
@@ -75,7 +76,7 @@ public partial class RemotePairingWindow : MetroWindow
                 if (TunnelModeRadio.IsChecked == true)
                 {
                     TunnelConnectingBanner.Visibility = Visibility.Visible;
-                    TunnelConnectingText.Text = $"⚠️ Cloudflare fout: {msg}. Schakel eventueel over naar Wi-Fi.";
+                    TunnelConnectingText.Text = string.Format(Words.PairTunnelError, msg);
                 }
             }
         });
@@ -149,7 +150,7 @@ public partial class RemotePairingWindow : MetroWindow
                 {
                     QrLoadingText.Text = "Cloudflare tunnel verbinden... Even geduld.";
                     QrLoadingProgressBar.IsIndeterminate = true;
-                    TunnelConnectingText.Text = "⏳ Cloudflare Quick Tunnel opzetten... QR-code verschijnt zodra verbinding actief is.";
+                    TunnelConnectingText.Text = Words.PairTunnelStarting;
                 }
 
                 _currentPairingUrl = "";
@@ -159,7 +160,7 @@ public partial class RemotePairingWindow : MetroWindow
         }
         else
         {
-            ConnectionModeHintTextBlock.Text = "Verbind via hetzelfde Wi-Fi netwerk als deze computer.";
+            ConnectionModeHintTextBlock.Text = Words.PairModeLanHint;
             QrLoadingOverlay.Visibility = Visibility.Collapsed;
             QrCodeBorder.Visibility = Visibility.Visible;
             TunnelNoticeBanner.Visibility = Visibility.Collapsed;
@@ -210,7 +211,7 @@ public partial class RemotePairingWindow : MetroWindow
             _timer.Stop();
             var latest = currentConfig.PairedDevices[^1];
             PairedSuccessBanner.Visibility = Visibility.Visible;
-            PairedSuccessText.Text = $"✓ Apparaat '{latest.Name}' succesvol gekoppeld!";
+            PairedSuccessText.Text = string.Format(Words.PairSucceededNamed, latest.Name);
 
             // Auto-close after 2 seconds
             var closeTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
@@ -227,7 +228,7 @@ public partial class RemotePairingWindow : MetroWindow
     {
         if (string.IsNullOrEmpty(_currentPairingUrl))
         {
-            MessageBox.Show("De Cloudflare koppellink is nog niet gereed. Even geduld a.u.b.", "Even wachten", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(Words.PairLinkNotReady, Words.PairLinkNotReadyTitle, MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
         try
@@ -237,7 +238,7 @@ public partial class RemotePairingWindow : MetroWindow
         }
         catch (Exception ex)
         {
-            MessageBox.Show("Kon link niet kopiëren: " + ex.Message, "Fout", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(Words.PairCopyFailed + ex.Message, Words.Error, MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 

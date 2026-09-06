@@ -1,4 +1,4 @@
-<UserControl x:Class="Spotnet.Downloader.Controls.DownloadsGrid" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:controls="clr-namespace:Spotnet.Controls" xmlns:controls1="clr-namespace:Spotnet.Downloader.Controls">
+<UserControl x:Class="Spotnet.Downloader.Controls.DownloadsGrid" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:Spotnet.Localization" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:controls="clr-namespace:Spotnet.Controls" xmlns:controls1="clr-namespace:Spotnet.Downloader.Controls">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <Style x:Key="BodyContentCentering" TargetType="{x:Type DataGridCell}">
@@ -46,7 +46,7 @@
       </FrameworkElement.Resources>
       <DataGrid.Columns>
         <DataGridTextColumn Header="#" MinWidth="20" CanUserSort="True" SortMemberPath="Index" Binding="{Binding Path=Priority, Mode=OneWay}" />
-        <DataGridTemplateColumn Header="{x:Static p:Words.ColumnSubject}" MinWidth="50" Width="*" CanUserSort="True" SortMemberPath="Titel">
+        <DataGridTemplateColumn Header="{loc:Loc ColumnSubject}" MinWidth="50" Width="*" CanUserSort="True" SortMemberPath="Titel">
           <DataGridTemplateColumn.CellTemplate>
             <DataTemplate>
               <Grid>
@@ -66,15 +66,15 @@
             </DataTemplate>
           </DataGridTemplateColumn.CellTemplate>
         </DataGridTemplateColumn>
-        <DataGridTemplateColumn Header="{x:Static p:Words.ColumnProgress}" CanUserSort="True" MinWidth="100">
+        <DataGridTemplateColumn Header="{loc:Loc ColumnProgress}" CanUserSort="True" MinWidth="100">
           <DataGridTemplateColumn.CellTemplate>
             <DataTemplate>
               <ProgressBar Margin="2" Minimum="0" Maximum="100" VerticalAlignment="Center" Value="{Binding Path=PercInt, Mode=OneWay}" Visibility="{Binding Path=ProgressBarVisibility, Mode=OneWay}" Opacity="{Binding Path=Opacity, Mode=OneWay}" ToolTip="{Binding Path=Tooltip, Mode=OneWay}" IsIndeterminate="{Binding Path=IsProgressIndeterminate, Mode=OneWay}" />
             </DataTemplate>
           </DataGridTemplateColumn.CellTemplate>
         </DataGridTemplateColumn>
-        <DataGridTextColumn Header="{x:Static p:Words.ColumnSpeed}" MinWidth="75" Binding="{Binding Path=Speed, Mode=OneWay}" />
-        <DataGridTemplateColumn Header="{x:Static p:Words.ColumnStatus}" MinWidth="100" SortMemberPath="Status">
+        <DataGridTextColumn Header="{loc:Loc ColumnSpeed}" MinWidth="75" Binding="{Binding Path=Speed, Mode=OneWay}" />
+        <DataGridTemplateColumn Header="{loc:Loc ColumnStatus}" MinWidth="100" SortMemberPath="Status">
           <DataGridTemplateColumn.CellTemplate>
             <DataTemplate>
               <Border Name="StatusElement" BorderThickness="0" ToolTipService.ShowDuration="180000" ToolTipService.IsEnabled="{Binding IsStatusWarningIconVisible}">
@@ -98,28 +98,28 @@
             </DataTemplate>
           </DataGridTemplateColumn.CellTemplate>
         </DataGridTemplateColumn>
-        <DataGridTemplateColumn Header="{x:Static p:Words.ColumnSize}" MinWidth="100" SortMemberPath="SizeMegaBytes">
+        <DataGridTemplateColumn Header="{loc:Loc ColumnSize}" MinWidth="100" SortMemberPath="SizeMegaBytes">
           <DataGridTemplateColumn.CellTemplate>
             <DataTemplate>
               <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Margin="3,0,5,0" Text="{Binding Path=Size, Mode=OneWay}" />
             </DataTemplate>
           </DataGridTemplateColumn.CellTemplate>
         </DataGridTemplateColumn>
-        <DataGridTemplateColumn Header="{x:Static p:Words.ColumnETA}" MinWidth="100" SortMemberPath="Time">
+        <DataGridTemplateColumn Header="{loc:Loc ColumnETA}" MinWidth="100" SortMemberPath="Time">
           <DataGridTemplateColumn.CellTemplate>
             <DataTemplate>
               <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Margin="3,0,10,0" Text="{Binding Path=Time, Mode=OneWay}" />
             </DataTemplate>
           </DataGridTemplateColumn.CellTemplate>
         </DataGridTemplateColumn>
-        <DataGridTemplateColumn Header="{x:Static p:Words.Added}" MinWidth="100" SortMemberPath="Added">
+        <DataGridTemplateColumn Header="{loc:Loc Added}" MinWidth="100" SortMemberPath="Added">
           <DataGridTemplateColumn.CellTemplate>
             <DataTemplate>
               <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Margin="3,0,5,0" Text="{Binding Path=Added, Mode=OneWay}" />
             </DataTemplate>
           </DataGridTemplateColumn.CellTemplate>
         </DataGridTemplateColumn>
-        <DataGridTemplateColumn Header="{x:Static p:Words.Finished}" MinWidth="100" SortMemberPath="Finished">
+        <DataGridTemplateColumn Header="{loc:Loc Finished}" MinWidth="100" SortMemberPath="Finished">
           <DataGridTemplateColumn.CellTemplate>
             <DataTemplate>
               <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Margin="3,0,5,0" Text="{Binding Path=Finished, Mode=OneWay}" />

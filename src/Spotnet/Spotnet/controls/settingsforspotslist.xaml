@@ -1,4 +1,4 @@
-<UserControl x:Class="Spotnet.Controls.SettingsForSpotsList" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:controls="clr-namespace:Spotnet.Controls" FontSize="{Binding ElementName=VisibilityVmProxy, Path=DataContext.FontSize, Mode=OneWay}">
+<UserControl x:Class="Spotnet.Controls.SettingsForSpotsList" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:Spotnet.Localization" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:controls="clr-namespace:Spotnet.Controls" FontSize="{Binding ElementName=VisibilityVmProxy, Path=DataContext.FontSize, Mode=OneWay}">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <Storyboard x:Key="FieldAnimationStoryboard">
@@ -8,23 +8,23 @@
   </FrameworkElement.Resources>
   <StackPanel Orientation="Vertical">
     <StackPanel Orientation="Vertical" Margin="0,7,0,0">
-      <TextBlock Text="{x:Static p:Words.MenuSpamReportsThreshold}" />
+      <TextBlock Text="{loc:Loc MenuSpamReportsThreshold}" />
       <ComboBox Name="SpamReportsThresholdCombo">
         <TextBlock Text="&gt;=1" />
         <TextBlock Text="&gt;=2" />
         <TextBlock Text="&gt;=3" />
         <TextBlock Text="&gt;=5" />
         <TextBlock Text="&gt;=7" />
-        <TextBlock Text="{x:Static p:Words.Never}" />
+        <TextBlock Text="{loc:Loc Never}" />
       </ComboBox>
     </StackPanel>
-    <CheckBox Name="HideBlacklistedSpots" Content="{x:Static p:Words.MenuHideBlacklistedSpots}" Margin="0,7,0,0" />
-    <CheckBox Name="ShowTrustedOnly" Content="{x:Static p:Words.MenuShowTrustedOnly}" Margin="0,7,0,0" />
-    <CheckBox Name="ShowErotica" Content="{x:Static p:Words.MenuShowEroticaInSearchResults}" Margin="0,7,0,0" />
+    <CheckBox Name="HideBlacklistedSpots" Content="{loc:Loc MenuHideBlacklistedSpots}" Margin="0,7,0,0" />
+    <CheckBox Name="ShowTrustedOnly" Content="{loc:Loc MenuShowTrustedOnly}" Margin="0,7,0,0" />
+    <CheckBox Name="ShowErotica" Content="{loc:Loc MenuShowEroticaInSearchResults}" Margin="0,7,0,0" />
     <Separator Margin="12" />
-    <CheckBox Name="AutoShowNewSpotsInTheList" Content="{x:Static p:Words.MenuAutoShowNewSpotsInTheList}" Margin="0,0,0,0" />
+    <CheckBox Name="AutoShowNewSpotsInTheList" Content="{loc:Loc MenuAutoShowNewSpotsInTheList}" Margin="0,0,0,0" />
     <Separator Margin="12" />
-    <CheckBox Name="ColoringSpots" Content="{x:Static p:Words.ColoringSpots}" Margin="0,0,0,0" />
-    <CheckBox Name="ColoringFilters" Content="{x:Static p:Words.ColoringFilters}" Margin="0,7,0,0" />
+    <CheckBox Name="ColoringSpots" Content="{loc:Loc ColoringSpots}" Margin="0,0,0,0" />
+    <CheckBox Name="ColoringFilters" Content="{loc:Loc ColoringFilters}" Margin="0,7,0,0" />
   </StackPanel>
 </UserControl>

@@ -6,6 +6,7 @@ using NLog;
 using Spotnet.Community;
 using Spotnet.Extensions;
 using Spotnet.Helpers;
+using Spotnet.Properties;
 
 namespace Spotnet.Controls;
 
@@ -24,7 +25,7 @@ public partial class SettingsForIntegrations : UserControl, IAdvancedSettingsCon
     /// <summary>Wordt getoond in plaats van een sleutel tot de gebruiker hem vervangt.</summary>
     private const string MaskedKeyPlaceholder = "••••••••";
 
-    private const string NotSetPlaceholder = "(niet ingesteld)";
+    private static string NotSetPlaceholder => Words.IntegrNotSet;
 
     private CommunityConfig _working;
 
@@ -106,13 +107,13 @@ public partial class SettingsForIntegrations : UserControl, IAdvancedSettingsCon
 
         if (url.IsNullOrWhiteSpace() && newznabKey.IsNullOrWhiteSpace())
         {
-            NewznabStatusTextBlock.Text = "Uitgeschakeld";
+            NewznabStatusTextBlock.Text = Words.IntegrDisabled;
         }
         else if (url.IsNullOrWhiteSpace() || newznabKey.IsNullOrWhiteSpace())
         {
             NewznabStatusTextBlock.Text = url.IsNullOrWhiteSpace()
-                ? "Uitgeschakeld — server ontbreekt"
-                : "Uitgeschakeld — sleutel ontbreekt";
+                ? Words.IntegrDisabledNoServer
+                : Words.IntegrDisabledNoKey;
         }
         else
         {
@@ -120,7 +121,7 @@ public partial class SettingsForIntegrations : UserControl, IAdvancedSettingsCon
         }
 
         OmdbStatusTextBlock.Text = EffectiveKey(OmdbKeyTextBox, _originalOmdbKey).IsNullOrWhiteSpace()
-            ? "Uitgeschakeld"
+            ? Words.IntegrDisabled
             : "Ingeschakeld";
     }
 

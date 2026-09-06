@@ -1,4 +1,4 @@
-<UserControl x:Class="Spotnet.Downloader.Controls.DownloadsStatusBar" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:Spotnet.Downloader.Controls" xmlns:p="clr-namespace:Spotnet.Properties" DataContext="{Binding RelativeSource={RelativeSource Self}}">
+<UserControl x:Class="Spotnet.Downloader.Controls.DownloadsStatusBar" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:Spotnet.Localization" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:Spotnet.Downloader.Controls" xmlns:p="clr-namespace:Spotnet.Properties" DataContext="{Binding RelativeSource={RelativeSource Self}}">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <Style x:Key="SeparatorStyle" TargetType="{x:Type Separator}">
@@ -19,7 +19,7 @@
     </ResourceDictionary>
   </FrameworkElement.Resources>
   <DockPanel MouseLeftButtonDown="UIElement_OnMouseLeftButtonDown">
-    <TextBlock Text="{x:Static p:Words.SpeedLimitClear}" />
+    <TextBlock Text="{loc:Loc SpeedLimitClear}" />
     <TextBlock Text=":  " />
     <TextBlock Text="{Binding SpeedLimitValue}" />
     <Canvas Margin="0,0,12,0">
@@ -27,7 +27,7 @@
     </Canvas>
     <Separator Margin="8,0" Style="{StaticResource SeparatorStyle}" />
     <StackPanel Orientation="Horizontal" ToolTip="{Binding SpaceTooltip}">
-      <TextBlock Text="{x:Static p:Words.Space}" />
+      <TextBlock Text="{loc:Loc Space}" />
       <TextBlock Text=":  " />
       <TextBlock Text="{Binding Space}" />
     </StackPanel>

@@ -53,7 +53,7 @@
   <data name="PleaseSelectCategory" xml:space="preserve"><value>Selecteer een categorie.</value></data>
   <data name="SaveSearch" xml:space="preserve"><value>Zoekopdracht opslaan</value></data>
   <data name="WhiteListAddTo" xml:space="preserve"><value>Toevoegen aan witte lijst</value></data>
-  <data name="ResetAvatar" xml:space="preserve"><value>Reset avatar</value></data>
+  <data name="ResetAvatar" xml:space="preserve"><value>Avatar herstellen</value></data>
   <data name="AvatarFileSizeTooLarge" xml:space="preserve"><value>Je avatar mag maximaal 4000 bytes groot zijn.</value></data>
   <data name="MenuClose" xml:space="preserve"><value>Afsluiten</value></data>
   <data name="MenuAbout" xml:space="preserve"><value>Over</value></data>
@@ -61,7 +61,7 @@
   <data name="NumberOfSpamReports" xml:space="preserve"><value>Meldingen</value></data>
   <data name="SystemStateProblemsWithNntpServer" xml:space="preserve"><value>Er zijn problemen met de Usenet server.</value></data>
   <data name="NZBSave" xml:space="preserve"><value>NZB Opslaan</value></data>
-  <data name="NZBOpen" xml:space="preserve"><value>Open NZB</value></data>
+  <data name="NZBOpen" xml:space="preserve"><value>NZB openen</value></data>
   <data name="EncryptedNZBCannotPost" xml:space="preserve"><value>Kan backup NZB niet posten?</value></data>
   <data name="FiltersEnterNewFilterName" xml:space="preserve"><value>Voer een nieuwe filter naam in:</value></data>
   <data name="HostIsUnknown" xml:space="preserve"><value>De server/host is onbekend.</value></data>
@@ -78,7 +78,7 @@
   <data name="MenuBadWordsFilterForComments" xml:space="preserve"><value>Gebruik scheldwoorden filter voor de reacties</value></data>
   <data name="Filter" xml:space="preserve"><value>Filter</value></data>
   <data name="Finish" xml:space="preserve"><value>Voltooid</value></data>
-  <data name="MenuOpenNZB" xml:space="preserve"><value>_Open NZB...</value></data>
+  <data name="MenuOpenNZB" xml:space="preserve"><value>_NZB openen...</value></data>
   <data name="BlackListYouWillReceiveFromSender" xml:space="preserve"><value>Je zult weer spots/reacties van deze afzender gaan ontvangen.</value></data>
   <data name="CannotStartNzbGet" xml:space="preserve"><value>Kan NzbGet niet starten?</value></data>
   <data name="PleaseEnterSubject" xml:space="preserve"><value>Vul een titel in.</value></data>
@@ -96,7 +96,7 @@
   <data name="ColumnSize" xml:space="preserve"><value>Omvang</value></data>
   <data name="ColumnTime" xml:space="preserve"><value>Tijd</value></data>
   <data name="ColumnDate" xml:space="preserve"><value>Datum</value></data>
-  <data name="UseSocks5Proxy" xml:space="preserve"><value>Use Socks5 proxy</value></data>
+  <data name="UseSocks5Proxy" xml:space="preserve"><value>Socks5-proxy gebruiken</value></data>
   <data name="MenuAutoShowNewSpotsInTheList" xml:space="preserve"><value>Automatisch nieuwe spots tonen zonder popup-venster</value></data>
   <data name="MenuAutoGetComments" xml:space="preserve"><value>Laad de reacties automatisch bij het openen van een spot</value></data>
   <data name="Browse" xml:space="preserve"><value>Bladeren</value></data>
@@ -110,7 +110,7 @@
   <data name="ImageSourceNotSpecified" xml:space="preserve"><value>Geen afbeelding opgegeven voor deze spot</value></data>
   <data name="MessageIsSend" xml:space="preserve"><value>Je melding is verzonden, bedankt voor de moeite.</value></data>
   <data name="FilterEdit" xml:space="preserve"><value>Bewerken</value></data>
-  <data name="MenuVisibleControlsMainToolbar" xml:space="preserve"><value>Toolbar</value></data>
+  <data name="MenuVisibleControlsMainToolbar" xml:space="preserve"><value>Werkbalk</value></data>
   <data name="DbIsNotUpToDateSoSpeedCanBeLowWarning" xml:space="preserve"><value>De download snelheid kan lager zijn omdat de database update op dit moment bezig is.</value></data>
   <data name="Italic" xml:space="preserve"><value>Schuingedrukt</value></data>
   <data name="PleaseWaitWhilePageIsLoading" xml:space="preserve"><value>Ogenblik geduld.</value></data>
@@ -134,7 +134,7 @@
   <data name="Underline" xml:space="preserve"><value>Onderstreept</value></data>
   <data name="Health" xml:space="preserve"><value>Gezondheid</value></data>
   <data name="EnterYourNameHere" xml:space="preserve"><value>Vul hier je naam in</value></data>
-  <data name="MenuDownloadSettings" xml:space="preserve"><value>Download Settings</value></data>
+  <data name="MenuDownloadSettings" xml:space="preserve"><value>Downloadinstellingen</value></data>
   <data name="CannotFindNZBTryAgainLater" xml:space="preserve"><value>Kan de NZB (nog) niet vinden, als deze spot nog niet zo oud is, probeer het dan later nog eens. Soms heeft je provider wat vertraging.</value></data>
   <data name="StatRepairing" xml:space="preserve"><value>Repareren</value></data>
   <data name="Newsgroups" xml:space="preserve"><value>Nieuwsgroepen</value></data>
@@ -163,7 +163,6 @@
   <data name="Connecting" xml:space="preserve"><value>Verbinding maken...</value></data>
   <data name="SelectNumberOfConnections" xml:space="preserve"><value>Selecteer het aantal toegestane verbindingen. Dit kun je navragen bi je provider.</value></data>
   <data name="SpotGiveDescription" xml:space="preserve"><value>Geef een beschrijving van de spot</value></data>
-  <data name="LanguageRestartForSettingTakesEffect" xml:space="preserve"><value>Please restart the application for new language setting takes effect.</value></data>
   <data name="MenuUseExternalBrowser" xml:space="preserve"><value>Links openen in externe browser</value></data>
   <data name="NewSpot" xml:space="preserve"><value>Toevoegen</value></data>
   <data name="UpdateCompleted" xml:space="preserve"><value>Updaten voltooid</value></data>
@@ -215,7 +214,7 @@
   <data name="Connect" xml:space="preserve"><value>VERBINDEN</value></data>
   <data name="StatFailedNoSuchArticle" xml:space="preserve"><value>Mislukt, artikelen niet gevonden, probeer het misschien met 5eurousenet?</value></data>
   <data name="MenuVisibleControlsSearch" xml:space="preserve"><value>Zoeken</value></data>
-  <data name="MenuOpenSpotlink" xml:space="preserve"><value>Open Spotlink...</value></data>
+  <data name="MenuOpenSpotlink" xml:space="preserve"><value>Spotlink openen...</value></data>
   <data name="SearchSenderToolTip" xml:space="preserve"><value>Zoeken op afzender</value></data>
   <data name="isComplete" xml:space="preserve"><value>download compleet</value></data>
   <data name="NewVersionInstalled" xml:space="preserve"><value>Nieuwe versie van Spotnet {0} is geïnstalleerd.</value></data>
@@ -242,7 +241,7 @@
   <data name="Pausing" xml:space="preserve"><value>Pauzeren</value></data>
   <data name="ColumnMessageID" xml:space="preserve"><value>Message ID</value></data>
   <data name="ConnectionsLimitHowToSolve" xml:space="preserve"><value>Verlaag het aantal verbindingen in de provider instellingen van Spotnet of controleer of u mogelijk in andere software gebruik maakt van hetzelfde account?</value></data>
-  <data name="MenuSpeedLimit" xml:space="preserve"><value>Speed limit...</value></data>
+  <data name="MenuSpeedLimit" xml:space="preserve"><value>Snelheidslimiet...</value></data>
   <data name="ChangeAvatar" xml:space="preserve"><value>Avatar wijzigen</value></data>
   <data name="PauseText" xml:space="preserve"><value>Pauzeren</value></data>
   <data name="TabDownloads" xml:space="preserve"><value>Downloads</value></data>
@@ -277,7 +276,7 @@
   <data name="FiltersSaveAs" xml:space="preserve"><value>Opslaan als ...</value></data>
   <data name="NZBCannotPost" xml:space="preserve"><value>Kan NZB niet posten?</value></data>
   <data name="Picture" xml:space="preserve"><value>Afbeelding</value></data>
-  <data name="NZBDownloadError" xml:space="preserve"><value>Error on file downloading.</value></data>
+  <data name="NZBDownloadError" xml:space="preserve"><value>Fout bij het downloaden van het bestand.</value></data>
   <data name="EnterServerAddress" xml:space="preserve"><value>Vul hier het adres van de server in.</value></data>
   <data name="ContactYourProvider" xml:space="preserve"><value>Neem contact op met uw provider.</value></data>
   <data name="Download" xml:space="preserve"><value>Downloaden</value></data>
@@ -357,11 +356,10 @@
   <data name="ServerIsNotAvailable" xml:space="preserve"><value>Kan de server niet bereiken. </value></data>
   <data name="SpamReportsUpdating" xml:space="preserve"><value>Updaten spam meldingen database</value></data>
   <data name="SpeedLimitUpdateFailed" xml:space="preserve"><value>Mislukt om het snelheidslimiet in te stellen. Controleer de logs voor meer informatie.</value></data>
-  <data name="DbIsUpToDate" xml:space="preserve"><value>Spots database is up-to-date</value></data>
+  <data name="DbIsUpToDate" xml:space="preserve"><value>Spotsdatabase is bijgewerkt</value></data>
   <data name="CannotConnectToDatabase" xml:space="preserve"><value>Geen verbinding met database</value></data>
   <data name="CheckUsernamePasswordAndTryAgain" xml:space="preserve"><value>Controleer gebruikersnaam en / of wachtwoord en probeer het opnieuw.</value></data>
   <data name="PleaseSelectSubCat" xml:space="preserve"><value>Selecteer een sub-categorie.</value></data>
-  <data name="LanguageChange" xml:space="preserve"><value>Change language</value></data>
   <data name="FilterSwitchToMode2" xml:space="preserve"><value>Omschakelen naar filter lijst 2</value></data>
   <data name="FilterSwitchToMode1" xml:space="preserve"><value>Omschakelen naar filter lijst 1</value></data>
   <data name="NZBCannotBeFound" xml:space="preserve"><value>Kan NZB niet vinden, klik de bestandsnaam om handmatig te zoeken.</value></data>
@@ -432,12 +430,12 @@ Schrijf de reden waarom u deze wilt verwijderen:</value></data>
   <data name="NewVersionChecking" xml:space="preserve"><value>Controleren op nieuwe versies...</value></data>
   <data name="InProgress" xml:space="preserve"><value>Aan de gang</value></data>
   <data name="SearchExtensive" xml:space="preserve"><value>Uitgebreid</value></data>
-  <data name="OpenSpotTab" xml:space="preserve"><value>Open Spot info</value></data>
+  <data name="OpenSpotTab" xml:space="preserve"><value>Spotinfo openen</value></data>
   <data name="NoSegments" xml:space="preserve"><value>Geen segmenten.</value></data>
   <data name="SpotsFiltering" xml:space="preserve"><value>Overzicht aan het filteren...</value></data>
   <data name="AddFilterErrorFilterEmpty" xml:space="preserve"><value>Geef eerst een naam op voor het filter.</value></data>
   <data name="MessageIDIsWrong" xml:space="preserve"><value>Message-ID ongeldig</value></data>
-  <data name="NzbGetIsNotAvailablePossibleReasons" xml:space="preserve"><value>Please make sure NzbGet local port {0} is not blocked by your firewall. If not, try to restart NzbGet.</value></data>
+  <data name="NzbGetIsNotAvailablePossibleReasons" xml:space="preserve"><value>Controleer of de lokale NzbGet-poort {0} niet door je firewall wordt geblokkeerd. Start NzbGet anders opnieuw op.</value></data>
   <data name="NoSpamReportsFound" xml:space="preserve"><value>Geen Spam Meldingen gevonden</value></data>
   <data name="AddFilterNameToolTip" xml:space="preserve"><value>Naam voor de nieuwe filter</value></data>
   <data name="ConnectionsMaxNumberReached" xml:space="preserve"><value>Maximaal aantal verbindingen bereikt.</value></data>
@@ -502,9 +500,9 @@ Schrijf de reden waarom u deze wilt verwijderen:</value></data>
   <data name="monday" xml:space="preserve"><value>maandag</value></data>
   <data name="PictureSizeMoreThan1MB" xml:space="preserve"><value>Plaatje is groter dan 1 MB.</value></data>
   <data name="SpotThemePreviewShow" xml:space="preserve"><value>Voorbeeldweergave tonen</value></data>
-  <data name="Retention" xml:space="preserve"><value>Retention (days)</value></data>
+  <data name="Retention" xml:space="preserve"><value>Retentie (dagen)</value></data>
   <data name="MenuAdvDownloads" xml:space="preserve"><value>Downloads</value></data>
-  <data name="MenuEnableLogs" xml:space="preserve"><value>Enable Logging</value></data>
+  <data name="MenuEnableLogs" xml:space="preserve"><value>Logboek inschakelen</value></data>
   <data name="UnpackFailed" xml:space="preserve"><value>Mislukt om uit te pakken</value></data>
   <data name="MenuRemoveFilesOnDownloadRemove" xml:space="preserve"><value>Bestanden verwijderen van de schijf bij download verwijdering</value></data>
   <data name="LinkToASpot" xml:space="preserve"><value>Link naar een spot</value></data>
@@ -529,7 +527,7 @@ Schrijf de reden waarom u deze wilt verwijderen:</value></data>
   <data name="DbLockTimeout" xml:space="preserve"><value>Mislukt om de database te lezen, deze wordt geblokkeerd door een lange database update. Even geduld a.u.b.</value></data>
   <data name="NzbFilesAssociated" xml:space="preserve"><value>.nzb bestanden geassocieerd met Spotnet.</value></data>
   <data name="StatFetching" xml:space="preserve"><value>Blokken ophalen</value></data>
-  <data name="MenuLangEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="MenuLangEnglish" xml:space="preserve"><value>Engels</value></data>
   <data name="SpotsUpdating" xml:space="preserve"><value>Spots updaten...</value></data>
   <data name="EncryptedNZBLikeMainNZBError" xml:space="preserve"><value>NZB en Encrypted NZB zijn hetzelfde, het heeft geen zin om dezelfde NZB te encrypten...</value></data>
   <data name="DbUpdateFailed" xml:space="preserve"><value>Database bijwerken is mislukt</value></data>
@@ -620,8 +618,6 @@ Schrijf de reden waarom u deze wilt verwijderen:</value></data>
   <data name="ConnectionSecuredWithSsl" xml:space="preserve"><value>De verbinding wordt met SSL beveiligd waar de provider dat ondersteunt.</value></data>
   <data name="Testing" xml:space="preserve"><value>Verbinding testen...</value></data>
   <data name="UseInternalDownloader" xml:space="preserve"><value>Gebruik interne downloader</value></data>
-  <data name="RestartNow" xml:space="preserve"><value>Nu opnieuw starten</value></data>
-  <data name="RestartLater" xml:space="preserve"><value>Later opnieuw starten</value></data>
   <data name="VPNAdvice" xml:space="preserve"><value>Het is aan te raden een veilige en betrouwbare VPN te gebruiken bij het gebruik van Spotnet.</value></data>
   <data name="UpdateTitle" xml:space="preserve"><value>Update</value></data>
   <data name="UpdateAvailableHeadline" xml:space="preserve"><value>Er is een nieuwe versie beschikbaar</value></data>
@@ -652,4 +648,244 @@ Schrijf de reden waarom u deze wilt verwijderen:</value></data>
   <data name="MenuTestNotification" xml:space="preserve"><value>Melding testen</value></data>
   <data name="NotificationTestTitle" xml:space="preserve"><value>Spotnet testmelding</value></data>
   <data name="NotificationTestBody" xml:space="preserve"><value>Als u dit ziet, levert Windows meldingen van Spotnet af.</value></data>
+  <data name="RemoteTitle" xml:space="preserve"><value>Spotnet Remote</value></data>
+  <data name="RemoteIntro" xml:space="preserve"><value>Bedien Spotnet via je smartphone of tablet. Zoek spots, bekijk reacties en start downloads op afstand.</value></data>
+  <data name="RemoteEnable" xml:space="preserve"><value>Spotnet Remote inschakelen</value></data>
+  <data name="RemoteStatusLabel" xml:space="preserve"><value>Status: </value></data>
+  <data name="RemoteStopped" xml:space="preserve"><value>Gestopt</value></data>
+  <data name="RemoteShowQrCode" xml:space="preserve"><value>📱 Toon QR-code</value></data>
+  <data name="RemoteConnectionOptions" xml:space="preserve"><value>Verbindingsmogelijkheden</value></data>
+  <data name="RemoteAllowLan" xml:space="preserve"><value>Toegang via thuisnetwerk (Wi-Fi)</value></data>
+  <data name="RemoteEnableCloudflare" xml:space="preserve"><value>Toegang buitenshuis via Cloudflare (4G / 5G)</value></data>
+  <data name="RemoteCloudflareHint" xml:space="preserve"><value>Werkt direct zonder poorten openen in je router. Geen account nodig.</value></data>
+  <data name="RemoteCloudflareStatusLabel" xml:space="preserve"><value>Cloudflare status: </value></data>
+  <data name="RemoteCloudflareUrlLabel" xml:space="preserve"><value>Cloudflare URL: </value></data>
+  <data name="RemoteAdvancedHeader" xml:space="preserve"><value>Geavanceerde instellingen (poort, wachtwoord, browser)</value></data>
+  <data name="RemotePortLabel" xml:space="preserve"><value>Poort:</value></data>
+  <data name="RemoteOpenInBrowser" xml:space="preserve"><value>Open in browser</value></data>
+  <data name="RemoteRequireAuth" xml:space="preserve"><value>Wachtwoordbeveiliging inschakelen</value></data>
+  <data name="RemoteSetPassword" xml:space="preserve"><value>Wachtwoord instellen…</value></data>
+  <data name="RemoteChangePassword" xml:space="preserve"><value>Wachtwoord wijzigen…</value></data>
+  <data name="RemotePasswordConfigured" xml:space="preserve"><value>Wachtwoord ingesteld</value></data>
+  <data name="RemotePasswordNotConfigured" xml:space="preserve"><value>Nog geen wachtwoord ingesteld</value></data>
+  <data name="RemoteNoAuthWarning" xml:space="preserve"><value>⚠️ Zonder wachtwoord kan iedereen op je netwerk Spotnet bedienen.</value></data>
+  <data name="RemoteKeepAwake" xml:space="preserve"><value>Houd computer wakker zolang Spotnet Remote actief is</value></data>
+  <data name="RemotePairedDevices" xml:space="preserve"><value>Gekoppelde Mobiele Apparaten</value></data>
+  <data name="RemoteRevoke" xml:space="preserve"><value>Ontkoppelen</value></data>
+  <data name="RemoteRevokeAll" xml:space="preserve"><value>Alle apparaten ontkoppelen</value></data>
+  <data name="RemotePairedAt" xml:space="preserve"><value>Gekoppeld: </value></data>
+  <data name="RemoteLastSeen" xml:space="preserve"><value> • Laatst actief: </value></data>
+  <data name="RemoteActive" xml:space="preserve"><value>● Actief</value></data>
+  <data name="RemoteStartFailed" xml:space="preserve"><value>● Starten mislukt (poort mogelijk bezet)</value></data>
+  <data name="RemoteDisabled" xml:space="preserve"><value>Uitgeschakeld</value></data>
+  <data name="RemoteNotStarted" xml:space="preserve"><value>Niet gestart</value></data>
+  <data name="RemoteWaitingForServer" xml:space="preserve"><value>Wacht op starten van Spotnet Remote...</value></data>
+  <data name="RemoteBrowserOpenFailed" xml:space="preserve"><value>Kon browser niet openen: </value></data>
+  <data name="RemoteRevokeQuestion" xml:space="preserve"><value>Wil je de toegang voor dit apparaat intrekken?</value></data>
+  <data name="RemoteRevokeTitle" xml:space="preserve"><value>Apparaat ontkoppelen</value></data>
+  <data name="RemoteRevokeAllQuestion" xml:space="preserve"><value>Weet je zeker dat je ALLE mobiele apparaten wilt ontkoppelen?</value></data>
+  <data name="RemoteRevokeAllTitle" xml:space="preserve"><value>Alle apparaten intrekken</value></data>
+  <data name="RemoteSetPasswordFirst" xml:space="preserve"><value>Stel eerst een wachtwoord in voor Spotnet Remote.</value></data>
+  <data name="RemotePasswordRequired" xml:space="preserve"><value>Wachtwoord vereist</value></data>
+  <data name="RemoteTipCheckingStatus" xml:space="preserve"><value>Status: Controleren...</value></data>
+  <data name="RemoteTipOpenSettings" xml:space="preserve"><value>Klik om Spotnet Remote instellingen te openen</value></data>
+  <data name="RemoteBadgeOn" xml:space="preserve"><value>Remote: Aan</value></data>
+  <data name="RemoteBadgeOff" xml:space="preserve"><value>Remote: Uit</value></data>
+  <data name="RemoteBadgeInUseLabel" xml:space="preserve"><value>Remote:</value></data>
+  <data name="RemoteBadgeInUse" xml:space="preserve"><value>📱 In gebruik</value></data>
+  <data name="RemoteBadgeAwake" xml:space="preserve"><value>Wakker</value></data>
+  <data name="RemoteTipTitleOff" xml:space="preserve"><value>Spotnet Remote: Uit</value></data>
+  <data name="RemoteTipTitleOn" xml:space="preserve"><value>Spotnet Remote: Aan</value></data>
+  <data name="RemoteTipTitleInUse" xml:space="preserve"><value>Spotnet Remote: In gebruik</value></data>
+  <data name="RemoteTipServerOff" xml:space="preserve"><value>De server is momenteel uitgeschakeld.</value></data>
+  <data name="RemoteTipSleepNormal" xml:space="preserve"><value>Slaapstand: Normaal Windows energiebeheer</value></data>
+  <data name="RemoteTipConnectedOnPort" xml:space="preserve"><value>Status: Actief verbonden op poort {0}</value></data>
+  <data name="RemoteTipWaitingOnPort" xml:space="preserve"><value>Status: Actief en wacht op verbinding (poort {0})</value></data>
+  <data name="RemoteTipActiveDevice" xml:space="preserve"><value>Actief apparaat: {0}</value></data>
+  <data name="RemoteTipConnectedMobile" xml:space="preserve"><value>Verbonden mobiel</value></data>
+  <data name="RemoteTipKeepAwakeOn" xml:space="preserve"><value>Houd PC wakker: Actief (slaapstand geblokkeerd)</value></data>
+  <data name="RemoteTipKeepAwakeOff" xml:space="preserve"><value>Houd PC wakker: Uitgeschakeld</value></data>
+  <data name="PairTitle" xml:space="preserve"><value>Koppel Mobiel Apparaat - Spotnet Remote</value></data>
+  <data name="PairHeading" xml:space="preserve"><value>Koppel je smartphone of tablet</value></data>
+  <data name="PairSubHeading" xml:space="preserve"><value>Scan de onderstaande QR-code met je camera om direct te verbinden.</value></data>
+  <data name="PairModeLan" xml:space="preserve"><value>🏠 Thuisnetwerk (Wi-Fi)</value></data>
+  <data name="PairModeTunnel" xml:space="preserve"><value>🌐 Buitenshuis (Cloudflare 4G/5G)</value></data>
+  <data name="PairModeLanHint" xml:space="preserve"><value>Verbind via hetzelfde Wi-Fi netwerk als deze computer.</value></data>
+  <data name="PairTunnelTemporary" xml:space="preserve"><value>⚠️ Tijdelijke link: Cloudflare links veranderen automatisch wanneer Spotnet opnieuw opstart.</value></data>
+  <data name="PairTunnelStarting" xml:space="preserve"><value>⏳ Cloudflare Quick Tunnel opzetten... QR-code verschijnt zodra verbinding actief is.</value></data>
+  <data name="PairTunnelConnecting" xml:space="preserve"><value>Cloudflare tunnel verbinden...</value></data>
+  <data name="PairEnterCodeManually" xml:space="preserve"><value>Of voer deze 6-cijferige koppelcode handmatig in:</value></data>
+  <data name="PairCodeValidFor" xml:space="preserve"><value>Code is nog 5:00 minuten geldig</value></data>
+  <data name="PairSucceeded" xml:space="preserve"><value>✓ Apparaat succesvol gekoppeld!</value></data>
+  <data name="PairSucceededNamed" xml:space="preserve"><value>✓ Apparaat ‘{0}’ succesvol gekoppeld!</value></data>
+  <data name="PairCopyLink" xml:space="preserve"><value>Kopieer Koppelingslink</value></data>
+  <data name="PairTunnelError" xml:space="preserve"><value>⚠️ Cloudflare fout: {0}. Schakel eventueel over naar Wi-Fi.</value></data>
+  <data name="PairLinkNotReady" xml:space="preserve"><value>De Cloudflare koppellink is nog niet gereed. Even geduld a.u.b.</value></data>
+  <data name="PairLinkNotReadyTitle" xml:space="preserve"><value>Even wachten</value></data>
+  <data name="PairCopyFailed" xml:space="preserve"><value>Kon link niet kopiëren: </value></data>
+  <data name="RemotePasswordWindowTitle" xml:space="preserve"><value>Wachtwoord voor Spotnet Remote</value></data>
+  <data name="RemotePasswordIntro" xml:space="preserve"><value>Kies een wachtwoord om op je telefoon in te loggen.</value></data>
+  <data name="RemotePasswordLabel" xml:space="preserve"><value>Wachtwoord (minimaal 6 tekens)</value></data>
+  <data name="RemotePasswordRepeat" xml:space="preserve"><value>Herhaal wachtwoord</value></data>
+  <data name="RemotePasswordTooShort" xml:space="preserve"><value>Gebruik een wachtwoord van minimaal 6 tekens.</value></data>
+  <data name="RemotePasswordMismatch" xml:space="preserve"><value>De wachtwoorden zijn niet gelijk. Probeer het opnieuw.</value></data>
+  <data name="CloudflareStopped" xml:space="preserve"><value>Gestopt</value></data>
+  <data name="CloudflareError" xml:space="preserve"><value>Fout: {0}</value></data>
+  <data name="NcWindowTitle" xml:space="preserve"><value>Spotnet Meldingencentrum &amp; Alerts</value></data>
+  <data name="NcTabNotifications" xml:space="preserve"><value>🔔 Meldingen</value></data>
+  <data name="NcTabNotificationsCount" xml:space="preserve"><value>🔔 Meldingen ({0})</value></data>
+  <data name="NcHistoryHeader" xml:space="preserve"><value>Meldinghistorie</value></data>
+  <data name="NcHistoryIntro" xml:space="preserve"><value>Kies welke meldingen in de historie en de teller verschijnen. Wijzigingen worden direct opgeslagen. Windows-pop-ups stelt u apart in.</value></data>
+  <data name="NcHistoryDownloadFinished" xml:space="preserve"><value>Download klaar</value></data>
+  <data name="NcHistoryDownloadFailed" xml:space="preserve"><value>Download mislukt</value></data>
+  <data name="NcHistoryDownloadPassword" xml:space="preserve"><value>Download vraagt om wachtwoord</value></data>
+  <data name="NcHistoryDownloadWarning" xml:space="preserve"><value>Download gaf waarschuwing</value></data>
+  <data name="NcHistoryFilterRules" xml:space="preserve"><value>Meldingen op basis van filters</value></data>
+  <data name="NcHistoryKeywordRules" xml:space="preserve"><value>Meldingen op basis van trefwoorden</value></data>
+  <data name="NcRecent" xml:space="preserve"><value>Recente Meldingen</value></data>
+  <data name="NcRecentCount" xml:space="preserve"><value>Recente Meldingen ({0})</value></data>
+  <data name="NcMarkAllRead" xml:space="preserve"><value>Alles als gelezen markeren</value></data>
+  <data name="NcClearAll" xml:space="preserve"><value>Alles wissen</value></data>
+  <data name="NcEmptyTitle" xml:space="preserve"><value>Nog geen meldingen ontvangen.</value></data>
+  <data name="NcEmptyHint" xml:space="preserve"><value>Maak in het tabblad 'Regels Beheren' een melding aan op basis van een filter of trefwoord.</value></data>
+  <data name="NcTabRules" xml:space="preserve"><value>⚙️ Regels Beheren</value></data>
+  <data name="NcNewRule" xml:space="preserve"><value>Nieuwe Melding Aanmaken</value></data>
+  <data name="NcEditRuleHeader" xml:space="preserve"><value>Melding Aanpassen</value></data>
+  <data name="NcRuleTypeFilter" xml:space="preserve"><value>📁 Melding op basis van Filter</value></data>
+  <data name="NcRuleTypeKeyword" xml:space="preserve"><value>🏷️ Melding op basis van Trefwoorden</value></data>
+  <data name="NcRuleName" xml:space="preserve"><value>Naam van melding:</value></data>
+  <data name="NcSelectFilter" xml:space="preserve"><value>Selecteer Filter:</value></data>
+  <data name="NcCheckEvery" xml:space="preserve"><value>Controleer elke:</value></data>
+  <data name="NcEvery15Minutes" xml:space="preserve"><value>15 minuten</value></data>
+  <data name="NcEvery30Minutes" xml:space="preserve"><value>30 minuten</value></data>
+  <data name="NcEvery1Hour" xml:space="preserve"><value>1 uur</value></data>
+  <data name="NcEvery8Hours" xml:space="preserve"><value>8 uur</value></data>
+  <data name="NcEvery24Hours" xml:space="preserve"><value>24 uur</value></data>
+  <data name="NcCustomInterval" xml:space="preserve"><value>Zelf invullen...</value></data>
+  <data name="NcCustomIntervalTip" xml:space="preserve"><value>Aantal minuten (minimaal 5)</value></data>
+  <data name="NcMinutes" xml:space="preserve"><value>minuten</value></data>
+  <data name="NcKeywords" xml:space="preserve"><value>Trefwoord(en):</value></data>
+  <data name="NcKeywordsTip" xml:space="preserve"><value>Bijv. F1, Formule 1, The Voice (door komma gescheiden)</value></data>
+  <data name="NcCategory" xml:space="preserve"><value>Categorie:</value></data>
+  <data name="NcAllCategories" xml:space="preserve"><value>Alle categorieën</value></data>
+  <data name="NcCatFilms" xml:space="preserve"><value>🎬 Films &amp; Video</value></data>
+  <data name="NcCatSeries" xml:space="preserve"><value>📺 Series</value></data>
+  <data name="NcCatMusic" xml:space="preserve"><value>🎵 Muziek</value></data>
+  <data name="NcCatGames" xml:space="preserve"><value>🎮 Spellen</value></data>
+  <data name="NcCatApplications" xml:space="preserve"><value>💻 Applicaties</value></data>
+  <data name="NcCatBooks" xml:space="preserve"><value>📚 Boeken</value></data>
+  <data name="NcCatErotica" xml:space="preserve"><value>🔞 Erotiek</value></data>
+  <data name="NcCheckMode" xml:space="preserve"><value>Controle:</value></data>
+  <data name="NcCheckDirect" xml:space="preserve"><value>⚡ Direct bij elke Usenet sync</value></data>
+  <data name="NcCheckPeriodic" xml:space="preserve"><value>⏱️ Periodiek (elke 15 min)</value></data>
+  <data name="NcAutoSyncInterval" xml:space="preserve"><value>🔄 Automatische Usenet sync-interval:</value></data>
+  <data name="NcSyncEvery5" xml:space="preserve"><value>Elke 5 minuten</value></data>
+  <data name="NcSyncEvery10" xml:space="preserve"><value>Elke 10 minuten</value></data>
+  <data name="NcSyncEvery15" xml:space="preserve"><value>Elke 15 minuten</value></data>
+  <data name="NcSyncEvery30" xml:space="preserve"><value>Elke 30 minuten</value></data>
+  <data name="NcSyncEvery60" xml:space="preserve"><value>Elk uur (60m)</value></data>
+  <data name="NcWindowsToasts" xml:space="preserve"><value>Toon Windows desktop meldingen (toasts)</value></data>
+  <data name="NcSaveRule" xml:space="preserve"><value>➕ Melding Opslaan</value></data>
+  <data name="NcSaveChanges" xml:space="preserve"><value>💾 Wijzigingen Opslaan</value></data>
+  <data name="NcActiveRules" xml:space="preserve"><value>Actieve Meldingen</value></data>
+  <data name="NcEditRule" xml:space="preserve"><value>✏ Bewerken</value></data>
+  <data name="NcEditRuleTip" xml:space="preserve"><value>Melding bewerken</value></data>
+  <data name="NcTestRule" xml:space="preserve"><value>▶ Testen</value></data>
+  <data name="NcTestRuleTip" xml:space="preserve"><value>Voer deze melding nu direct uit om te testen</value></data>
+  <data name="NcDeleteRuleTip" xml:space="preserve"><value>Melding verwijderen</value></data>
+  <data name="NcFilterOrKeyword" xml:space="preserve"><value>Filter/Trefwoord: </value></data>
+  <data name="NcKeywordsRequired" xml:space="preserve"><value>Voer één of meerdere trefwoorden in (bijv. F1, Formule 1).</value></data>
+  <data name="NcKeywordsRequiredTitle" xml:space="preserve"><value>Trefwoorden vereist</value></data>
+  <data name="NcRuleUpdated" xml:space="preserve"><value>Melding '{0}' is succesvol bijgewerkt!</value></data>
+  <data name="NcRuleSaved" xml:space="preserve"><value>Melding '{0}' is succesvol opgeslagen en actief!</value></data>
+  <data name="NcRuleUpdatedTitle" xml:space="preserve"><value>Melding Gewijzigd</value></data>
+  <data name="NcRuleSavedTitle" xml:space="preserve"><value>Melding Opgeslagen</value></data>
+  <data name="NcClearAllQuestion" xml:space="preserve"><value>Weet je zeker dat je alle meldingen wilt wissen?</value></data>
+  <data name="NcClearAllTitle" xml:space="preserve"><value>Meldingen wissen</value></data>
+  <data name="NcOpenSpotFailed" xml:space="preserve"><value>Kon spot niet openen: </value></data>
+  <data name="NcDeleteRuleQuestion" xml:space="preserve"><value>Weet je zeker dat je deze melding wilt verwijderen?</value></data>
+  <data name="NcDeleteRuleTitle" xml:space="preserve"><value>Melding verwijderen</value></data>
+  <data name="NcTestSucceeded" xml:space="preserve"><value>Test geslaagd! Er zijn {0} spots gevonden en een melding is getoond.</value></data>
+  <data name="NcTestResultTitle" xml:space="preserve"><value>Test Resultaat</value></data>
+  <data name="NcTestNoResults" xml:space="preserve"><value>Er zijn momenteel geen recente spots gevonden die matchen met deze regel.</value></data>
+  <data name="NcTestNoResultsTitle" xml:space="preserve"><value>Geen resultaten</value></data>
+  <data name="NcBellTitle" xml:space="preserve"><value>Spotnet Meldingen</value></data>
+  <data name="NcBellNoUnread" xml:space="preserve"><value>Geen nieuwe meldingen</value></data>
+  <data name="NcBellUnreadOne" xml:space="preserve"><value>1 ongelezen melding</value></data>
+  <data name="NcBellUnreadMany" xml:space="preserve"><value>{0} ongelezen meldingen</value></data>
+  <data name="NcBellHint" xml:space="preserve"><value>Klik om meldingen te bekijken of te beheren</value></data>
+  <data name="NcBellOpenFailed" xml:space="preserve"><value>Kon meldingencentrum niet openen: </value></data>
+  <data name="NcPanelHeader" xml:space="preserve"><value>MELDINGEN</value></data>
+  <data name="NcPanelOpenCentre" xml:space="preserve"><value>Meldingencentrum openen</value></data>
+  <data name="NcPanelNewRule" xml:space="preserve"><value>Nieuwe melding maken...</value></data>
+  <data name="CommTitle" xml:space="preserve"><value>Community</value></data>
+  <data name="CommIntro" xml:space="preserve"><value>Spots, reacties en klachten lopen over Usenet en blijven altijd werken. Hieronder staat waar deze Spotnet zijn moderatielijsten en community-diensten vandaan haalt.</value></data>
+  <data name="CommNameLabel" xml:space="preserve"><value>Community: </value></data>
+  <data name="CommRefreshNow" xml:space="preserve"><value>Nu bijwerken</value></data>
+  <data name="CommNewsgroups" xml:space="preserve"><value>Newsgroups</value></data>
+  <data name="CommSpotsGroup" xml:space="preserve"><value>Spots:</value></data>
+  <data name="CommCommentsGroup" xml:space="preserve"><value>Reacties:</value></data>
+  <data name="CommReportsGroup" xml:space="preserve"><value>Klachten:</value></data>
+  <data name="CommNzbGroup" xml:space="preserve"><value>NZB:</value></data>
+  <data name="CommModeration" xml:space="preserve"><value>Moderatie</value></data>
+  <data name="CommUseModerationLists" xml:space="preserve"><value>Moderatielijsten van de community gebruiken</value></data>
+  <data name="CommModerationHint" xml:space="preserve"><value>Zonder deze lijsten ziet u alles wat er wordt gepost, inclusief spam en meldingen die de community heeft afgekeurd.</value></data>
+  <data name="CommRefreshEvery" xml:space="preserve"><value>Bijwerken elke</value></data>
+  <data name="CommRefreshEveryUnit" xml:space="preserve"><value>minuten (0 = alleen bij opstarten)</value></data>
+  <data name="CommUseClassicLists" xml:space="preserve"><value>Spotnet Classic zwarte/witte lijst gebruiken (spotlist.store)</value></data>
+  <data name="CommUseClassicListsHint" xml:space="preserve"><value>Haalt de actieve vertrouwde spotters- en zwarte lijst op van Spotnet Classic (spotlist.store XML-formaat).</value></data>
+  <data name="CommClassicWhitelist" xml:space="preserve"><value>Classic whitelist:</value></data>
+  <data name="CommClassicBlacklist" xml:space="preserve"><value>Classic blacklist:</value></data>
+  <data name="CommServersHeader" xml:space="preserve"><value>Servers van de community</value></data>
+  <data name="CommWhitelist" xml:space="preserve"><value>Whitelist:</value></data>
+  <data name="CommBlacklist" xml:space="preserve"><value>Blacklist:</value></data>
+  <data name="CommSpotWhitelist" xml:space="preserve"><value>Spot-whitelist:</value></data>
+  <data name="CommSpotBlacklist" xml:space="preserve"><value>Spot-blacklist:</value></data>
+  <data name="CommModeratorKeys" xml:space="preserve"><value>Moderatorsleutels:</value></data>
+  <data name="CommFeedbackSite" xml:space="preserve"><value>Feedbacksite:</value></data>
+  <data name="CommLogUpload" xml:space="preserve"><value>Log-upload:</value></data>
+  <data name="CommUpgradeFailures" xml:space="preserve"><value>Updatefouten:</value></data>
+  <data name="CommPromoFolder" xml:space="preserve"><value>Promo-map:</value></data>
+  <data name="CommRequireSigned" xml:space="preserve"><value>Alleen ondertekende lijsten accepteren</value></data>
+  <data name="CommRequireSignedHint" xml:space="preserve"><value>Vereist dat de community naast elke lijst een .sig-bestand publiceert. Laat uit als uw community nog niet ondertekent.</value></data>
+  <data name="CommPublicKey" xml:space="preserve"><value>Publieke sleutel:</value></data>
+  <data name="CommRawHeader" xml:space="preserve"><value>Volledige configuratie (community_config.json)</value></data>
+  <data name="CommApplyRaw" xml:space="preserve"><value>Overnemen in de velden</value></data>
+  <data name="CommResetDefaults" xml:space="preserve"><value>Herstel standaardwaarden</value></data>
+  <data name="CommExportProfile" xml:space="preserve"><value>Exporteer profiel…</value></data>
+  <data name="CommImportProfile" xml:space="preserve"><value>Importeer profiel…</value></data>
+  <data name="CommShowRaw" xml:space="preserve"><value>Toon raw</value></data>
+  <data name="CommHideRaw" xml:space="preserve"><value>Verberg raw</value></data>
+  <data name="CommRefreshStarted" xml:space="preserve"><value>Bijwerken gestart…</value></data>
+  <data name="CommListSummary" xml:space="preserve"><value>{0} vertrouwd, {1} geblokkeerd{2}</value></data>
+  <data name="CommRawApplied" xml:space="preserve"><value>Overgenomen. Klik op Opslaan om het vast te leggen.</value></data>
+  <data name="CommResetQuestion" xml:space="preserve"><value>Alle community-instellingen terugzetten naar de standaardwaarden van deze Spotnet?</value></data>
+  <data name="CommImportNotAProfile" xml:space="preserve"><value>Dat bestand bevat geen community-profiel.</value></data>
+  <data name="CommImportInvalid" xml:space="preserve"><value>Het profiel is niet geldig:</value></data>
+  <data name="CommImportLoaded" xml:space="preserve"><value>Profiel geladen. Klik op Opslaan om het in gebruik te nemen.</value></data>
+  <data name="CommImportFailed" xml:space="preserve"><value>Importeren mislukt: </value></data>
+  <data name="IntegrTitle" xml:space="preserve"><value>Externe integraties</value></data>
+  <data name="IntegrIntro" xml:space="preserve"><value>Optionele koppelingen met diensten van derden. Alles hieronder is standaard leeg: een integratie doet pas iets zodra u er zelf een adres of sleutel voor invult. Spots, reacties en downloads werken hier volledig los van.</value></data>
+  <data name="IntegrNewznabHeader" xml:space="preserve"><value>Newznab-indexer</value></data>
+  <data name="IntegrDisabled" xml:space="preserve"><value>Uitgeschakeld</value></data>
+  <data name="IntegrDisabledNoServer" xml:space="preserve"><value>Uitgeschakeld — server ontbreekt</value></data>
+  <data name="IntegrDisabledNoKey" xml:space="preserve"><value>Uitgeschakeld — sleutel ontbreekt</value></data>
+  <data name="IntegrNewznabHint" xml:space="preserve"><value>Een alternatieve spotbron naast Usenet. Vul zowel het serveradres als uw eigen API-sleutel in; zolang één van beide leeg is, wordt de indexer niet bevraagd en verschijnen er geen Newznab-categorieën in de filterlijst.</value></data>
+  <data name="IntegrServerLabel" xml:space="preserve"><value>Server:</value></data>
+  <data name="IntegrServerHint" xml:space="preserve"><value>Bijvoorbeeld https://mijn-indexer.example/. Gebruik bij voorkeur https.</value></data>
+  <data name="IntegrApiKeyLabel" xml:space="preserve"><value>API-sleutel:</value></data>
+  <data name="IntegrReplace" xml:space="preserve"><value>Vervangen</value></data>
+  <data name="IntegrKeyMaskedHint" xml:space="preserve"><value>De sleutel wordt afgeschermd weergegeven. Klik op Vervangen om een eigen sleutel in te voeren, of om hem te wissen.</value></data>
+  <data name="IntegrOmdbHeader" xml:space="preserve"><value>OMDb (filminfo)</value></data>
+  <data name="IntegrOmdbHint" xml:space="preserve"><value>Vult het film- en serie-informatieblok in de spotweergave met titel, jaar, kijkwijzer en poster. OMDb vereist sinds 2017 een eigen sleutel; zonder sleutel wordt het blok verborgen in plaats van leeg getoond.</value></data>
+  <data name="IntegrOmdbKeyHint" xml:space="preserve"><value>Een gratis sleutel is aan te vragen op omdbapi.com. De aanroep gaat over https.</value></data>
+  <data name="IntegrNotSet" xml:space="preserve"><value>(niet ingesteld)</value></data>
+  <data name="CleanupHeader" xml:space="preserve"><value>Opruimen van bestanden</value></data>
+  <data name="CleanupIntro" xml:space="preserve"><value>Verwijder deze bestandstypen na een geslaagde download en het uitpakken. Een lege lijst schakelt opruimen uit.</value></data>
+  <data name="CleanupExtensionTip" xml:space="preserve"><value>Bijvoorbeeld txt, .jpg of docx</value></data>
+  <data name="CleanupAdd" xml:space="preserve"><value>Toevoegen</value></data>
+  <data name="CleanupRemove" xml:space="preserve"><value>Verwijderen</value></data>
+  <data name="CleanupAddSuggestions" xml:space="preserve"><value>Suggesties toevoegen</value></data>
+  <data name="CleanupSuggestions" xml:space="preserve"><value>Suggesties: nfo, sfv, srr, url, lnk, txt, doc, docx, htm en html. Afbeeldingen kun je zelf toevoegen; ook covers worden dan verwijderd.</value></data>
+  <data name="CleanupExternalNzbGet" xml:space="preserve"><value>Bij externe NZBGet stel je het opruimen in NZBGet in.</value></data>
 </root>

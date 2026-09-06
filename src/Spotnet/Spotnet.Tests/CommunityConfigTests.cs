@@ -62,6 +62,10 @@ public class CommunityConfigTests : IDisposable
         // Signature checking is off until a community publishes signatures.
         Assert.False(config.Moderation.RequireSignedLists);
         Assert.Equal("", config.Moderation.SignaturePublicKeyXml);
+
+        Assert.False(config.Moderation.UseClassicLists);
+        Assert.Equal("https://spotlist.store/spotnet/whitelist.xml", config.Moderation.ClassicWhitelistUrl);
+        Assert.Equal("https://spotlist.store/spotnet/blacklist.xml", config.Moderation.ClassicBlacklistUrl);
     }
 
     [Fact]
@@ -79,6 +83,9 @@ public class CommunityConfigTests : IDisposable
         };
         original.Newsgroups.Spots = "free.test";
         original.Moderation.UpdateIntervalMinutes = 45;
+        original.Moderation.UseClassicLists = true;
+        original.Moderation.ClassicWhitelistUrl = "https://example.org/whitelist.xml";
+        original.Moderation.ClassicBlacklistUrl = "https://example.org/blacklist.xml";
         original.Integrations.NewznabApiKey = "abcdef";
 
         CommunityConfig restored = CommunityConfig.Deserialize(original.Serialize());
@@ -86,6 +93,9 @@ public class CommunityConfigTests : IDisposable
         Assert.Equal("Testgemeenschap", restored.Name);
         Assert.Equal("free.test", restored.Newsgroups.Spots);
         Assert.Equal(45, restored.Moderation.UpdateIntervalMinutes);
+        Assert.True(restored.Moderation.UseClassicLists);
+        Assert.Equal("https://example.org/whitelist.xml", restored.Moderation.ClassicWhitelistUrl);
+        Assert.Equal("https://example.org/blacklist.xml", restored.Moderation.ClassicBlacklistUrl);
         Assert.Equal("abcdef", restored.Integrations.NewznabApiKey);
     }
 
@@ -323,4 +333,56 @@ public class CommunityConfigTests : IDisposable
         Assert.Equal(3, errors.Count);
         Assert.All(errors, e => Assert.False(string.IsNullOrWhiteSpace(e)));
     }
+
+    [Fact]
+    public void ClassicListUrlsValidationWorks()
+    {
+        CommunityConfig config = new CommunityConfig();
+        config.Moderation.UseClassicLists = true;
+
+        // Valid defaults pass
+        Assert.Empty(config.Validate());
+
+        // Empty whitelist URL is caught when UseClassicLists is true
+        config.Moderation.ClassicWhitelistUrl = "";
+        Assert.Contains(config.Validate(), e => e.Contains("Classic-whitelist-URL"));
+
+        // Invalid URL scheme is caught
+        config.Moderation.ClassicWhitelistUrl = "ftp://example.com/whitelist.xml";
+        Assert.Contains(config.Validate(), e => e.Contains("Classic-whitelist-URL"));
+
+        config.Moderation.ClassicWhitelistUrl = "https://spotlist.store/spotnet/whitelist.xml";
+        config.Moderation.ClassicBlacklistUrl = "not a valid url";
+        Assert.Contains(config.Validate(), e => e.Contains("Classic-blacklist-URL"));
+
+        // When UseClassicLists is false, invalid or empty classic URLs are ignored
+        config.Moderation.UseClassicLists = false;
+        Assert.Empty(config.Validate());
+    }
+
+    [Fact]
+    public void XmlListFormatCanBeParsedSuccessfully()
+    {
+        string tempXml = Path.Combine(testFolder, "test_classic.xml");
+        string sampleXml = @"<Keys>
+    <Key Name=""SpotPoster1"">AAAAB3NzaC1yc2EAAAADAQABAAABAQC12345</Key>
+    <Key Name=""SpotPoster2"">AAAAB3NzaC1yc2EAAAADAQABAAABAQC67890</Key>
+</Keys>";
+        File.WriteAllText(tempXml, sampleXml);
+
+        Assert.True(Spotnet.Model.BlackAndWhite.IsXmlList(tempXml));
+
+        HashSet<string> keys = new HashSet<string>();
+        Assert.True(Spotnet.Model.BlackAndWhite.LoadToList(tempXml, keys));
+        Assert.Equal(2, keys.Count);
+        Assert.Contains("AAAAB3NzaC1yc2EAAAADAQABAAABAQC12345", keys);
+        Assert.Contains("AAAAB3NzaC1yc2EAAAADAQABAAABAQC67890", keys);
+
+        List<Spotnet.Model.BlackAndWhite.UserModulusPair> pairs = new List<Spotnet.Model.BlackAndWhite.UserModulusPair>();
+        Assert.True(Spotnet.Model.BlackAndWhite.LoadToFakeUsernamesList(tempXml, pairs));
+        Assert.Equal(2, pairs.Count);
+        Assert.Contains(pairs, p => p.User == "SpotPoster1" && p.Modulus == "AAAAB3NzaC1yc2EAAAADAQABAAABAQC12345");
+        Assert.Contains(pairs, p => p.User == "SpotPoster2" && p.Modulus == "AAAAB3NzaC1yc2EAAAADAQABAAABAQC67890");
+    }
 }
+

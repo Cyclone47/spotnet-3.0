@@ -1,4 +1,4 @@
-<metro:MetroWindow x:Class="Spotnet.Views.UpdateWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls" xmlns:p="clr-namespace:Spotnet.Properties" Title="{x:Static p:Words.UpdateTitle}" ShowInTaskbar="False" ResizeMode="NoResize" SizeToContent="Manual" WindowStartupLocation="CenterOwner" Topmost="False" GlowBrush="{DynamicResource HighlightBrush}" Height="300" Width="520" WindowTransitionsEnabled="True" ShowIconOnTitleBar="False" ShowTitleBar="True" ShowActivated="True" WindowTitleBrush="{DynamicResource WindowTitleColorBrush}" TitleForeground="{DynamicResource WindowTitleForegroundBrush}" NonActiveWindowTitleBrush="{DynamicResource NonActiveWindowTitleBrush}" Background="{DynamicResource DialogBackgroundBrush}" Closing="Window_Closing">
+<metro:MetroWindow x:Class="Spotnet.Views.UpdateWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:Spotnet.Localization" xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls" xmlns:p="clr-namespace:Spotnet.Properties" Title="{loc:Loc UpdateTitle}" ShowInTaskbar="False" ResizeMode="NoResize" SizeToContent="Manual" WindowStartupLocation="CenterOwner" Topmost="False" GlowBrush="{DynamicResource HighlightBrush}" Height="300" Width="520" WindowTransitionsEnabled="True" ShowIconOnTitleBar="False" ShowTitleBar="True" ShowActivated="True" WindowTitleBrush="{DynamicResource WindowTitleColorBrush}" TitleForeground="{DynamicResource WindowTitleForegroundBrush}" NonActiveWindowTitleBrush="{DynamicResource NonActiveWindowTitleBrush}" Background="{DynamicResource DialogBackgroundBrush}" Closing="Window_Closing">
   <Grid Margin="24,20,24,18">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
@@ -18,7 +18,7 @@
       <TextBlock Name="SizeLabel" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource GrayBrush2}" />
       <TextBlock Name="NotesPanel" Margin="0,6,0,0" Visibility="Collapsed">
         <Hyperlink Name="NotesLink" RequestNavigate="NotesLink_RequestNavigate" Foreground="{DynamicResource AccentColorBrush}">
-          <Run Text="{x:Static p:Words.UpdateReleaseNotes}" FontSize="12" />
+          <Run Text="{loc:Loc UpdateReleaseNotes}" FontSize="12" />
         </Hyperlink>
       </TextBlock>
 
@@ -32,9 +32,9 @@
     </StackPanel>
 
     <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
-      <Button Name="SkipButton" Content="{x:Static p:Words.UpdateSkipVersion}" MinWidth="132" Height="30" Margin="0,0,8,0" Click="SkipButton_Click" />
-      <Button Name="LaterButton" Content="{x:Static p:Words.UpdateLater}" MinWidth="92" Height="30" Margin="0,0,8,0" Click="LaterButton_Click" IsCancel="True" />
-      <Button Name="InstallButton" Content="{x:Static p:Words.UpdateInstallNow}" MinWidth="118" Height="30" Click="InstallButton_Click" IsDefault="True" />
+      <Button Name="SkipButton" Content="{loc:Loc UpdateSkipVersion}" MinWidth="132" Height="30" Margin="0,0,8,0" Click="SkipButton_Click" />
+      <Button Name="LaterButton" Content="{loc:Loc UpdateLater}" MinWidth="92" Height="30" Margin="0,0,8,0" Click="LaterButton_Click" IsCancel="True" />
+      <Button Name="InstallButton" Content="{loc:Loc UpdateInstallNow}" MinWidth="118" Height="30" Click="InstallButton_Click" IsDefault="True" />
     </StackPanel>
   </Grid>
 </metro:MetroWindow>

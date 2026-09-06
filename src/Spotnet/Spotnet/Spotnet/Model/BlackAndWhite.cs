@@ -20,7 +20,7 @@ namespace Spotnet.Model;
 
 internal static class BlackAndWhite
 {
-	private struct UserModulusPair
+	internal struct UserModulusPair
 	{
 		internal string Modulus;
 
@@ -100,6 +100,8 @@ internal static class BlackAndWhite
 		UpdateBlackFromTheNetAsync();
 		UpdateSpotWhiteFromTheNetAsync();
 		UpdateSpotBlackFromTheNetAsync();
+		UpdateClassicWhiteFromTheNetAsync();
+		UpdateClassicBlackFromTheNetAsync();
 	}
 
 	internal static HashSet<string> BlackList()
@@ -216,6 +218,14 @@ internal static class BlackAndWhite
 				_blackList = new HashSet<string>();
 			}
 			LoadToList(file, _blackList, fileToExclude);
+			if (CommunityConfig.Current.Moderation.UseClassicLists)
+			{
+				string classicFile = System.IO.Path.Combine(AppHelper.SettingsFolder, "blacklist.classic.srv.xml");
+				if (System.IO.File.Exists(classicFile))
+				{
+					LoadToList(classicFile, _blackList, fileToExclude);
+				}
+			}
 		}
 	}
 
@@ -239,6 +249,14 @@ internal static class BlackAndWhite
 		lock (LockWhitelist)
 		{
 			LoadToFakeUsernamesList(file, WhiteFakesList);
+			if (CommunityConfig.Current.Moderation.UseClassicLists)
+			{
+				string classicFile = System.IO.Path.Combine(AppHelper.SettingsFolder, "whitelist.classic.srv.xml");
+				if (System.IO.File.Exists(classicFile))
+				{
+					LoadToFakeUsernamesList(classicFile, WhiteFakesList);
+				}
+			}
 		}
 	}
 
@@ -367,7 +385,84 @@ internal static class BlackAndWhite
 		});
 	}
 
-	private static bool LoadToList(string file, HashSet<string> list, string fileToExclude = null)
+	private static void UpdateClassicWhiteFromTheNetAsync()
+	{
+		if (!CommunityConfig.Current.Moderation.Enabled || !CommunityConfig.Current.Moderation.UseClassicLists)
+		{
+			return;
+		}
+		string sFile = System.IO.Path.Combine(AppHelper.SettingsFolder, "whitelist.classic.srv.xml");
+		string url = CommunityConfig.Current.Moderation.ClassicWhitelistUrl;
+		if (string.IsNullOrWhiteSpace(url))
+		{
+			return;
+		}
+		Task.Run(delegate
+		{
+			if (AppHelper.UpdateKeysFileFromTheNet(AppHelper.AddHttp(url), sFile + ".new") &&
+				CommunityListVerifier.MayUse(sFile + ".new", AppHelper.AddHttp(url)))
+			{
+				lock (LockWhitelist)
+				{
+					MoveFileWithOverride(sFile + ".new", sFile);
+					LoadToFakeUsernamesList(sFile, WhiteFakesList);
+				}
+				BlackAndWhite.OnTrustedListUploaded?.Invoke();
+			}
+		});
+	}
+
+	private static void UpdateClassicBlackFromTheNetAsync()
+	{
+		if (!CommunityConfig.Current.Moderation.Enabled || !CommunityConfig.Current.Moderation.UseClassicLists)
+		{
+			return;
+		}
+		string listFullPath = System.IO.Path.Combine(AppHelper.SettingsFolder, "blacklist.classic.srv.xml");
+		string listForRemovedFullPath = System.IO.Path.Combine(AppHelper.SettingsFolder, "blacklist.srv.removed.xml");
+		string url = CommunityConfig.Current.Moderation.ClassicBlacklistUrl;
+		if (string.IsNullOrWhiteSpace(url))
+		{
+			return;
+		}
+		Task.Run(delegate
+		{
+			BlackList();
+			if (AppHelper.UpdateKeysFileFromTheNet(AppHelper.AddHttp(url), listFullPath + ".new") &&
+				CommunityListVerifier.MayUse(listFullPath + ".new", AppHelper.AddHttp(url)))
+			{
+				lock (LockBlacklist)
+				{
+					MoveFileWithOverride(listFullPath + ".new", listFullPath);
+					LoadToList(listFullPath, _blackList, listForRemovedFullPath);
+				}
+			}
+		});
+	}
+
+	internal static bool IsXmlList(string file)
+	{
+		if (System.IO.Path.GetExtension(file).EqualsIgnoreCase(".xml"))
+		{
+			return true;
+		}
+		try
+		{
+			using StreamReader reader = new StreamReader(file, Encoding.UTF8);
+			int ch;
+			while ((ch = reader.Read()) != -1)
+			{
+				if (!char.IsWhiteSpace((char)ch))
+				{
+					return (char)ch == '<';
+				}
+			}
+		}
+		catch { }
+		return false;
+	}
+
+	internal static bool LoadToList(string file, HashSet<string> list, string fileToExclude = null)
 	{
 		try
 		{
@@ -381,7 +476,7 @@ internal static class BlackAndWhite
 			{
 				LoadToList(fileToExclude, hashSet);
 			}
-			if (System.IO.Path.GetExtension(file).EqualsIgnoreCase(".xml"))
+			if (IsXmlList(file))
 			{
 				XmlDocument xmlDocument = new XmlDocument();
 				xmlDocument.XmlResolver = null;
@@ -433,7 +528,7 @@ internal static class BlackAndWhite
 		}
 	}
 
-	private static bool LoadToFakeUsernamesList(string file, ICollection<UserModulusPair> set)
+	internal static bool LoadToFakeUsernamesList(string file, ICollection<UserModulusPair> set)
 	{
 		try
 		{
@@ -442,7 +537,7 @@ internal static class BlackAndWhite
 				CreateList(file, new List<ListItem>());
 				return true;
 			}
-			if (System.IO.Path.GetExtension(file).EqualsIgnoreCase(".xml"))
+			if (IsXmlList(file))
 			{
 				XmlDocument xmlDocument = new XmlDocument();
 				xmlDocument.XmlResolver = null;

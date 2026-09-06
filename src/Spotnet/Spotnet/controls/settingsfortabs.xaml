@@ -1,4 +1,4 @@
-<UserControl x:Class="Spotnet.Controls.SettingsForTabs" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:controls="clr-namespace:Spotnet.Controls" FontSize="{Binding ElementName=VisibilityVmProxy, Path=DataContext.FontSize, Mode=OneWay}">
+<UserControl x:Class="Spotnet.Controls.SettingsForTabs" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:Spotnet.Localization" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:controls="clr-namespace:Spotnet.Controls" FontSize="{Binding ElementName=VisibilityVmProxy, Path=DataContext.FontSize, Mode=OneWay}">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <Storyboard x:Key="FieldAnimationStoryboard">
@@ -7,19 +7,19 @@
     </ResourceDictionary>
   </FrameworkElement.Resources>
   <StackPanel Orientation="Vertical">
-    <CheckBox Name="SetTabs" Content="{x:Static p:Words.MenuRememberTabs}" Margin="0,7,0,0" />
+    <CheckBox Name="SetTabs" Content="{loc:Loc MenuRememberTabs}" Margin="0,7,0,0" />
     <Separator Margin="10,10,10,3" />
     <StackPanel Orientation="Vertical" Margin="0,7,0,0">
-      <TextBlock Text="{x:Static p:Words.SelectTheme}" />
+      <TextBlock Text="{loc:Loc SelectTheme}" />
       <ComboBox Name="TabThemeCombo" SelectionChanged="TabThemeCombo_OnSelectionChanged" />
     </StackPanel>
-    <CheckBox Name="ShowTabToolbar" Content="{x:Static p:Words.MenuShowTabToolbar}" Margin="0,7,0,0" />
+    <CheckBox Name="ShowTabToolbar" Content="{loc:Loc MenuShowTabToolbar}" Margin="0,7,0,0" />
     <Separator Margin="10,10,10,3" />
-    <CheckBox Name="UseExternalBrowser" Content="{x:Static p:Words.MenuUseExternalBrowser}" Margin="0,7,0,0" />
-    <CheckBox Name="DoNotLoadImageOnSpotTab" Content="{x:Static p:Words.MenuDoNotLoadImageOnSpotTab}" Margin="0,7,0,0" />
-    <CheckBox Name="ShowCom" Content="{x:Static p:Words.MenuAutoGetComments}" Margin="0,7,0,0" />
+    <CheckBox Name="UseExternalBrowser" Content="{loc:Loc MenuUseExternalBrowser}" Margin="0,7,0,0" />
+    <CheckBox Name="DoNotLoadImageOnSpotTab" Content="{loc:Loc MenuDoNotLoadImageOnSpotTab}" Margin="0,7,0,0" />
+    <CheckBox Name="ShowCom" Content="{loc:Loc MenuAutoGetComments}" Margin="0,7,0,0" />
     <Separator Margin="10,10,10,3" />
-    <CheckBox Name="EnableSmiles" Content="{x:Static p:Words.MenuEnableSmiles}" Margin="0,7,0,0" />
+    <CheckBox Name="EnableSmiles" Content="{loc:Loc MenuEnableSmiles}" Margin="0,7,0,0" />
     <Grid Margin="0,7,0,0">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto" />
@@ -27,8 +27,8 @@
         <ColumnDefinition Width="Auto" />
       </Grid.ColumnDefinitions>
       <Image Name="AvatarImage" Grid.Column="0" Margin="0,0,10,0" Width="32" Height="32" />
-      <Button Grid.Column="1" Content="{x:Static p:Words.ChangeAvatar}" Margin="0,0,10,0" Width="110" VerticalAlignment="Center" Click="ChangeAvatar_OnClick" />
-      <Button Grid.Column="2" Content="{x:Static p:Words.ResetAvatar}" Margin="0,0,10,0" Width="110" VerticalAlignment="Center" Click="ResetAvatar_OnClick" />
+      <Button Grid.Column="1" Content="{loc:Loc ChangeAvatar}" Margin="0,0,10,0" Width="110" VerticalAlignment="Center" Click="ChangeAvatar_OnClick" />
+      <Button Grid.Column="2" Content="{loc:Loc ResetAvatar}" Margin="0,0,10,0" Width="110" VerticalAlignment="Center" Click="ResetAvatar_OnClick" />
     </Grid>
   </StackPanel>
 </UserControl>

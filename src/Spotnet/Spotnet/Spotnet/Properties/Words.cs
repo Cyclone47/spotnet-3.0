@@ -1,4 +1,4 @@
-﻿using System.CodeDom.Compiler;
+using System.CodeDom.Compiler;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -462,9 +462,7 @@ public class Words
 
 	public static string Italic => ResourceManager.GetString("Italic", resourceCulture);
 
-	public static string LanguageChange => ResourceManager.GetString("LanguageChange", resourceCulture);
 
-	public static string LanguageRestartForSettingTakesEffect => ResourceManager.GetString("LanguageRestartForSettingTakesEffect", resourceCulture);
 
 	public static string Last24Hours => ResourceManager.GetString("Last24Hours", resourceCulture);
 
@@ -890,9 +888,7 @@ public class Words
 
 	public static string ResponseNotASCII => ResourceManager.GetString("ResponseNotASCII", resourceCulture);
 
-	public static string RestartLater => ResourceManager.GetString("RestartLater", resourceCulture);
 
-	public static string RestartNow => ResourceManager.GetString("RestartNow", resourceCulture);
 
 	public static string ResumeText => ResourceManager.GetString("ResumeText", resourceCulture);
 
@@ -1302,4 +1298,484 @@ public class Words
 	internal Words()
 	{
 	}
+
+	public static string RemoteTitle => ResourceManager.GetString("RemoteTitle", resourceCulture);
+
+	public static string RemoteIntro => ResourceManager.GetString("RemoteIntro", resourceCulture);
+
+	public static string RemoteEnable => ResourceManager.GetString("RemoteEnable", resourceCulture);
+
+	public static string RemoteStatusLabel => ResourceManager.GetString("RemoteStatusLabel", resourceCulture);
+
+	public static string RemoteStopped => ResourceManager.GetString("RemoteStopped", resourceCulture);
+
+	public static string RemoteShowQrCode => ResourceManager.GetString("RemoteShowQrCode", resourceCulture);
+
+	public static string RemoteConnectionOptions => ResourceManager.GetString("RemoteConnectionOptions", resourceCulture);
+
+	public static string RemoteAllowLan => ResourceManager.GetString("RemoteAllowLan", resourceCulture);
+
+	public static string RemoteEnableCloudflare => ResourceManager.GetString("RemoteEnableCloudflare", resourceCulture);
+
+	public static string RemoteCloudflareHint => ResourceManager.GetString("RemoteCloudflareHint", resourceCulture);
+
+	public static string RemoteCloudflareStatusLabel => ResourceManager.GetString("RemoteCloudflareStatusLabel", resourceCulture);
+
+	public static string RemoteCloudflareUrlLabel => ResourceManager.GetString("RemoteCloudflareUrlLabel", resourceCulture);
+
+	public static string RemoteAdvancedHeader => ResourceManager.GetString("RemoteAdvancedHeader", resourceCulture);
+
+	public static string RemotePortLabel => ResourceManager.GetString("RemotePortLabel", resourceCulture);
+
+	public static string RemoteOpenInBrowser => ResourceManager.GetString("RemoteOpenInBrowser", resourceCulture);
+
+	public static string RemoteRequireAuth => ResourceManager.GetString("RemoteRequireAuth", resourceCulture);
+
+	public static string RemoteSetPassword => ResourceManager.GetString("RemoteSetPassword", resourceCulture);
+
+	public static string RemoteChangePassword => ResourceManager.GetString("RemoteChangePassword", resourceCulture);
+
+	public static string RemotePasswordConfigured => ResourceManager.GetString("RemotePasswordConfigured", resourceCulture);
+
+	public static string RemotePasswordNotConfigured => ResourceManager.GetString("RemotePasswordNotConfigured", resourceCulture);
+
+	public static string RemoteNoAuthWarning => ResourceManager.GetString("RemoteNoAuthWarning", resourceCulture);
+
+	public static string RemoteKeepAwake => ResourceManager.GetString("RemoteKeepAwake", resourceCulture);
+
+	public static string RemotePairedDevices => ResourceManager.GetString("RemotePairedDevices", resourceCulture);
+
+	public static string RemoteRevoke => ResourceManager.GetString("RemoteRevoke", resourceCulture);
+
+	public static string RemoteRevokeAll => ResourceManager.GetString("RemoteRevokeAll", resourceCulture);
+
+	public static string RemotePairedAt => ResourceManager.GetString("RemotePairedAt", resourceCulture);
+
+	public static string RemoteLastSeen => ResourceManager.GetString("RemoteLastSeen", resourceCulture);
+
+	public static string RemoteActive => ResourceManager.GetString("RemoteActive", resourceCulture);
+
+	public static string RemoteStartFailed => ResourceManager.GetString("RemoteStartFailed", resourceCulture);
+
+	public static string RemoteDisabled => ResourceManager.GetString("RemoteDisabled", resourceCulture);
+
+	public static string RemoteNotStarted => ResourceManager.GetString("RemoteNotStarted", resourceCulture);
+
+	public static string RemoteWaitingForServer => ResourceManager.GetString("RemoteWaitingForServer", resourceCulture);
+
+	public static string RemoteBrowserOpenFailed => ResourceManager.GetString("RemoteBrowserOpenFailed", resourceCulture);
+
+	public static string RemoteRevokeQuestion => ResourceManager.GetString("RemoteRevokeQuestion", resourceCulture);
+
+	public static string RemoteRevokeTitle => ResourceManager.GetString("RemoteRevokeTitle", resourceCulture);
+
+	public static string RemoteRevokeAllQuestion => ResourceManager.GetString("RemoteRevokeAllQuestion", resourceCulture);
+
+	public static string RemoteRevokeAllTitle => ResourceManager.GetString("RemoteRevokeAllTitle", resourceCulture);
+
+	public static string RemoteSetPasswordFirst => ResourceManager.GetString("RemoteSetPasswordFirst", resourceCulture);
+
+	public static string RemotePasswordRequired => ResourceManager.GetString("RemotePasswordRequired", resourceCulture);
+
+	public static string RemoteTipCheckingStatus => ResourceManager.GetString("RemoteTipCheckingStatus", resourceCulture);
+
+	public static string RemoteTipOpenSettings => ResourceManager.GetString("RemoteTipOpenSettings", resourceCulture);
+
+	public static string RemoteBadgeOn => ResourceManager.GetString("RemoteBadgeOn", resourceCulture);
+
+	public static string RemoteBadgeOff => ResourceManager.GetString("RemoteBadgeOff", resourceCulture);
+
+	public static string RemoteBadgeInUseLabel => ResourceManager.GetString("RemoteBadgeInUseLabel", resourceCulture);
+
+	public static string RemoteBadgeInUse => ResourceManager.GetString("RemoteBadgeInUse", resourceCulture);
+
+	public static string RemoteBadgeAwake => ResourceManager.GetString("RemoteBadgeAwake", resourceCulture);
+
+	public static string RemoteTipTitleOff => ResourceManager.GetString("RemoteTipTitleOff", resourceCulture);
+
+	public static string RemoteTipTitleOn => ResourceManager.GetString("RemoteTipTitleOn", resourceCulture);
+
+	public static string RemoteTipTitleInUse => ResourceManager.GetString("RemoteTipTitleInUse", resourceCulture);
+
+	public static string RemoteTipServerOff => ResourceManager.GetString("RemoteTipServerOff", resourceCulture);
+
+	public static string RemoteTipSleepNormal => ResourceManager.GetString("RemoteTipSleepNormal", resourceCulture);
+
+	public static string RemoteTipConnectedOnPort => ResourceManager.GetString("RemoteTipConnectedOnPort", resourceCulture);
+
+	public static string RemoteTipWaitingOnPort => ResourceManager.GetString("RemoteTipWaitingOnPort", resourceCulture);
+
+	public static string RemoteTipActiveDevice => ResourceManager.GetString("RemoteTipActiveDevice", resourceCulture);
+
+	public static string RemoteTipConnectedMobile => ResourceManager.GetString("RemoteTipConnectedMobile", resourceCulture);
+
+	public static string RemoteTipKeepAwakeOn => ResourceManager.GetString("RemoteTipKeepAwakeOn", resourceCulture);
+
+	public static string RemoteTipKeepAwakeOff => ResourceManager.GetString("RemoteTipKeepAwakeOff", resourceCulture);
+
+	public static string PairTitle => ResourceManager.GetString("PairTitle", resourceCulture);
+
+	public static string PairHeading => ResourceManager.GetString("PairHeading", resourceCulture);
+
+	public static string PairSubHeading => ResourceManager.GetString("PairSubHeading", resourceCulture);
+
+	public static string PairModeLan => ResourceManager.GetString("PairModeLan", resourceCulture);
+
+	public static string PairModeTunnel => ResourceManager.GetString("PairModeTunnel", resourceCulture);
+
+	public static string PairModeLanHint => ResourceManager.GetString("PairModeLanHint", resourceCulture);
+
+	public static string PairTunnelTemporary => ResourceManager.GetString("PairTunnelTemporary", resourceCulture);
+
+	public static string PairTunnelStarting => ResourceManager.GetString("PairTunnelStarting", resourceCulture);
+
+	public static string PairTunnelConnecting => ResourceManager.GetString("PairTunnelConnecting", resourceCulture);
+
+	public static string PairEnterCodeManually => ResourceManager.GetString("PairEnterCodeManually", resourceCulture);
+
+	public static string PairCodeValidFor => ResourceManager.GetString("PairCodeValidFor", resourceCulture);
+
+	public static string PairSucceeded => ResourceManager.GetString("PairSucceeded", resourceCulture);
+
+	public static string PairSucceededNamed => ResourceManager.GetString("PairSucceededNamed", resourceCulture);
+
+	public static string PairCopyLink => ResourceManager.GetString("PairCopyLink", resourceCulture);
+
+	public static string PairTunnelError => ResourceManager.GetString("PairTunnelError", resourceCulture);
+
+	public static string PairLinkNotReady => ResourceManager.GetString("PairLinkNotReady", resourceCulture);
+
+	public static string PairLinkNotReadyTitle => ResourceManager.GetString("PairLinkNotReadyTitle", resourceCulture);
+
+	public static string PairCopyFailed => ResourceManager.GetString("PairCopyFailed", resourceCulture);
+
+	public static string RemotePasswordWindowTitle => ResourceManager.GetString("RemotePasswordWindowTitle", resourceCulture);
+
+	public static string RemotePasswordIntro => ResourceManager.GetString("RemotePasswordIntro", resourceCulture);
+
+	public static string RemotePasswordLabel => ResourceManager.GetString("RemotePasswordLabel", resourceCulture);
+
+	public static string RemotePasswordRepeat => ResourceManager.GetString("RemotePasswordRepeat", resourceCulture);
+
+	public static string RemotePasswordTooShort => ResourceManager.GetString("RemotePasswordTooShort", resourceCulture);
+
+	public static string RemotePasswordMismatch => ResourceManager.GetString("RemotePasswordMismatch", resourceCulture);
+
+	public static string CloudflareStopped => ResourceManager.GetString("CloudflareStopped", resourceCulture);
+
+	public static string CloudflareError => ResourceManager.GetString("CloudflareError", resourceCulture);
+
+	public static string NcWindowTitle => ResourceManager.GetString("NcWindowTitle", resourceCulture);
+
+	public static string NcTabNotifications => ResourceManager.GetString("NcTabNotifications", resourceCulture);
+
+	public static string NcTabNotificationsCount => ResourceManager.GetString("NcTabNotificationsCount", resourceCulture);
+
+	public static string NcHistoryHeader => ResourceManager.GetString("NcHistoryHeader", resourceCulture);
+
+	public static string NcHistoryIntro => ResourceManager.GetString("NcHistoryIntro", resourceCulture);
+
+	public static string NcHistoryDownloadFinished => ResourceManager.GetString("NcHistoryDownloadFinished", resourceCulture);
+
+	public static string NcHistoryDownloadFailed => ResourceManager.GetString("NcHistoryDownloadFailed", resourceCulture);
+
+	public static string NcHistoryDownloadPassword => ResourceManager.GetString("NcHistoryDownloadPassword", resourceCulture);
+
+	public static string NcHistoryDownloadWarning => ResourceManager.GetString("NcHistoryDownloadWarning", resourceCulture);
+
+	public static string NcHistoryFilterRules => ResourceManager.GetString("NcHistoryFilterRules", resourceCulture);
+
+	public static string NcHistoryKeywordRules => ResourceManager.GetString("NcHistoryKeywordRules", resourceCulture);
+
+	public static string NcRecent => ResourceManager.GetString("NcRecent", resourceCulture);
+
+	public static string NcRecentCount => ResourceManager.GetString("NcRecentCount", resourceCulture);
+
+	public static string NcMarkAllRead => ResourceManager.GetString("NcMarkAllRead", resourceCulture);
+
+	public static string NcClearAll => ResourceManager.GetString("NcClearAll", resourceCulture);
+
+	public static string NcEmptyTitle => ResourceManager.GetString("NcEmptyTitle", resourceCulture);
+
+	public static string NcEmptyHint => ResourceManager.GetString("NcEmptyHint", resourceCulture);
+
+	public static string NcTabRules => ResourceManager.GetString("NcTabRules", resourceCulture);
+
+	public static string NcNewRule => ResourceManager.GetString("NcNewRule", resourceCulture);
+
+	public static string NcEditRuleHeader => ResourceManager.GetString("NcEditRuleHeader", resourceCulture);
+
+	public static string NcRuleTypeFilter => ResourceManager.GetString("NcRuleTypeFilter", resourceCulture);
+
+	public static string NcRuleTypeKeyword => ResourceManager.GetString("NcRuleTypeKeyword", resourceCulture);
+
+	public static string NcRuleName => ResourceManager.GetString("NcRuleName", resourceCulture);
+
+	public static string NcSelectFilter => ResourceManager.GetString("NcSelectFilter", resourceCulture);
+
+	public static string NcCheckEvery => ResourceManager.GetString("NcCheckEvery", resourceCulture);
+
+	public static string NcEvery15Minutes => ResourceManager.GetString("NcEvery15Minutes", resourceCulture);
+
+	public static string NcEvery30Minutes => ResourceManager.GetString("NcEvery30Minutes", resourceCulture);
+
+	public static string NcEvery1Hour => ResourceManager.GetString("NcEvery1Hour", resourceCulture);
+
+	public static string NcEvery8Hours => ResourceManager.GetString("NcEvery8Hours", resourceCulture);
+
+	public static string NcEvery24Hours => ResourceManager.GetString("NcEvery24Hours", resourceCulture);
+
+	public static string NcCustomInterval => ResourceManager.GetString("NcCustomInterval", resourceCulture);
+
+	public static string NcCustomIntervalTip => ResourceManager.GetString("NcCustomIntervalTip", resourceCulture);
+
+	public static string NcMinutes => ResourceManager.GetString("NcMinutes", resourceCulture);
+
+	public static string NcKeywords => ResourceManager.GetString("NcKeywords", resourceCulture);
+
+	public static string NcKeywordsTip => ResourceManager.GetString("NcKeywordsTip", resourceCulture);
+
+	public static string NcCategory => ResourceManager.GetString("NcCategory", resourceCulture);
+
+	public static string NcAllCategories => ResourceManager.GetString("NcAllCategories", resourceCulture);
+
+	public static string NcCatFilms => ResourceManager.GetString("NcCatFilms", resourceCulture);
+
+	public static string NcCatSeries => ResourceManager.GetString("NcCatSeries", resourceCulture);
+
+	public static string NcCatMusic => ResourceManager.GetString("NcCatMusic", resourceCulture);
+
+	public static string NcCatGames => ResourceManager.GetString("NcCatGames", resourceCulture);
+
+	public static string NcCatApplications => ResourceManager.GetString("NcCatApplications", resourceCulture);
+
+	public static string NcCatBooks => ResourceManager.GetString("NcCatBooks", resourceCulture);
+
+	public static string NcCatErotica => ResourceManager.GetString("NcCatErotica", resourceCulture);
+
+	public static string NcCheckMode => ResourceManager.GetString("NcCheckMode", resourceCulture);
+
+	public static string NcCheckDirect => ResourceManager.GetString("NcCheckDirect", resourceCulture);
+
+	public static string NcCheckPeriodic => ResourceManager.GetString("NcCheckPeriodic", resourceCulture);
+
+	public static string NcAutoSyncInterval => ResourceManager.GetString("NcAutoSyncInterval", resourceCulture);
+
+	public static string NcSyncEvery5 => ResourceManager.GetString("NcSyncEvery5", resourceCulture);
+
+	public static string NcSyncEvery10 => ResourceManager.GetString("NcSyncEvery10", resourceCulture);
+
+	public static string NcSyncEvery15 => ResourceManager.GetString("NcSyncEvery15", resourceCulture);
+
+	public static string NcSyncEvery30 => ResourceManager.GetString("NcSyncEvery30", resourceCulture);
+
+	public static string NcSyncEvery60 => ResourceManager.GetString("NcSyncEvery60", resourceCulture);
+
+	public static string NcWindowsToasts => ResourceManager.GetString("NcWindowsToasts", resourceCulture);
+
+	public static string NcSaveRule => ResourceManager.GetString("NcSaveRule", resourceCulture);
+
+	public static string NcSaveChanges => ResourceManager.GetString("NcSaveChanges", resourceCulture);
+
+	public static string NcActiveRules => ResourceManager.GetString("NcActiveRules", resourceCulture);
+
+	public static string NcEditRule => ResourceManager.GetString("NcEditRule", resourceCulture);
+
+	public static string NcEditRuleTip => ResourceManager.GetString("NcEditRuleTip", resourceCulture);
+
+	public static string NcTestRule => ResourceManager.GetString("NcTestRule", resourceCulture);
+
+	public static string NcTestRuleTip => ResourceManager.GetString("NcTestRuleTip", resourceCulture);
+
+	public static string NcDeleteRuleTip => ResourceManager.GetString("NcDeleteRuleTip", resourceCulture);
+
+	public static string NcFilterOrKeyword => ResourceManager.GetString("NcFilterOrKeyword", resourceCulture);
+
+	public static string NcKeywordsRequired => ResourceManager.GetString("NcKeywordsRequired", resourceCulture);
+
+	public static string NcKeywordsRequiredTitle => ResourceManager.GetString("NcKeywordsRequiredTitle", resourceCulture);
+
+	public static string NcRuleUpdated => ResourceManager.GetString("NcRuleUpdated", resourceCulture);
+
+	public static string NcRuleSaved => ResourceManager.GetString("NcRuleSaved", resourceCulture);
+
+	public static string NcRuleUpdatedTitle => ResourceManager.GetString("NcRuleUpdatedTitle", resourceCulture);
+
+	public static string NcRuleSavedTitle => ResourceManager.GetString("NcRuleSavedTitle", resourceCulture);
+
+	public static string NcClearAllQuestion => ResourceManager.GetString("NcClearAllQuestion", resourceCulture);
+
+	public static string NcClearAllTitle => ResourceManager.GetString("NcClearAllTitle", resourceCulture);
+
+	public static string NcOpenSpotFailed => ResourceManager.GetString("NcOpenSpotFailed", resourceCulture);
+
+	public static string NcDeleteRuleQuestion => ResourceManager.GetString("NcDeleteRuleQuestion", resourceCulture);
+
+	public static string NcDeleteRuleTitle => ResourceManager.GetString("NcDeleteRuleTitle", resourceCulture);
+
+	public static string NcTestSucceeded => ResourceManager.GetString("NcTestSucceeded", resourceCulture);
+
+	public static string NcTestResultTitle => ResourceManager.GetString("NcTestResultTitle", resourceCulture);
+
+	public static string NcTestNoResults => ResourceManager.GetString("NcTestNoResults", resourceCulture);
+
+	public static string NcTestNoResultsTitle => ResourceManager.GetString("NcTestNoResultsTitle", resourceCulture);
+
+	public static string NcBellTitle => ResourceManager.GetString("NcBellTitle", resourceCulture);
+
+	public static string NcBellNoUnread => ResourceManager.GetString("NcBellNoUnread", resourceCulture);
+
+	public static string NcBellUnreadOne => ResourceManager.GetString("NcBellUnreadOne", resourceCulture);
+
+	public static string NcBellUnreadMany => ResourceManager.GetString("NcBellUnreadMany", resourceCulture);
+
+	public static string NcBellHint => ResourceManager.GetString("NcBellHint", resourceCulture);
+
+	public static string NcBellOpenFailed => ResourceManager.GetString("NcBellOpenFailed", resourceCulture);
+
+	public static string NcPanelHeader => ResourceManager.GetString("NcPanelHeader", resourceCulture);
+
+	public static string NcPanelOpenCentre => ResourceManager.GetString("NcPanelOpenCentre", resourceCulture);
+
+	public static string NcPanelNewRule => ResourceManager.GetString("NcPanelNewRule", resourceCulture);
+
+	public static string CommTitle => ResourceManager.GetString("CommTitle", resourceCulture);
+
+	public static string CommIntro => ResourceManager.GetString("CommIntro", resourceCulture);
+
+	public static string CommNameLabel => ResourceManager.GetString("CommNameLabel", resourceCulture);
+
+	public static string CommRefreshNow => ResourceManager.GetString("CommRefreshNow", resourceCulture);
+
+	public static string CommNewsgroups => ResourceManager.GetString("CommNewsgroups", resourceCulture);
+
+	public static string CommSpotsGroup => ResourceManager.GetString("CommSpotsGroup", resourceCulture);
+
+	public static string CommCommentsGroup => ResourceManager.GetString("CommCommentsGroup", resourceCulture);
+
+	public static string CommReportsGroup => ResourceManager.GetString("CommReportsGroup", resourceCulture);
+
+	public static string CommNzbGroup => ResourceManager.GetString("CommNzbGroup", resourceCulture);
+
+	public static string CommModeration => ResourceManager.GetString("CommModeration", resourceCulture);
+
+	public static string CommUseModerationLists => ResourceManager.GetString("CommUseModerationLists", resourceCulture);
+
+	public static string CommModerationHint => ResourceManager.GetString("CommModerationHint", resourceCulture);
+
+	public static string CommRefreshEvery => ResourceManager.GetString("CommRefreshEvery", resourceCulture);
+
+	public static string CommRefreshEveryUnit => ResourceManager.GetString("CommRefreshEveryUnit", resourceCulture);
+
+	public static string CommUseClassicLists => ResourceManager.GetString("CommUseClassicLists", resourceCulture);
+
+	public static string CommUseClassicListsHint => ResourceManager.GetString("CommUseClassicListsHint", resourceCulture);
+
+	public static string CommClassicWhitelist => ResourceManager.GetString("CommClassicWhitelist", resourceCulture);
+
+	public static string CommClassicBlacklist => ResourceManager.GetString("CommClassicBlacklist", resourceCulture);
+
+	public static string CommServersHeader => ResourceManager.GetString("CommServersHeader", resourceCulture);
+
+	public static string CommWhitelist => ResourceManager.GetString("CommWhitelist", resourceCulture);
+
+	public static string CommBlacklist => ResourceManager.GetString("CommBlacklist", resourceCulture);
+
+	public static string CommSpotWhitelist => ResourceManager.GetString("CommSpotWhitelist", resourceCulture);
+
+	public static string CommSpotBlacklist => ResourceManager.GetString("CommSpotBlacklist", resourceCulture);
+
+	public static string CommModeratorKeys => ResourceManager.GetString("CommModeratorKeys", resourceCulture);
+
+	public static string CommFeedbackSite => ResourceManager.GetString("CommFeedbackSite", resourceCulture);
+
+	public static string CommLogUpload => ResourceManager.GetString("CommLogUpload", resourceCulture);
+
+	public static string CommUpgradeFailures => ResourceManager.GetString("CommUpgradeFailures", resourceCulture);
+
+	public static string CommPromoFolder => ResourceManager.GetString("CommPromoFolder", resourceCulture);
+
+	public static string CommRequireSigned => ResourceManager.GetString("CommRequireSigned", resourceCulture);
+
+	public static string CommRequireSignedHint => ResourceManager.GetString("CommRequireSignedHint", resourceCulture);
+
+	public static string CommPublicKey => ResourceManager.GetString("CommPublicKey", resourceCulture);
+
+	public static string CommRawHeader => ResourceManager.GetString("CommRawHeader", resourceCulture);
+
+	public static string CommApplyRaw => ResourceManager.GetString("CommApplyRaw", resourceCulture);
+
+	public static string CommResetDefaults => ResourceManager.GetString("CommResetDefaults", resourceCulture);
+
+	public static string CommExportProfile => ResourceManager.GetString("CommExportProfile", resourceCulture);
+
+	public static string CommImportProfile => ResourceManager.GetString("CommImportProfile", resourceCulture);
+
+	public static string CommShowRaw => ResourceManager.GetString("CommShowRaw", resourceCulture);
+
+	public static string CommHideRaw => ResourceManager.GetString("CommHideRaw", resourceCulture);
+
+	public static string CommRefreshStarted => ResourceManager.GetString("CommRefreshStarted", resourceCulture);
+
+	public static string CommListSummary => ResourceManager.GetString("CommListSummary", resourceCulture);
+
+	public static string CommRawApplied => ResourceManager.GetString("CommRawApplied", resourceCulture);
+
+	public static string CommResetQuestion => ResourceManager.GetString("CommResetQuestion", resourceCulture);
+
+	public static string CommImportNotAProfile => ResourceManager.GetString("CommImportNotAProfile", resourceCulture);
+
+	public static string CommImportInvalid => ResourceManager.GetString("CommImportInvalid", resourceCulture);
+
+	public static string CommImportLoaded => ResourceManager.GetString("CommImportLoaded", resourceCulture);
+
+	public static string CommImportFailed => ResourceManager.GetString("CommImportFailed", resourceCulture);
+
+	public static string IntegrTitle => ResourceManager.GetString("IntegrTitle", resourceCulture);
+
+	public static string IntegrIntro => ResourceManager.GetString("IntegrIntro", resourceCulture);
+
+	public static string IntegrNewznabHeader => ResourceManager.GetString("IntegrNewznabHeader", resourceCulture);
+
+	public static string IntegrDisabled => ResourceManager.GetString("IntegrDisabled", resourceCulture);
+
+	public static string IntegrDisabledNoServer => ResourceManager.GetString("IntegrDisabledNoServer", resourceCulture);
+
+	public static string IntegrDisabledNoKey => ResourceManager.GetString("IntegrDisabledNoKey", resourceCulture);
+
+	public static string IntegrNewznabHint => ResourceManager.GetString("IntegrNewznabHint", resourceCulture);
+
+	public static string IntegrServerLabel => ResourceManager.GetString("IntegrServerLabel", resourceCulture);
+
+	public static string IntegrServerHint => ResourceManager.GetString("IntegrServerHint", resourceCulture);
+
+	public static string IntegrApiKeyLabel => ResourceManager.GetString("IntegrApiKeyLabel", resourceCulture);
+
+	public static string IntegrReplace => ResourceManager.GetString("IntegrReplace", resourceCulture);
+
+	public static string IntegrKeyMaskedHint => ResourceManager.GetString("IntegrKeyMaskedHint", resourceCulture);
+
+	public static string IntegrOmdbHeader => ResourceManager.GetString("IntegrOmdbHeader", resourceCulture);
+
+	public static string IntegrOmdbHint => ResourceManager.GetString("IntegrOmdbHint", resourceCulture);
+
+	public static string IntegrOmdbKeyHint => ResourceManager.GetString("IntegrOmdbKeyHint", resourceCulture);
+
+	public static string IntegrNotSet => ResourceManager.GetString("IntegrNotSet", resourceCulture);
+
+	public static string CleanupHeader => ResourceManager.GetString("CleanupHeader", resourceCulture);
+
+	public static string CleanupIntro => ResourceManager.GetString("CleanupIntro", resourceCulture);
+
+	public static string CleanupExtensionTip => ResourceManager.GetString("CleanupExtensionTip", resourceCulture);
+
+	public static string CleanupAdd => ResourceManager.GetString("CleanupAdd", resourceCulture);
+
+	public static string CleanupRemove => ResourceManager.GetString("CleanupRemove", resourceCulture);
+
+	public static string CleanupAddSuggestions => ResourceManager.GetString("CleanupAddSuggestions", resourceCulture);
+
+	public static string CleanupSuggestions => ResourceManager.GetString("CleanupSuggestions", resourceCulture);
+
+	public static string CleanupExternalNzbGet => ResourceManager.GetString("CleanupExternalNzbGet", resourceCulture);
 }

@@ -12,9 +12,17 @@ namespace Spotnet.Tests;
 /// forgotten, so it drifts: it claimed .NET 8 well after the move to .NET 10. These tests
 /// hold it to the platform the application actually ships on.
 /// </summary>
+[CollectionDefinition("UserLanguage", DisableParallelization = true)]
+public sealed class UserLanguageCollection { }
+
 [Collection("UserLanguage")]
-public sealed class AboutWindowContentTests
+public sealed class AboutWindowContentTests : IDisposable
 {
+    public void Dispose()
+    {
+        UserLanguageHelper.Culture = CultureInfo.CreateSpecificCulture("nl");
+    }
+
     private static string[] Headlines() => new[]
     {
         Words.AboutChangeRuntime,

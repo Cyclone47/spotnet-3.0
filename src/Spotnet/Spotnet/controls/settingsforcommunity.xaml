@@ -1,6 +1,7 @@
 <UserControl x:Class="Spotnet.Controls.SettingsForCommunity"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:loc="clr-namespace:Spotnet.Localization"
              FontSize="{Binding ElementName=VisibilityVmProxy, Path=DataContext.FontSize, Mode=OneWay}">
   <UserControl.Resources>
     <Style x:Key="FieldLabel" TargetType="TextBlock">
@@ -15,8 +16,8 @@
   </UserControl.Resources>
 
   <StackPanel Orientation="Vertical" Margin="4">
-    <TextBlock Text="Community" FontWeight="Bold" FontSize="15" Margin="0,0,0,4" />
-    <TextBlock Text="Spots, reacties en klachten lopen over Usenet en blijven altijd werken. Hieronder staat waar deze Spotnet zijn moderatielijsten en community-diensten vandaan haalt."
+    <TextBlock Text="{loc:Loc CommTitle}" FontWeight="Bold" FontSize="15" Margin="0,0,0,4" />
+    <TextBlock Text="{loc:Loc CommIntro}"
                TextWrapping="Wrap" Opacity="0.8" Margin="0,0,0,12" />
 
     <!-- Status -->
@@ -24,94 +25,110 @@
       <DockPanel LastChildFill="False">
         <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
           <StackPanel Orientation="Horizontal">
-            <TextBlock Text="Community: " FontWeight="SemiBold" />
+            <TextBlock Text="{loc:Loc CommNameLabel}" FontWeight="SemiBold" />
             <TextBlock Name="CommunityNameTextBlock" Text="Spotnet NL" FontWeight="Bold" />
           </StackPanel>
           <TextBlock Name="ListStatusTextBlock" Text="" Opacity="0.75" FontSize="11" Margin="0,3,0,0" />
         </StackPanel>
-        <Button Name="RefreshListsButton" Content="Nu bijwerken" DockPanel.Dock="Right"
+        <Button Name="RefreshListsButton" Content="{loc:Loc CommRefreshNow}" DockPanel.Dock="Right"
                 Padding="14,6" VerticalAlignment="Center" Click="RefreshListsButton_Click" />
       </DockPanel>
     </Border>
 
     <!-- Newsgroups -->
-    <TextBlock Text="Newsgroups" FontWeight="SemiBold" Margin="0,2,0,6" />
+    <TextBlock Text="{loc:Loc CommNewsgroups}" FontWeight="SemiBold" Margin="0,2,0,6" />
     <StackPanel Style="{StaticResource FieldRow}">
-      <TextBlock Text="Spots:" Style="{StaticResource FieldLabel}" />
+      <TextBlock Text="{loc:Loc CommSpotsGroup}" Style="{StaticResource FieldLabel}" />
       <TextBox Name="SpotsGroupTextBox" Width="260" />
     </StackPanel>
     <StackPanel Style="{StaticResource FieldRow}">
-      <TextBlock Text="Reacties:" Style="{StaticResource FieldLabel}" />
+      <TextBlock Text="{loc:Loc CommCommentsGroup}" Style="{StaticResource FieldLabel}" />
       <TextBox Name="CommentsGroupTextBox" Width="260" />
     </StackPanel>
     <StackPanel Style="{StaticResource FieldRow}">
-      <TextBlock Text="Klachten:" Style="{StaticResource FieldLabel}" />
+      <TextBlock Text="{loc:Loc CommReportsGroup}" Style="{StaticResource FieldLabel}" />
       <TextBox Name="ReportsGroupTextBox" Width="260" />
     </StackPanel>
     <StackPanel Style="{StaticResource FieldRow}">
-      <TextBlock Text="NZB:" Style="{StaticResource FieldLabel}" />
+      <TextBlock Text="{loc:Loc CommNzbGroup}" Style="{StaticResource FieldLabel}" />
       <TextBox Name="NzbGroupTextBox" Width="260" />
     </StackPanel>
 
     <!-- Moderation -->
-    <TextBlock Text="Moderatie" FontWeight="SemiBold" Margin="0,14,0,6" />
-    <CheckBox Name="ModerationEnabledCheckBox" Content="Moderatielijsten van de community gebruiken"
+    <TextBlock Text="{loc:Loc CommModeration}" FontWeight="SemiBold" Margin="0,14,0,6" />
+    <CheckBox Name="ModerationEnabledCheckBox" Content="{loc:Loc CommUseModerationLists}"
               FontWeight="SemiBold" Margin="0,2,0,4" Click="ModerationEnabledCheckBox_Click" />
-    <TextBlock Text="Zonder deze lijsten ziet u alles wat er wordt gepost, inclusief spam en meldingen die de community heeft afgekeurd."
+    <TextBlock Text="{loc:Loc CommModerationHint}"
                TextWrapping="Wrap" Opacity="0.7" FontSize="11" Margin="22,0,0,6" />
     <StackPanel Style="{StaticResource FieldRow}" Margin="22,0,0,4">
-      <TextBlock Text="Bijwerken elke" VerticalAlignment="Center" Margin="0,0,8,0" />
+      <TextBlock Text="{loc:Loc CommRefreshEvery}" VerticalAlignment="Center" Margin="0,0,8,0" />
       <TextBox Name="IntervalTextBox" Width="60" VerticalAlignment="Center" />
-      <TextBlock Text="minuten (0 = alleen bij opstarten)" VerticalAlignment="Center" Margin="8,0,0,0" Opacity="0.7" />
+      <TextBlock Text="{loc:Loc CommRefreshEveryUnit}" VerticalAlignment="Center" Margin="8,0,0,0" Opacity="0.7" />
+    </StackPanel>
+
+    <!-- Classic lists -->
+    <CheckBox Name="UseClassicListsCheckBox" Content="{loc:Loc CommUseClassicLists}"
+              FontWeight="SemiBold" Margin="22,6,0,4" Click="UseClassicListsCheckBox_Click" />
+    <TextBlock Text="{loc:Loc CommUseClassicListsHint}"
+               TextWrapping="Wrap" Opacity="0.7" FontSize="11" Margin="44,0,0,6" />
+    <StackPanel Name="ClassicListsPanel" Margin="44,0,0,4">
+      <StackPanel Style="{StaticResource FieldRow}">
+        <TextBlock Text="{loc:Loc CommClassicWhitelist}" Style="{StaticResource FieldLabel}" />
+        <TextBox Name="ClassicWhitelistUrlTextBox" Width="400" />
+      </StackPanel>
+      <StackPanel Style="{StaticResource FieldRow}">
+        <TextBlock Text="{loc:Loc CommClassicBlacklist}" Style="{StaticResource FieldLabel}" />
+        <TextBox Name="ClassicBlacklistUrlTextBox" Width="400" />
+      </StackPanel>
     </StackPanel>
 
     <!-- Servers -->
-    <Expander Header="Servers van de community" Margin="0,10,0,4">
+    <Expander Header="{loc:Loc CommServersHeader}" Margin="0,10,0,4">
       <Border Background="{DynamicResource DialogBackgroundBrush}" CornerRadius="4" Padding="10" Margin="0,4,0,0">
         <StackPanel Orientation="Vertical">
           <StackPanel Style="{StaticResource FieldRow}">
-            <TextBlock Text="Whitelist:" Style="{StaticResource FieldLabel}" />
+            <TextBlock Text="{loc:Loc CommWhitelist}" Style="{StaticResource FieldLabel}" />
             <TextBox Name="WhitelistUrlTextBox" Width="420" />
           </StackPanel>
           <StackPanel Style="{StaticResource FieldRow}">
-            <TextBlock Text="Blacklist:" Style="{StaticResource FieldLabel}" />
+            <TextBlock Text="{loc:Loc CommBlacklist}" Style="{StaticResource FieldLabel}" />
             <TextBox Name="BlacklistUrlTextBox" Width="420" />
           </StackPanel>
           <StackPanel Style="{StaticResource FieldRow}">
-            <TextBlock Text="Spot-whitelist:" Style="{StaticResource FieldLabel}" />
+            <TextBlock Text="{loc:Loc CommSpotWhitelist}" Style="{StaticResource FieldLabel}" />
             <TextBox Name="SpotWhitelistUrlTextBox" Width="420" />
           </StackPanel>
           <StackPanel Style="{StaticResource FieldRow}">
-            <TextBlock Text="Spot-blacklist:" Style="{StaticResource FieldLabel}" />
+            <TextBlock Text="{loc:Loc CommSpotBlacklist}" Style="{StaticResource FieldLabel}" />
             <TextBox Name="SpotBlacklistUrlTextBox" Width="420" />
           </StackPanel>
           <StackPanel Style="{StaticResource FieldRow}">
-            <TextBlock Text="Moderatorsleutels:" Style="{StaticResource FieldLabel}" />
+            <TextBlock Text="{loc:Loc CommModeratorKeys}" Style="{StaticResource FieldLabel}" />
             <TextBox Name="ModeratorKeysUrlTextBox" Width="420" />
           </StackPanel>
           <Separator Margin="0,8,0,8" />
           <StackPanel Style="{StaticResource FieldRow}">
-            <TextBlock Text="Feedbacksite:" Style="{StaticResource FieldLabel}" />
+            <TextBlock Text="{loc:Loc CommFeedbackSite}" Style="{StaticResource FieldLabel}" />
             <TextBox Name="ResponseSiteUrlTextBox" Width="420" />
           </StackPanel>
           <StackPanel Style="{StaticResource FieldRow}">
-            <TextBlock Text="Log-upload:" Style="{StaticResource FieldLabel}" />
+            <TextBlock Text="{loc:Loc CommLogUpload}" Style="{StaticResource FieldLabel}" />
             <TextBox Name="LogUploadUrlTextBox" Width="420" />
           </StackPanel>
           <StackPanel Style="{StaticResource FieldRow}">
-            <TextBlock Text="Updatefouten:" Style="{StaticResource FieldLabel}" />
+            <TextBlock Text="{loc:Loc CommUpgradeFailures}" Style="{StaticResource FieldLabel}" />
             <TextBox Name="UpgradeFailuresUrlTextBox" Width="420" />
           </StackPanel>
           <StackPanel Style="{StaticResource FieldRow}">
-            <TextBlock Text="Promo-map:" Style="{StaticResource FieldLabel}" />
+            <TextBlock Text="{loc:Loc CommPromoFolder}" Style="{StaticResource FieldLabel}" />
             <TextBox Name="PromoFolderUrlTextBox" Width="420" />
           </StackPanel>
           <Separator Margin="0,8,0,8" />
-          <CheckBox Name="RequireSignedListsCheckBox" Content="Alleen ondertekende lijsten accepteren" Margin="0,2,0,2" />
-          <TextBlock Text="Vereist dat de community naast elke lijst een .sig-bestand publiceert. Laat uit als uw community nog niet ondertekent."
+          <CheckBox Name="RequireSignedListsCheckBox" Content="{loc:Loc CommRequireSigned}" Margin="0,2,0,2" />
+          <TextBlock Text="{loc:Loc CommRequireSignedHint}"
                      TextWrapping="Wrap" Opacity="0.7" FontSize="11" Margin="22,0,0,6" />
           <StackPanel Style="{StaticResource FieldRow}">
-            <TextBlock Text="Publieke sleutel:" Style="{StaticResource FieldLabel}" />
+            <TextBlock Text="{loc:Loc CommPublicKey}" Style="{StaticResource FieldLabel}" />
             <TextBox Name="SignatureKeyTextBox" Width="420" Height="46" TextWrapping="Wrap"
                      AcceptsReturn="True" VerticalScrollBarVisibility="Auto" />
           </StackPanel>
@@ -124,12 +141,12 @@
     <Border Name="RawPanel" Visibility="Collapsed" Background="{DynamicResource DialogBackgroundBrush}"
             CornerRadius="4" Padding="10" Margin="0,8,0,4">
       <StackPanel Orientation="Vertical">
-        <TextBlock Text="Volledige configuratie (community_config.json)" FontWeight="SemiBold" Margin="0,0,0,6" />
+        <TextBlock Text="{loc:Loc CommRawHeader}" FontWeight="SemiBold" Margin="0,0,0,6" />
         <TextBox Name="RawJsonTextBox" Height="260" AcceptsReturn="True" AcceptsTab="True"
                  FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
                  TextWrapping="NoWrap" />
         <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-          <Button Name="ApplyRawButton" Content="Overnemen in de velden" Padding="10,3" Click="ApplyRawButton_Click" />
+          <Button Name="ApplyRawButton" Content="{loc:Loc CommApplyRaw}" Padding="10,3" Click="ApplyRawButton_Click" />
           <TextBlock Name="RawStatusTextBlock" Text="" VerticalAlignment="Center" Margin="12,0,0,0" TextWrapping="Wrap" />
         </StackPanel>
       </StackPanel>
@@ -137,10 +154,10 @@
 
     <Separator Margin="0,12,0,0" />
     <StackPanel Orientation="Horizontal" Margin="0,10,0,4">
-      <Button Name="ResetButton" Content="Herstel standaardwaarden" Padding="10,4" Click="ResetButton_Click" />
-      <Button Name="ExportButton" Content="Exporteer profiel…" Margin="8,0,0,0" Padding="10,4" Click="ExportButton_Click" />
-      <Button Name="ImportButton" Content="Importeer profiel…" Margin="8,0,0,0" Padding="10,4" Click="ImportButton_Click" />
-      <Button Name="ToggleRawButton" Content="Toon raw" Margin="8,0,0,0" Padding="10,4" Click="ToggleRawButton_Click" />
+      <Button Name="ResetButton" Content="{loc:Loc CommResetDefaults}" Padding="10,4" Click="ResetButton_Click" />
+      <Button Name="ExportButton" Content="{loc:Loc CommExportProfile}" Margin="8,0,0,0" Padding="10,4" Click="ExportButton_Click" />
+      <Button Name="ImportButton" Content="{loc:Loc CommImportProfile}" Margin="8,0,0,0" Padding="10,4" Click="ImportButton_Click" />
+      <Button Name="ToggleRawButton" Content="{loc:Loc CommShowRaw}" Margin="8,0,0,0" Padding="10,4" Click="ToggleRawButton_Click" />
     </StackPanel>
     <TextBlock Name="ValidationTextBlock" Text="" TextWrapping="Wrap" Foreground="OrangeRed" Margin="0,4,0,0" />
   </StackPanel>

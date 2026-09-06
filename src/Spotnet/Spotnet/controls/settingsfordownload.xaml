@@ -1,4 +1,4 @@
-<UserControl x:Class="Spotnet.Controls.SettingsForDownload" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:viewModel="clr-namespace:Spotnet.ViewModel" xmlns:controls="clr-namespace:Spotnet.Controls" FontSize="{Binding ElementName=VisibilityVmProxy, Path=DataContext.FontSize, Mode=OneWay}">
+<UserControl x:Class="Spotnet.Controls.SettingsForDownload" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:Spotnet.Localization" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:viewModel="clr-namespace:Spotnet.ViewModel" xmlns:controls="clr-namespace:Spotnet.Controls" FontSize="{Binding ElementName=VisibilityVmProxy, Path=DataContext.FontSize, Mode=OneWay}">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <Storyboard x:Key="FieldAnimationStoryboard">
@@ -8,18 +8,18 @@
   </FrameworkElement.Resources>
   <StackPanel Orientation="Vertical">
     <StackPanel Orientation="Vertical" Margin="0,7,0,0">
-      <TextBlock Text="{x:Static p:Words.SelectDownloadsFolder}" />
+      <TextBlock Text="{loc:Loc SelectDownloadsFolder}" />
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <TextBox Name="DownloadFolderTextBox" Grid.Column="0" GotFocus="DownloadFolderTextBox_OnGotFocus" TextChanged="DownloadFolderTextBox_OnTextChanged" />
-        <Button Grid.Column="1" Margin="5,0,0,0" Content="{x:Static p:Words.Browse}" Click="BrowseDownloaderPath_OnClick" />
+        <Button Grid.Column="1" Margin="5,0,0,0" Content="{loc:Loc Browse}" Click="BrowseDownloaderPath_OnClick" />
       </Grid>
     </StackPanel>
     <StackPanel Orientation="Vertical" Margin="0,7,0,0">
-      <CheckBox Name="EnableScheduleCheckBox" Content="{x:Static p:Words.DownloaderScheduleText}" Click="EnableScheduleCheckBox_OnClick" />
+      <CheckBox Name="EnableScheduleCheckBox" Content="{loc:Loc DownloaderScheduleText}" Click="EnableScheduleCheckBox_OnClick" />
       <StackPanel Orientation="Horizontal" Margin="25,0">
         <Border Name="DownloaderScheduleStartTimeTextBoxBorder" BorderBrush="#00FFFFFF" BorderThickness="2">
           <TextBox Name="DownloaderScheduleStartTime" TabIndex="2" Text="00:00" MaxLength="5" Width="52" TextAlignment="Center" IsEnabled="False" GotFocus="DownloaderScheduleTime_GotFocus" TextChanged="DownloaderScheduleOnTimeChanged" />
@@ -31,41 +31,41 @@
       </StackPanel>
     </StackPanel>
     <StackPanel Orientation="Vertical" Margin="0,7,0,0">
-      <CheckBox Name="SpeedLimitCheckBox" Content="{x:Static p:Words.SpeedLimit}" Click="SpeedLimitCheckBox_OnClick" />
+      <CheckBox Name="SpeedLimitCheckBox" Content="{loc:Loc SpeedLimit}" Click="SpeedLimitCheckBox_OnClick" />
       <Border Name="SpeedLimitTextBoxBorder" BorderBrush="#00FFFFFF" HorizontalAlignment="Left" Margin="25,0" BorderThickness="2">
-        <TextBox Name="SpeedLimitTextBox" TabIndex="2" ToolTip="{x:Static p:Words.SpeedLimit}" Width="50" GotFocus="SpeedLimit_GotFocus" TextChanged="SpeedLimitTextBox_OnTextChanged" />
+        <TextBox Name="SpeedLimitTextBox" TabIndex="2" ToolTip="{loc:Loc SpeedLimit}" Width="50" GotFocus="SpeedLimit_GotFocus" TextChanged="SpeedLimitTextBox_OnTextChanged" />
       </Border>
     </StackPanel>
     <StackPanel Orientation="Vertical" Margin="0,7,0,0">
-      <TextBlock Text="{x:Static p:Words.MenuRemoveFilesOnDownloadRemove}" />
+      <TextBlock Text="{loc:Loc MenuRemoveFilesOnDownloadRemove}" />
       <ComboBox Name="RemoveFilesCombo">
-        <TextBlock Text="{x:Static p:Words.YesWord}" />
-        <TextBlock Text="{x:Static p:Words.NoWord}" />
-        <TextBlock Text="{x:Static p:Words.Ask}" />
+        <TextBlock Text="{loc:Loc YesWord}" />
+        <TextBlock Text="{loc:Loc NoWord}" />
+        <TextBlock Text="{loc:Loc Ask}" />
       </ComboBox>
     </StackPanel>
-    <CheckBox Name="RemovePar2Files" Content="{x:Static p:Words.RemovePar2Files}" Margin="0,7,0,0" />
-    <CheckBox Name="ShutdownPcAfterDownloads" Content="{x:Static p:Words.MenuShutdownPCAfterDownloads}" Margin="0,7,0,0" />
-    <CheckBox Name="NotifyAboutDownloadComplete" Content="{x:Static p:Words.MenuNotifyAboutDownloadComplete}" Margin="0,7,0,0" />
+    <CheckBox Name="RemovePar2Files" Content="{loc:Loc RemovePar2Files}" Margin="0,7,0,0" />
+    <CheckBox Name="ShutdownPcAfterDownloads" Content="{loc:Loc MenuShutdownPCAfterDownloads}" Margin="0,7,0,0" />
+    <CheckBox Name="NotifyAboutDownloadComplete" Content="{loc:Loc MenuNotifyAboutDownloadComplete}" Margin="0,7,0,0" />
     <StackPanel Name="CleanupPanel" Margin="0,18,0,0">
-      <TextBlock Text="Opruimen van bestanden" FontWeight="SemiBold" />
-      <TextBlock Text="Verwijder deze bestandstypen na een geslaagde download en het uitpakken. Een lege lijst schakelt opruimen uit." TextWrapping="Wrap" Margin="0,5,0,8" />
+      <TextBlock Text="{loc:Loc CleanupHeader}" FontWeight="SemiBold" />
+      <TextBlock Text="{loc:Loc CleanupIntro}" TextWrapping="Wrap" Margin="0,5,0,8" />
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <TextBox Name="CleanupExtensionInput" ToolTip="Bijvoorbeeld txt, .jpg of docx" KeyDown="CleanupExtensionInput_OnKeyDown" />
-        <Button Grid.Column="1" Content="Toevoegen" Click="CleanupAdd_OnClick" Margin="6,0,0,0" />
+        <TextBox Name="CleanupExtensionInput" ToolTip="{loc:Loc CleanupExtensionTip}" KeyDown="CleanupExtensionInput_OnKeyDown" />
+        <Button Grid.Column="1" Content="{loc:Loc CleanupAdd}" Click="CleanupAdd_OnClick" Margin="6,0,0,0" />
       </Grid>
       <TextBlock Name="CleanupError" TextWrapping="Wrap" Foreground="{DynamicResource NoticeForegroundBrush}" Margin="0,4,0,0" Visibility="Collapsed" />
       <ListBox Name="CleanupExtensionsList" Height="110" Margin="0,6,0,6" SelectionMode="Extended" />
       <WrapPanel>
-        <Button Content="Verwijderen" Click="CleanupRemove_OnClick" Margin="0,0,6,0" />
-        <Button Content="Suggesties toevoegen" Click="CleanupSuggestions_OnClick" />
+        <Button Content="{loc:Loc CleanupRemove}" Click="CleanupRemove_OnClick" Margin="0,0,6,0" />
+        <Button Content="{loc:Loc CleanupAddSuggestions}" Click="CleanupSuggestions_OnClick" />
       </WrapPanel>
-      <TextBlock Text="Suggesties: nfo, sfv, srr, url, lnk, txt, doc, docx, htm en html. Afbeeldingen kun je zelf toevoegen; ook covers worden dan verwijderd." TextWrapping="Wrap" Margin="0,6,0,0" />
-      <TextBlock Name="CleanupExternalNotice" Text="Bij externe NZBGet stel je het opruimen in NZBGet in." TextWrapping="Wrap" Visibility="Collapsed" />
+      <TextBlock Text="{loc:Loc CleanupSuggestions}" TextWrapping="Wrap" Margin="0,6,0,0" />
+      <TextBlock Name="CleanupExternalNotice" Text="{loc:Loc CleanupExternalNzbGet}" TextWrapping="Wrap" Visibility="Collapsed" />
     </StackPanel>
   </StackPanel>
 </UserControl>

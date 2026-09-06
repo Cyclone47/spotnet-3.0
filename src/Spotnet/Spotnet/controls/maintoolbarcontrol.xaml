@@ -1,4 +1,4 @@
-<UserControl x:Class="Spotnet.Controls.MainToolBarControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:vm="clr-namespace:Spotnet.ViewModel" xmlns:controls="clr-namespace:Spotnet.Controls" xmlns:converters="clr-namespace:Spotnet.Converters">
+<UserControl x:Class="Spotnet.Controls.MainToolBarControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:Spotnet.Localization" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:vm="clr-namespace:Spotnet.ViewModel" xmlns:controls="clr-namespace:Spotnet.Controls" xmlns:converters="clr-namespace:Spotnet.Converters">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <converters:TrueToFalseConverter x:Key="InverseBooleanConverter" />
@@ -9,37 +9,37 @@
     <FrameworkElement Name="SpotsListVmProxy" DataContext="{Binding SpotsList, Source={StaticResource Locator}}" />
     <FrameworkElement Name="VisibilityVmProxy" DataContext="{Binding Visibility, Source={StaticResource Locator}}" />
     <Menu Name="MainMenu" DockPanel.Dock="Left" VerticalAlignment="Center" ToolBar.OverflowMode="Never" HorizontalAlignment="Stretch" FontSize="{DynamicResource MenuFontSize}" Background="{x:Null}" BorderBrush="{x:Null}">
-      <MenuItem Name="MenuItem1" Header="{x:Static p:Words.MenuFile}">
-        <MenuItem Name="UpdateMenuItem" Header="{x:Static p:Words.MenuDatabaseUpdate}" Command="vm:CustomCommands.UpdateDbCommand" InputGestureText="Ctrl+U">
+      <MenuItem Name="MenuItem1" Header="{loc:Loc MenuFile}">
+        <MenuItem Name="UpdateMenuItem" Header="{loc:Loc MenuDatabaseUpdate}" Command="vm:CustomCommands.UpdateDbCommand" InputGestureText="Ctrl+U">
           <MenuItem.Icon>
             <TextBlock Text="" Style="{StaticResource FontAwesomeMenuPics}" />
           </MenuItem.Icon>
         </MenuItem>
         <Separator />
-        <MenuItem Name="Open" Header="{x:Static p:Words.MenuOpenNZB}" Command="vm:CustomCommands.OpenNzbCommand" InputGestureText="Ctrl+O">
+        <MenuItem Name="Open" Header="{loc:Loc MenuOpenNZB}" Command="vm:CustomCommands.OpenNzbCommand" InputGestureText="Ctrl+O">
           <MenuItem.Icon>
             <TextBlock Text="" Style="{StaticResource FontAwesomeMenuPics}" />
           </MenuItem.Icon>
         </MenuItem>
-        <MenuItem Name="OpenSpotlink" Header="{x:Static p:Words.MenuOpenSpotlink}" Command="vm:CustomCommands.OpenSpotlinkCommand" InputGestureText="Ctrl+L">
+        <MenuItem Name="OpenSpotlink" Header="{loc:Loc MenuOpenSpotlink}" Command="vm:CustomCommands.OpenSpotlinkCommand" InputGestureText="Ctrl+L">
           <MenuItem.Icon>
             <TextBlock Text="" Style="{StaticResource FontAwesomeMenuPics}" />
           </MenuItem.Icon>
         </MenuItem>
-        <MenuItem Name="PostNewNzb" Header="{x:Static p:Words.MenuPost}" Command="vm:CustomCommands.AddNewSpotCommand" InputGestureText="Ctrl+N">
+        <MenuItem Name="PostNewNzb" Header="{loc:Loc MenuPost}" Command="vm:CustomCommands.AddNewSpotCommand" InputGestureText="Ctrl+N">
           <MenuItem.Icon>
             <TextBlock Text="" Style="{StaticResource FontAwesomeMenuPics}" />
           </MenuItem.Icon>
         </MenuItem>
         <Separator />
-        <MenuItem Name="ExitMenuItem" Header="{x:Static p:Words.MenuClose}" InputGestureText="Alt+F4" Click="ExitMenuItem_Click">
+        <MenuItem Name="ExitMenuItem" Header="{loc:Loc MenuClose}" InputGestureText="Alt+F4" Click="ExitMenuItem_Click">
           <MenuItem.Icon>
             <TextBlock Text="" Style="{StaticResource FontAwesomeMenuPics}" />
           </MenuItem.Icon>
         </MenuItem>
       </MenuItem>
-      <MenuItem Name="MenuItem3" Header="{x:Static p:Words.MenuProperties}">
-        <MenuItem Name="ViewsMenuItem" Header="{x:Static p:Words.MenuView}">
+      <MenuItem Name="MenuItem3" Header="{loc:Loc MenuProperties}">
+        <MenuItem Name="ViewsMenuItem" Header="{loc:Loc MenuView}">
           <MenuItem.Icon>
             <TextBlock Text="" Style="{StaticResource FontAwesomeMenuPics}" />
           </MenuItem.Icon>
@@ -47,11 +47,11 @@
                the menu in the left panel, where they had only whatever width the menu did
                not take and were clipped to slivers. The checkmarks follow the view model,
                so they need no code to stay in step. -->
-          <MenuItem Name="SpotsListNoDetailsMenuItem" Header="{x:Static p:Words.MenuSpotsListNoDetails}" IsCheckable="True" IsChecked="{Binding ElementName=SpotsListVmProxy, Path=DataContext.SpotsListNoDetails, Mode=OneWay}" Click="SpotsListNoDetails_Click" />
-          <MenuItem Name="SpotsListWithDetailsMenuItem" Header="{x:Static p:Words.MenuSpotsListDetails}" IsCheckable="True" IsChecked="{Binding ElementName=SpotsListVmProxy, Path=DataContext.SpotsListWithDetails, Mode=OneWay}" Click="SpotsListWithDetails_Click" />
-          <MenuItem Name="SpotsListThumbsMenuItem" Header="{x:Static p:Words.MenuSpotsListPics}" IsCheckable="True" IsChecked="{Binding ElementName=SpotsListVmProxy, Path=DataContext.SpotsListPicsOnly, Mode=OneWay}" Click="SpotsListThumbs_Click" />
+          <MenuItem Name="SpotsListNoDetailsMenuItem" Header="{loc:Loc MenuSpotsListNoDetails}" IsCheckable="True" IsChecked="{Binding ElementName=SpotsListVmProxy, Path=DataContext.SpotsListNoDetails, Mode=OneWay}" Click="SpotsListNoDetails_Click" />
+          <MenuItem Name="SpotsListWithDetailsMenuItem" Header="{loc:Loc MenuSpotsListDetails}" IsCheckable="True" IsChecked="{Binding ElementName=SpotsListVmProxy, Path=DataContext.SpotsListWithDetails, Mode=OneWay}" Click="SpotsListWithDetails_Click" />
+          <MenuItem Name="SpotsListThumbsMenuItem" Header="{loc:Loc MenuSpotsListPics}" IsCheckable="True" IsChecked="{Binding ElementName=SpotsListVmProxy, Path=DataContext.SpotsListPicsOnly, Mode=OneWay}" Click="SpotsListThumbs_Click" />
           <Separator />
-          <MenuItem Name="sCol" Header="{x:Static p:Words.MenuColumns}" IsEnabled="{Binding ElementName=SpotsListVmProxy, Path=DataContext.SpotsListPicsOnly, Converter={StaticResource InverseBooleanConverter}, Mode=OneWay}" DataContext="{Binding SpotsList, Source={StaticResource Locator}}" SubmenuOpened="sCol_SubmenuOpened">
+          <MenuItem Name="sCol" Header="{loc:Loc MenuColumns}" IsEnabled="{Binding ElementName=SpotsListVmProxy, Path=DataContext.SpotsListPicsOnly, Converter={StaticResource InverseBooleanConverter}, Mode=OneWay}" DataContext="{Binding SpotsList, Source={StaticResource Locator}}" SubmenuOpened="sCol_SubmenuOpened">
             <MenuItem.Icon>
               <TextBlock Text="" Style="{StaticResource FontAwesomeMenuPics}" />
             </MenuItem.Icon>
@@ -59,7 +59,7 @@
           </MenuItem>
           <controls:ElementsVisibilityMenu />
           <controls:SpotsListTypeMenu />
-          <MenuItem Name="Lettergrootte" Header="{x:Static p:Words.MenuFont}" SubmenuOpened="Lettergrootte_SubmenuOpened">
+          <MenuItem Name="Lettergrootte" Header="{loc:Loc MenuFont}" SubmenuOpened="Lettergrootte_SubmenuOpened">
             <MenuItem.Icon>
               <TextBlock Text="" Style="{StaticResource FontAwesomeMenuPics}" />
             </MenuItem.Icon>
@@ -71,7 +71,7 @@
             <MenuItem Name="Let20" Header="20" IsCheckable="True" Click="Let20_Click" />
             <MenuItem Name="Let24" Header="24" IsCheckable="True" Click="Let24_Click" />
           </MenuItem>
-          <MenuItem Name="SpotFontSize" Header="{x:Static p:Words.MenuSpotFontSize}" SubmenuOpened="SpotFontSize_SubmenuOpened">
+          <MenuItem Name="SpotFontSize" Header="{loc:Loc MenuSpotFontSize}" SubmenuOpened="SpotFontSize_SubmenuOpened">
             <MenuItem.Icon>
               <TextBlock Text="" Style="{StaticResource FontAwesomeMenuPics}" />
             </MenuItem.Icon>
@@ -83,11 +83,11 @@
             <MenuItem Name="SpotLet20" Header="20" IsCheckable="True" Click="SpotLet20_Click" />
             <MenuItem Name="SpotLet24" Header="24" IsCheckable="True" Click="SpotLet24_Click" />
           </MenuItem>
-          <MenuItem Name="SpotsThemeChange" Header="{x:Static p:Words.MenuSpotsThemeChange}" Click="SpotsThemeChange_Click" />
-          <MenuItem Name="FiltersListChange" Header="{x:Static p:Words.MenuFiltersListChange}" Click="FiltersListChange_Click" />
+          <MenuItem Name="SpotsThemeChange" Header="{loc:Loc MenuSpotsThemeChange}" Click="SpotsThemeChange_Click" />
+          <MenuItem Name="FiltersListChange" Header="{loc:Loc MenuFiltersListChange}" Click="FiltersListChange_Click" />
         </MenuItem>
         <Separator />
-        <MenuItem Name="ProviderMenuItem" Header="{x:Static p:Words.MenuProvider}" Command="vm:CustomCommands.SelectProviderCommand" InputGestureText="Ctrl+P">
+        <MenuItem Name="ProviderMenuItem" Header="{loc:Loc MenuProvider}" Command="vm:CustomCommands.SelectProviderCommand" InputGestureText="Ctrl+P">
           <MenuItem.Icon>
             <TextBlock Text="" Style="{StaticResource FontAwesomeMenuPics}" />
           </MenuItem.Icon>
@@ -102,23 +102,23 @@
           <MenuItem Name="StyleModernLight" Header="Modern Light" IsCheckable="True" Click="StyleModernLight_Click" />
           <MenuItem Name="StyleModernDark" Header="Modern Dark" IsCheckable="True" Click="StyleModernDark_Click" />
         </MenuItem>
-        <MenuItem Name="MenuItem4" Header="{x:Static p:Words.MenuLanguage}" SubmenuOpened="Language_OnSubmenuOpened">
+        <MenuItem Name="MenuItem4" Header="{loc:Loc MenuLanguage}" SubmenuOpened="Language_OnSubmenuOpened">
           <MenuItem.Icon>
             <TextBlock Name="LanguageLabel" Text="xx" FontWeight="Bold" HorizontalAlignment="Center" />
           </MenuItem.Icon>
-          <MenuItem Name="MenuLangEnglish" Header="{x:Static p:Words.MenuLangEnglish}" IsCheckable="True" Click="LangEnglish_Click" />
-          <MenuItem Name="MenuLangDutch" Header="{x:Static p:Words.MenuLangDutch}" IsCheckable="True" Background="#0000FFFF" Click="LangDutch_Click" />
+          <MenuItem Name="MenuLangEnglish" Header="{loc:Loc MenuLangEnglish}" IsCheckable="True" Click="LangEnglish_Click" />
+          <MenuItem Name="MenuLangDutch" Header="{loc:Loc MenuLangDutch}" IsCheckable="True" Background="#0000FFFF" Click="LangDutch_Click" />
         </MenuItem>
-        <MenuItem Name="Map" Header="{x:Static p:Words.MenuDownloadDir}" Command="vm:CustomCommands.DownloadFolderChangeCommand" InputGestureText="Ctrl+D" />
-        <MenuItem Name="DownloadKnop" Header="{x:Static p:Words.MenuDnlMode}" SubmenuOpened="DownloadKnop_SubmenuOpened">
+        <MenuItem Name="Map" Header="{loc:Loc MenuDownloadDir}" Command="vm:CustomCommands.DownloadFolderChangeCommand" InputGestureText="Ctrl+D" />
+        <MenuItem Name="DownloadKnop" Header="{loc:Loc MenuDnlMode}" SubmenuOpened="DownloadKnop_SubmenuOpened">
           <MenuItem.Icon>
             <TextBlock Text="" Style="{StaticResource FontAwesomeMenuPics}" />
           </MenuItem.Icon>
-          <MenuItem Name="ViaSpotnet" Header="{x:Static p:Words.MenuDnlModeDownload}" IsCheckable="True" Click="ViaSpotnet_Click" />
-          <MenuItem Name="ViaStandaard" Header="{x:Static p:Words.MenuDnlModeOpenNZB}" IsCheckable="True" Click="ViaStandaard_Click" />
-          <MenuItem Name="NZBOpslaan" Header="{x:Static p:Words.MenuDnlModeSaveNZB}" IsCheckable="True" Click="NZBOpslaan_Click" />
+          <MenuItem Name="ViaSpotnet" Header="{loc:Loc MenuDnlModeDownload}" IsCheckable="True" Click="ViaSpotnet_Click" />
+          <MenuItem Name="ViaStandaard" Header="{loc:Loc MenuDnlModeOpenNZB}" IsCheckable="True" Click="ViaStandaard_Click" />
+          <MenuItem Name="NZBOpslaan" Header="{loc:Loc MenuDnlModeSaveNZB}" IsCheckable="True" Click="NZBOpslaan_Click" />
         </MenuItem>
-        <MenuItem Name="AssociateNzbFiles" Header="{x:Static p:Words.MenuNzbFilesAssociate}" Click="AssociateNzbFiles_Click">
+        <MenuItem Name="AssociateNzbFiles" Header="{loc:Loc MenuNzbFilesAssociate}" Click="AssociateNzbFiles_Click">
           <MenuItem.Icon>
             <TextBlock Text="" Style="{StaticResource FontAwesomeMenuPics}" />
           </MenuItem.Icon>
@@ -129,24 +129,24 @@
             <TextBlock Text="" Style="{StaticResource FontAwesomeMenuPics}" />
           </MenuItem.Icon>
         </MenuItem>
-        <MenuItem Name="AdvancedSettings" Header="{x:Static p:Words.MenuSettings}" Click="AdvancedSettings_OnClick">
+        <MenuItem Name="AdvancedSettings" Header="{loc:Loc MenuSettings}" Click="AdvancedSettings_OnClick">
           <MenuItem.Icon>
             <TextBlock Text="" Style="{StaticResource FontAwesomeMenuPics}" />
           </MenuItem.Icon>
         </MenuItem>
       </MenuItem>
-      <MenuItem Name="MenuItem2" Header="{x:Static p:Words.MenuHelp}">
-        <MenuItem Name="ReleaseNotes" Header="{x:Static p:Words.MenuReleaseNotes}" Click="ReleaseNotes_Click">
+      <MenuItem Name="MenuItem2" Header="{loc:Loc MenuHelp}">
+        <MenuItem Name="ReleaseNotes" Header="{loc:Loc MenuReleaseNotes}" Click="ReleaseNotes_Click">
           <MenuItem.Icon>
             <TextBlock Text="" Style="{StaticResource FontAwesomeMenuPics}" />
           </MenuItem.Icon>
         </MenuItem>
-        <MenuItem Name="CheckForUpdates" Header="{x:Static p:Words.MenuCheckForUpdates}" Click="CheckForUpdates_Click">
+        <MenuItem Name="CheckForUpdates" Header="{loc:Loc MenuCheckForUpdates}" Click="CheckForUpdates_Click">
           <MenuItem.Icon>
             <TextBlock Text="" Style="{StaticResource FontAwesomeMenuPics}" />
           </MenuItem.Icon>
         </MenuItem>
-        <MenuItem Name="About" Header="{x:Static p:Words.MenuAbout}" Click="About_Click">
+        <MenuItem Name="About" Header="{loc:Loc MenuAbout}" Click="About_Click">
           <MenuItem.Icon>
             <TextBlock Text="" Style="{StaticResource FontAwesomeMenuPics}" />
           </MenuItem.Icon>

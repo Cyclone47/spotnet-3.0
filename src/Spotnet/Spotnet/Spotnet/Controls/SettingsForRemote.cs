@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Spotnet.Remote;
+using Spotnet.Properties;
 
 namespace Spotnet.Controls;
 
@@ -71,7 +72,7 @@ public partial class SettingsForRemote : UserControl, IAdvancedSettingsControl
 
         if (isEnabled && RemoteServer.Instance.IsRunning)
         {
-            ServerStatusTextBlock.Text = "● Actief";
+            ServerStatusTextBlock.Text = Words.RemoteActive;
             ServerStatusTextBlock.Foreground = new SolidColorBrush(Color.FromRgb(16, 185, 129));
             string url = RemoteServer.Instance.GetRemoteUrl(_config.AllowLan);
             ServerUrlTextBlock.Text = url;
@@ -80,7 +81,7 @@ public partial class SettingsForRemote : UserControl, IAdvancedSettingsControl
         }
         else if (isEnabled)
         {
-            ServerStatusTextBlock.Text = "● Starten mislukt (poort mogelijk bezet)";
+            ServerStatusTextBlock.Text = Words.RemoteStartFailed;
             ServerStatusTextBlock.Foreground = new SolidColorBrush(Color.FromRgb(239, 68, 68));
             ServerUrlTextBlock.Text = $"http://{RemoteServer.GetLocalIpAddress()}:{_config.Port}";
             OpenBrowserButton.IsEnabled = false;
@@ -88,7 +89,7 @@ public partial class SettingsForRemote : UserControl, IAdvancedSettingsControl
         }
         else
         {
-            ServerStatusTextBlock.Text = "Uitgeschakeld";
+            ServerStatusTextBlock.Text = Words.RemoteDisabled;
             ServerStatusTextBlock.Foreground = Brushes.Gray;
             ServerUrlTextBlock.Text = "-";
             OpenBrowserButton.IsEnabled = false;
@@ -110,7 +111,7 @@ public partial class SettingsForRemote : UserControl, IAdvancedSettingsControl
 
         if (!isTunnelChecked)
         {
-            CloudflareStatusTextBlock.Text = "Uitgeschakeld";
+            CloudflareStatusTextBlock.Text = Words.RemoteDisabled;
             CloudflareStatusTextBlock.Foreground = Brushes.Gray;
             CloudflareDownloadProgressBar.Visibility = Visibility.Collapsed;
             CloudflareUrlRow.Visibility = Visibility.Collapsed;
@@ -136,7 +137,7 @@ public partial class SettingsForRemote : UserControl, IAdvancedSettingsControl
                 break;
 
             case TunnelState.Running:
-                CloudflareStatusTextBlock.Text = "● Actief";
+                CloudflareStatusTextBlock.Text = Words.RemoteActive;
                 CloudflareStatusTextBlock.Foreground = new SolidColorBrush(Color.FromRgb(16, 185, 129));
                 CloudflareDownloadProgressBar.Visibility = Visibility.Collapsed;
                 CloudflareUrlRow.Visibility = Visibility.Visible;
@@ -154,11 +155,11 @@ public partial class SettingsForRemote : UserControl, IAdvancedSettingsControl
             default:
                 if (EnableRemoteCheckBox.IsChecked == true && RemoteServer.Instance.IsRunning)
                 {
-                    CloudflareStatusTextBlock.Text = "Niet gestart";
+                    CloudflareStatusTextBlock.Text = Words.RemoteNotStarted;
                 }
                 else
                 {
-                    CloudflareStatusTextBlock.Text = "Wacht op starten van Spotnet Remote...";
+                    CloudflareStatusTextBlock.Text = Words.RemoteWaitingForServer;
                 }
                 CloudflareStatusTextBlock.Foreground = Brushes.LightGray;
                 CloudflareDownloadProgressBar.Visibility = Visibility.Collapsed;
@@ -190,8 +191,8 @@ public partial class SettingsForRemote : UserControl, IAdvancedSettingsControl
     private void UpdatePasswordHint()
     {
         bool configured = !string.IsNullOrEmpty(_pendingPassword) || !string.IsNullOrEmpty(_config.PasswordHash);
-        AuthPasswordHintTextBlock.Text = configured ? "Wachtwoord ingesteld" : "Nog geen wachtwoord ingesteld";
-        ChangePasswordButton.Content = configured ? "Wachtwoord wijzigen…" : "Wachtwoord instellen…";
+        AuthPasswordHintTextBlock.Text = configured ? Words.RemotePasswordConfigured : Words.RemotePasswordNotConfigured;
+        ChangePasswordButton.Content = configured ? Words.RemoteChangePassword : Words.RemoteSetPassword;
     }
 
     private string ShowPasswordDialog()
@@ -286,7 +287,7 @@ public partial class SettingsForRemote : UserControl, IAdvancedSettingsControl
         }
         catch (Exception ex)
         {
-            MessageBox.Show("Kon browser niet openen: " + ex.Message, "Fout", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(Words.RemoteBrowserOpenFailed + ex.Message, Words.Error, MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
@@ -313,7 +314,7 @@ public partial class SettingsForRemote : UserControl, IAdvancedSettingsControl
     {
         if (sender is Button btn && btn.Tag is string deviceId)
         {
-            if (MessageBox.Show("Wil je de toegang voor dit apparaat intrekken?", "Apparaat ontkoppelen", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            if (MessageBox.Show(Words.RemoteRevokeQuestion, Words.RemoteRevokeTitle, MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
                 RemoteAuthManager.Instance.RevokeDevice(deviceId);
                 RefreshDevicesList();
@@ -323,7 +324,7 @@ public partial class SettingsForRemote : UserControl, IAdvancedSettingsControl
 
     private void RevokeAllButton_Click(object sender, RoutedEventArgs e)
     {
-        if (MessageBox.Show("Weet je zeker dat je ALLE mobiele apparaten wilt ontkoppelen?", "Alle apparaten intrekken", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+        if (MessageBox.Show(Words.RemoteRevokeAllQuestion, Words.RemoteRevokeAllTitle, MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
         {
             RemoteAuthManager.Instance.RevokeAllDevices();
             RefreshDevicesList();
@@ -346,7 +347,7 @@ public partial class SettingsForRemote : UserControl, IAdvancedSettingsControl
                 if (string.IsNullOrEmpty(_pendingPassword) &&
                     (string.IsNullOrEmpty(_config.PasswordHash) || string.IsNullOrEmpty(_config.PasswordSalt)))
                 {
-                    MessageBox.Show("Stel eerst een wachtwoord in voor Spotnet Remote.", "Wachtwoord vereist", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show(Words.RemoteSetPasswordFirst, Words.RemotePasswordRequired, MessageBoxButton.OK, MessageBoxImage.Warning);
                     ChangePasswordButton.Focus();
                     return false;
                 }

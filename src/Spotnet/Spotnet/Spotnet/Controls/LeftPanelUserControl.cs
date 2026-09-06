@@ -52,11 +52,27 @@ public partial class LeftPanelUserControl : UserControl
         _suggest.DownloadStringCompleted += Suggest_DownloadStringCompleted;
         InitializeComponent();
         AddFilterTreeView.DataContext = FilterCatViewModel.RootCollection;
+        UserLanguageHelper.LanguageChanged += OnLanguageChanged;
         if (Sys.MainWindow != null)
         {
             MainWindow mainWindow = Sys.MainWindow;
             mainWindow.OnWindowPrepared = (Action)Delegate.Combine(mainWindow.OnWindowPrepared, new Action(OnWindowPrepared));
         }
+    }
+
+    /// <summary>
+    /// The category tree carries the translated names of its nodes, and the add button's
+    /// tooltip is assigned in code, so neither follows the resource bindings.
+    /// </summary>
+    private void OnLanguageChanged()
+    {
+        // The cache behind RootCollection has already been dropped, so this reads a tree
+        // built in the new language. Both the DataContext and the ItemsSource are set:
+        // the markup binds one-time to the former, and SaveFilter assigns the latter.
+        var categories = FilterCatViewModel.RootCollection;
+        AddFilterTreeView.DataContext = categories;
+        AddFilterTreeView.ItemsSource = categories;
+        CheckAddButton();
     }
 
     private void OnWindowPrepared()
@@ -103,7 +119,7 @@ public partial class LeftPanelUserControl : UserControl
         {
             SearchBox.Text = "";
             ClearFilterSelection();
-            SetFilter(Words.Search + ": " + sName, zQuery, Words.LookingFor + ": " + sName + "...", bResetCount: true);
+            SetFilter(SearchTabTitle.Prefix + sName, zQuery, Words.LookingFor + ": " + sName + "...", bResetCount: true);
             Sys.MainWindow.TabControl1.SelectedItem = (TabItem)Sys.MainWindow.TabControl1.Items[0];
             base.Dispatcher.BeginInvoke(DispatcherPriority.Background, (Action)delegate
             {
@@ -432,7 +448,7 @@ public partial class LeftPanelUserControl : UserControl
             return false;
         }
 
-        return AppHelper.GetHeader(RuntimeHelpers.GetObjectValue(((HeaderedContentControl)Sys.MainWindow.TabControl1.Items[0]).Header)).StartsWith(Words.Search + ": ");
+        return SearchTabTitle.Matches(AppHelper.GetHeader(RuntimeHelpers.GetObjectValue(((HeaderedContentControl)Sys.MainWindow.TabControl1.Items[0]).Header)));
     }
 
     private string LimCat(IEnumerable<string> theFilX, long limitCat, string limitSub)
@@ -682,7 +698,7 @@ public partial class LeftPanelUserControl : UserControl
                 }
 
                 ClearFilterSelection();
-                SetFilter(Words.Search + ": " + text, SearchString(text), Words.LookingFor + ": " + text + "...", bResetCount: true);
+                SetFilter(SearchTabTitle.Prefix + text, SearchString(text), Words.LookingFor + ": " + text + "...", bResetCount: true);
             }
 
             return true;
@@ -1048,7 +1064,7 @@ public partial class LeftPanelUserControl : UserControl
 
     private void RefreshSearch()
     {
-        if (IsSearching() && Sys.MainWindow.TabControl1 != null && Sys.MainWindow.TabControl1.Items.Count != 0 && string.Equals(AppHelper.GetHeader(RuntimeHelpers.GetObjectValue(((HeaderedContentControl)Sys.MainWindow.TabControl1.Items[0]).Header)).Trim(), Words.Search + ": " + SearchBox.Text.Trim(), StringComparison.OrdinalIgnoreCase))
+        if (IsSearching() && Sys.MainWindow.TabControl1 != null && Sys.MainWindow.TabControl1.Items.Count != 0 && string.Equals(AppHelper.GetHeader(RuntimeHelpers.GetObjectValue(((HeaderedContentControl)Sys.MainWindow.TabControl1.Items[0]).Header)).Trim(), SearchTabTitle.Prefix + SearchBox.Text.Trim(), StringComparison.OrdinalIgnoreCase))
         {
             DoSearch();
         }
@@ -1206,7 +1222,7 @@ public partial class LeftPanelUserControl : UserControl
 
     private bool IsSearchFilter(string filterName)
     {
-        return filterName.StartsWith(Words.Search + ": ");
+        return SearchTabTitle.Matches(filterName);
     }
 
     private static string RewriteQuery(string sIn)
@@ -1379,7 +1395,8 @@ public partial class LeftPanelUserControl : UserControl
 
     private void NotificationExpander_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        if (e.OriginalSource is TextBlock tb && string.Equals(tb.Text, "MELDINGEN", StringComparison.OrdinalIgnoreCase))
+        // Compared by identity rather than by its caption: the caption is translated.
+        if (ReferenceEquals(e.OriginalSource, NotificationHeaderLabel))
         {
             NotificationExpander.IsExpanded = !NotificationExpander.IsExpanded;
             e.Handled = true;

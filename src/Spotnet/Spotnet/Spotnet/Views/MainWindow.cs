@@ -1188,6 +1188,19 @@ public partial class MainWindow : MetroWindow
         EndWait();
     }
 
+    /// <summary>
+    /// Rewrites the search tab's title into the language just selected. Without this the
+    /// tab keeps the previous language's "Search:" prefix, and everything that reads the
+    /// title back stops recognising it.
+    /// </summary>
+    internal void RetranslateSearchTab()
+    {
+        string retitled = SearchTabTitle.Retranslate(SpotProvider?.QueryName);
+        if (retitled == null || retitled == SpotProvider.QueryName) return;
+        SpotProvider.QueryName = retitled;
+        FirstTabHeaderUpdate();
+    }
+
     internal void FirstTabHeaderUpdate()
     {
         PageTypeEnum sIcon = PageTypeEnum.SpotsFilter;
@@ -1196,7 +1209,7 @@ public partial class MainWindow : MetroWindow
             sIcon = PageTypeEnum.SpotsNoFilter;
         }
 
-        if (SpotProvider.QueryName.StartsWith(Words.Search + ": "))
+        if (SearchTabTitle.Matches(SpotProvider.QueryName))
         {
             sIcon = PageTypeEnum.SpotsSearch;
         }
@@ -1212,12 +1225,7 @@ public partial class MainWindow : MetroWindow
         }
 
         TabItem tabItem = (TabItem)TabControl1.Items[0];
-        if (AppHelper.GetHeader(RuntimeHelpers.GetObjectValue(tabItem.Header)).StartsWith(Words.Search + ": "))
-        {
-            return AppHelper.GetHeader(RuntimeHelpers.GetObjectValue(tabItem.Header)).Substring((Words.Search + ": ").Length);
-        }
-
-        return string.Empty;
+        return SearchTabTitle.TermOf(AppHelper.GetHeader(RuntimeHelpers.GetObjectValue(tabItem.Header))) ?? string.Empty;
     }
 
     private void UpdateNewCats(int[] nc = null, bool restoreTheLastResult = false)

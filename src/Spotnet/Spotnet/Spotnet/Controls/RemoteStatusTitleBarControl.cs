@@ -3,7 +3,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Spotnet.Helpers;
 using Spotnet.Remote;
+using Spotnet.Properties;
 
 namespace Spotnet.Controls;
 
@@ -28,6 +30,8 @@ public partial class RemoteStatusTitleBarControl : UserControl
         UpdateState();
 
         RemoteServer.Instance.StatusChanged += OnServerStatusChanged;
+        // The badge and its tooltip are composed in code, not bound to the resources.
+        UserLanguageHelper.LanguageChanged += UpdateState;
 
         if (_timer == null)
         {
@@ -44,6 +48,7 @@ public partial class RemoteStatusTitleBarControl : UserControl
     {
         _timer?.Stop();
         RemoteServer.Instance.StatusChanged -= OnServerStatusChanged;
+        UserLanguageHelper.LanguageChanged -= UpdateState;
     }
 
     private void OnServerStatusChanged()
@@ -74,15 +79,15 @@ public partial class RemoteStatusTitleBarControl : UserControl
                 // Status: Uit (Grijs lampje)
                 StatusLed.Fill = GrayBrush;
                 StatusGlow.Opacity = 0;
-                StatusLabel.Text = "Remote: Uit";
+                StatusLabel.Text = Words.RemoteBadgeOff;
                 StatusLabel.Opacity = 0.65;
                 InUseBadge.Visibility = Visibility.Collapsed;
                 KeepAwakeBadge.Visibility = Visibility.Collapsed;
 
-                TooltipTitle.Text = "Spotnet Remote: Uit";
-                TooltipStatus.Text = "De server is momenteel uitgeschakeld.";
+                TooltipTitle.Text = Words.RemoteTipTitleOff;
+                TooltipStatus.Text = Words.RemoteTipServerOff;
                 TooltipClient.Visibility = Visibility.Collapsed;
-                TooltipKeepAwake.Text = "Slaapstand: Normaal Windows energiebeheer";
+                TooltipKeepAwake.Text = Words.RemoteTipSleepNormal;
             }
             else if (isActive)
             {
@@ -90,23 +95,21 @@ public partial class RemoteStatusTitleBarControl : UserControl
                 StatusLed.Fill = BlueBrush;
                 StatusGlow.Fill = BlueBrush;
                 StatusGlow.Opacity = 0.7;
-                StatusLabel.Text = "Remote:";
+                StatusLabel.Text = Words.RemoteBadgeInUseLabel;
                 StatusLabel.Opacity = 1.0;
                 InUseBadge.Visibility = Visibility.Visible;
 
                 KeepAwakeBadge.Visibility = keepAwake ? Visibility.Visible : Visibility.Collapsed;
 
                 string clientName = server.LastActiveClientName;
-                if (string.IsNullOrWhiteSpace(clientName)) clientName = "Verbonden mobiel";
+                if (string.IsNullOrWhiteSpace(clientName)) clientName = Words.RemoteTipConnectedMobile;
 
-                TooltipTitle.Text = "Spotnet Remote: In gebruik";
-                TooltipStatus.Text = $"Status: Actief verbonden op poort {server.ActivePort}";
-                TooltipClient.Text = $"Actief apparaat: {clientName}";
+                TooltipTitle.Text = Words.RemoteTipTitleInUse;
+                TooltipStatus.Text = string.Format(Words.RemoteTipConnectedOnPort, server.ActivePort);
+                TooltipClient.Text = string.Format(Words.RemoteTipActiveDevice, clientName);
                 TooltipClient.Visibility = Visibility.Visible;
 
-                TooltipKeepAwake.Text = keepAwake
-                    ? "Houd PC wakker: Actief (slaapstand geblokkeerd)"
-                    : "Houd PC wakker: Uitgeschakeld";
+                TooltipKeepAwake.Text = keepAwake ? Words.RemoteTipKeepAwakeOn : Words.RemoteTipKeepAwakeOff;
             }
             else
             {
@@ -114,19 +117,17 @@ public partial class RemoteStatusTitleBarControl : UserControl
                 StatusLed.Fill = GreenBrush;
                 StatusGlow.Fill = GreenBrush;
                 StatusGlow.Opacity = 0.45;
-                StatusLabel.Text = "Remote: Aan";
+                StatusLabel.Text = Words.RemoteBadgeOn;
                 StatusLabel.Opacity = 1.0;
                 InUseBadge.Visibility = Visibility.Collapsed;
 
                 KeepAwakeBadge.Visibility = keepAwake ? Visibility.Visible : Visibility.Collapsed;
 
-                TooltipTitle.Text = "Spotnet Remote: Aan";
-                TooltipStatus.Text = $"Status: Actief en wacht op verbinding (poort {server.ActivePort})";
+                TooltipTitle.Text = Words.RemoteTipTitleOn;
+                TooltipStatus.Text = string.Format(Words.RemoteTipWaitingOnPort, server.ActivePort);
                 TooltipClient.Visibility = Visibility.Collapsed;
 
-                TooltipKeepAwake.Text = keepAwake
-                    ? "Houd PC wakker: Actief (slaapstand geblokkeerd)"
-                    : "Houd PC wakker: Uitgeschakeld";
+                TooltipKeepAwake.Text = keepAwake ? Words.RemoteTipKeepAwakeOn : Words.RemoteTipKeepAwakeOff;
             }
         }
         catch

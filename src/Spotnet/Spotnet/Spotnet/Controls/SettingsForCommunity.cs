@@ -10,6 +10,7 @@ using Spotnet.Community;
 using Spotnet.Extensions;
 using Spotnet.Helpers;
 using Spotnet.Model;
+using Spotnet.Properties;
 
 namespace Spotnet.Controls;
 
@@ -70,6 +71,10 @@ public partial class SettingsForCommunity : UserControl, IAdvancedSettingsContro
         RequireSignedListsCheckBox.IsChecked = c.Moderation.RequireSignedLists;
         SignatureKeyTextBox.Text = c.Moderation.SignaturePublicKeyXml;
 
+        UseClassicListsCheckBox.IsChecked = c.Moderation.UseClassicLists;
+        ClassicWhitelistUrlTextBox.Text = c.Moderation.ClassicWhitelistUrl;
+        ClassicBlacklistUrlTextBox.Text = c.Moderation.ClassicBlacklistUrl;
+
         ResponseSiteUrlTextBox.Text = c.Services.ResponseSiteUrl;
         LogUploadUrlTextBox.Text = c.Services.LogUploadUrl;
         UpgradeFailuresUrlTextBox.Text = c.Services.UpgradeFailuresUrl;
@@ -89,6 +94,10 @@ public partial class SettingsForCommunity : UserControl, IAdvancedSettingsContro
 
         c.Moderation.Enabled = ModerationEnabledCheckBox.IsChecked.GetValueOrDefault();
         c.Moderation.UpdateIntervalMinutes = ParseInterval(IntervalTextBox.Text, c.Moderation.UpdateIntervalMinutes);
+
+        c.Moderation.UseClassicLists = UseClassicListsCheckBox.IsChecked.GetValueOrDefault();
+        c.Moderation.ClassicWhitelistUrl = ClassicWhitelistUrlTextBox.Text.Trim();
+        c.Moderation.ClassicBlacklistUrl = ClassicBlacklistUrlTextBox.Text.Trim();
 
         c.Moderation.WhitelistUrl = WhitelistUrlTextBox.Text.Trim();
         c.Moderation.BlacklistUrl = BlacklistUrlTextBox.Text.Trim();
@@ -174,6 +183,15 @@ public partial class SettingsForCommunity : UserControl, IAdvancedSettingsContro
         bool on = ModerationEnabledCheckBox.IsChecked.GetValueOrDefault();
         IntervalTextBox.IsEnabled = on;
         RefreshListsButton.IsEnabled = on;
+        UseClassicListsCheckBox.IsEnabled = on;
+        ApplyClassicListsEnabledState();
+    }
+
+    private void ApplyClassicListsEnabledState()
+    {
+        bool on = ModerationEnabledCheckBox.IsChecked.GetValueOrDefault() &&
+                  UseClassicListsCheckBox.IsChecked.GetValueOrDefault();
+        ClassicListsPanel.IsEnabled = on;
     }
 
     private void ModerationEnabledCheckBox_Click(object sender, RoutedEventArgs e)
@@ -181,12 +199,17 @@ public partial class SettingsForCommunity : UserControl, IAdvancedSettingsContro
         ApplyModerationEnabledState();
     }
 
+    private void UseClassicListsCheckBox_Click(object sender, RoutedEventArgs e)
+    {
+        ApplyClassicListsEnabledState();
+    }
+
     private void RefreshListsButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
             BlackAndWhite.UpdateExternalListsAsync();
-            ListStatusTextBlock.Text = "Bijwerken gestart…";
+            ListStatusTextBlock.Text = Words.CommRefreshStarted;
         }
         catch (Exception ex)
         {
@@ -207,7 +230,7 @@ public partial class SettingsForCommunity : UserControl, IAdvancedSettingsContro
 
             string newest = NewestListTimestamp();
             ListStatusTextBlock.Text = string.Format(
-                "{0} vertrouwd, {1} geblokkeerd{2}",
+                Words.CommListSummary,
                 BlackAndWhite.WhiteList().Count,
                 BlackAndWhite.BlackList().Count,
                 newest == null ? "" : " · laatst bijgewerkt " + newest);
@@ -223,7 +246,8 @@ public partial class SettingsForCommunity : UserControl, IAdvancedSettingsContro
     {
         string[] files =
         {
-            "whitelist.srv.csv", "blacklist.srv.csv", "spot_whitelist.srv.csv", "spot_blacklist.srv.csv"
+            "whitelist.srv.csv", "blacklist.srv.csv", "spot_whitelist.srv.csv", "spot_blacklist.srv.csv",
+            "whitelist.classic.srv.xml", "blacklist.classic.srv.xml"
         };
 
         DateTime? newest = null;
@@ -250,7 +274,7 @@ public partial class SettingsForCommunity : UserControl, IAdvancedSettingsContro
         if (RawPanel.Visibility == Visibility.Visible)
         {
             RawPanel.Visibility = Visibility.Collapsed;
-            ToggleRawButton.Content = "Toon raw";
+            ToggleRawButton.Content = Words.CommShowRaw;
             return;
         }
 
@@ -258,7 +282,7 @@ public partial class SettingsForCommunity : UserControl, IAdvancedSettingsContro
         RawJsonTextBox.Text = _working.Serialize();
         RawStatusTextBlock.Text = "";
         RawPanel.Visibility = Visibility.Visible;
-        ToggleRawButton.Content = "Verberg raw";
+        ToggleRawButton.Content = Words.CommHideRaw;
     }
 
     private void ApplyRawButton_Click(object sender, RoutedEventArgs e)
@@ -281,7 +305,7 @@ public partial class SettingsForCommunity : UserControl, IAdvancedSettingsContro
 
             _working = parsed;
             LoadToUi(_working);
-            RawStatusTextBlock.Text = "Overgenomen. Klik op Opslaan om het vast te leggen.";
+            RawStatusTextBlock.Text = Words.CommRawApplied;
             ValidationTextBlock.Text = "";
         }
         catch (Exception ex)
@@ -293,8 +317,8 @@ public partial class SettingsForCommunity : UserControl, IAdvancedSettingsContro
     private void ResetButton_Click(object sender, RoutedEventArgs e)
     {
         if (MessageBox.Show(
-                "Alle community-instellingen terugzetten naar de standaardwaarden van deze Spotnet?",
-                "Herstel standaardwaarden", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                Words.CommResetQuestion,
+                Words.CommResetDefaults, MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
         {
             return;
         }
@@ -362,21 +386,21 @@ public partial class SettingsForCommunity : UserControl, IAdvancedSettingsContro
             CommunityConfig imported = CommunityConfig.Deserialize(File.ReadAllText(dialog.FileName));
             if (imported == null)
             {
-                ValidationTextBlock.Text = "Dat bestand bevat geen community-profiel.";
+                ValidationTextBlock.Text = Words.CommImportNotAProfile;
                 return;
             }
 
             IList<string> errors = imported.Validate();
             if (errors.Count > 0)
             {
-                ValidationTextBlock.Text = "Het profiel is niet geldig:" + Environment.NewLine +
+                ValidationTextBlock.Text = Words.CommImportInvalid + Environment.NewLine +
                                            string.Join(Environment.NewLine, errors);
                 return;
             }
 
             _working = imported;
             LoadToUi(_working);
-            ValidationTextBlock.Text = "Profiel geladen. Klik op Opslaan om het in gebruik te nemen.";
+            ValidationTextBlock.Text = Words.CommImportLoaded;
             if (RawPanel.Visibility == Visibility.Visible)
             {
                 RawJsonTextBox.Text = _working.Serialize();
@@ -385,7 +409,7 @@ public partial class SettingsForCommunity : UserControl, IAdvancedSettingsContro
         catch (Exception ex)
         {
             Log.Exception(ex, showToClient: true);
-            ValidationTextBlock.Text = "Importeren mislukt: " + ex.Message;
+            ValidationTextBlock.Text = Words.CommImportFailed + ex.Message;
         }
     }
 }

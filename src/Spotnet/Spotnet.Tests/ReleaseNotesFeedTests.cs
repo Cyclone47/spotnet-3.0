@@ -162,27 +162,39 @@ public sealed class ReleaseNotesFeedTests
     }
 
     [Fact]
-    public void ReleaseNotesPageGeneratesDutchHtmlWhenLanguageIsDutch()
+    public void ReleaseNotesPageGeneratesDutchHtmlByDefault()
     {
-        UserLanguageHelper.Culture = CultureInfo.CreateSpecificCulture("nl");
-        string url = Spotnet.Browser.ReleaseNotesPage.GetReleaseNotesUrl();
-        Assert.True(System.IO.File.Exists(url));
-        string content = System.IO.File.ReadAllText(url);
-        Assert.Contains("Spotnet Release Notes", content, StringComparison.Ordinal);
-        Assert.Contains("U gebruikt nu", content, StringComparison.Ordinal);
-        Assert.Contains("Spotnet Remote (Mobiele Companion", content, StringComparison.Ordinal);
+        try
+        {
+            UserLanguageHelper.Culture = CultureInfo.CreateSpecificCulture("nl");
+            string url = Spotnet.Browser.ReleaseNotesPage.GetReleaseNotesUrl();
+            Assert.True(System.IO.File.Exists(url));
+            string content = System.IO.File.ReadAllText(url);
+            Assert.Contains("Spotnet Release Notes", content, StringComparison.Ordinal);
+            Assert.Contains("U gebruikt nu", content, StringComparison.Ordinal);
+            Assert.Contains("Spotnet Remote (Mobiele Companion", content, StringComparison.Ordinal);
+        }
+        finally
+        {
+            UserLanguageHelper.Culture = CultureInfo.CreateSpecificCulture("nl");
+        }
     }
 
     [Fact]
     public void ReleaseNotesPageGeneratesEnglishHtmlWhenLanguageIsEnglish()
     {
-        UserLanguageHelper.Culture = CultureInfo.CreateSpecificCulture("en");
-        string url = Spotnet.Browser.ReleaseNotesPage.GetReleaseNotesUrl();
-        Assert.True(System.IO.File.Exists(url));
-        string content = System.IO.File.ReadAllText(url);
-        Assert.Contains("You are currently using", content, StringComparison.Ordinal);
-        Assert.Contains("Spotnet Remote", content, StringComparison.Ordinal);
-        // Restore default Dutch
-        UserLanguageHelper.Culture = CultureInfo.CreateSpecificCulture("nl");
+        try
+        {
+            UserLanguageHelper.Culture = CultureInfo.CreateSpecificCulture("en");
+            string url = Spotnet.Browser.ReleaseNotesPage.GetReleaseNotesUrl();
+            Assert.True(System.IO.File.Exists(url));
+            string content = System.IO.File.ReadAllText(url);
+            Assert.Contains("You are currently using", content, StringComparison.Ordinal);
+            Assert.Contains("Spotnet Remote", content, StringComparison.Ordinal);
+        }
+        finally
+        {
+            UserLanguageHelper.Culture = CultureInfo.CreateSpecificCulture("nl");
+        }
     }
 }

@@ -109,7 +109,7 @@
   <data name="MenuVisibleControlsMainToolbar" xml:space="preserve"><value>Toolbar</value></data>
   <data name="DbIsNotUpToDateSoSpeedCanBeLowWarning" xml:space="preserve"><value>Download speed can be less than your maximum one while database update is in progress.</value></data>
   <data name="Italic" xml:space="preserve"><value>Italic</value></data>
-  <data name="PleaseWaitWhilePageIsLoading" xml:space="preserve"><value>Een moment geduld aub pagina wordt geladen.</value></data>
+  <data name="PleaseWaitWhilePageIsLoading" xml:space="preserve"><value>Please wait, the page is loading.</value></data>
   <data name="Newsgroup" xml:space="preserve"><value>Newsgroup</value></data>
   <data name="NoWord" xml:space="preserve"><value>No</value></data>
   <data name="Sorting" xml:space="preserve"><value>Sorting...</value></data>
@@ -159,7 +159,6 @@
   <data name="Connecting" xml:space="preserve"><value>Connecting...</value></data>
   <data name="SelectNumberOfConnections" xml:space="preserve"><value>Select the max number of allowed connections. It is usually provided by your Provider.</value></data>
   <data name="SpotGiveDescription" xml:space="preserve"><value>Describe the Spot</value></data>
-  <data name="LanguageRestartForSettingTakesEffect" xml:space="preserve"><value>Gelieve de applicatie opnieuw te starten voor de taalinstelling wijziging ingaat.</value></data>
   <data name="MenuUseExternalBrowser" xml:space="preserve"><value>Open links in external browser</value></data>
   <data name="NewSpot" xml:space="preserve"><value>New Spot</value></data>
   <data name="UpdateCompleted" xml:space="preserve"><value>Update is finished</value></data>
@@ -357,7 +356,6 @@
   <data name="CannotConnectToDatabase" xml:space="preserve"><value>Cannot connect to database</value></data>
   <data name="CheckUsernamePasswordAndTryAgain" xml:space="preserve"><value>Please check username and/or password and try again.</value></data>
   <data name="PleaseSelectSubCat" xml:space="preserve"><value>Please select a sub-category.</value></data>
-  <data name="LanguageChange" xml:space="preserve"><value>Verander taal</value></data>
   <data name="FilterSwitchToMode2" xml:space="preserve"><value>Switch to filter list 2</value></data>
   <data name="FilterSwitchToMode1" xml:space="preserve"><value>Switch to filter list 1</value></data>
   <data name="NZBCannotBeFound" xml:space="preserve"><value>Cannot find NZB, click the file name to search manually.</value></data>
@@ -399,7 +397,6 @@
   <data name="SpotRemoveAskDialogText" xml:space="preserve"><value>You want to remove your own spot that is added by mistake. 
 The spot would be removed from databases of all Spotnet 3.0 users.
 Please write the reason why you want to remove it:</value></data>
-  <data name="RestartNow" xml:space="preserve"><value>Restart Now</value></data>
   <data name="MenuVisibleControlsStatusBar" xml:space="preserve"><value>Status Bar</value></data>
   <data name="ShutdownDialogComputerToBeShutdownDownloadsCompleted" xml:space="preserve"><value>All downloads are completed, so PC scheduled to Shut Down.</value></data>
   <data name="FilterToPicture" xml:space="preserve"><value>Images|*.jpg;*.gif;*.png;*.bmp;*.webp|JPG File (*.jpg)|*.jpg|GIF File (*.gif)|*.gif|PNG File (*.png)|*.png|BMP File (*.bmp)|*.bmp|WebP File (*.webp)|*.webp</value></data>
@@ -419,7 +416,6 @@ Please write the reason why you want to remove it:</value></data>
   <data name="CommentsUpdate" xml:space="preserve"><value>Update comments</value></data>
   <data name="SpotIsInBlackList" xml:space="preserve"><value>ATTENTION: The spot is in Black List!</value></data>
   <data name="AvatarChangedForFuturePosts" xml:space="preserve"><value>Avatar has been changed but for future posts only</value></data>
-  <data name="RestartLater" xml:space="preserve"><value>Restart Later</value></data>
   <data name="MenuSpotsListType" xml:space="preserve"><value>Spots List View</value></data>
   <data name="MenuSpotsListPics" xml:space="preserve"><value>Images Only</value></data>
   <data name="CannotPostEmptyMessage" xml:space="preserve"><value>You cannot post empty message.</value></data>
@@ -647,4 +643,244 @@ Please write the reason why you want to remove it:</value></data>
   <data name="MenuTestNotification" xml:space="preserve"><value>Test notification</value></data>
   <data name="NotificationTestTitle" xml:space="preserve"><value>Spotnet test notification</value></data>
   <data name="NotificationTestBody" xml:space="preserve"><value>If you can see this, Windows is delivering Spotnet notifications.</value></data>
+  <data name="RemoteTitle" xml:space="preserve"><value>Spotnet Remote</value></data>
+  <data name="RemoteIntro" xml:space="preserve"><value>Operate Spotnet from your phone or tablet. Search spots, read comments and start downloads from anywhere.</value></data>
+  <data name="RemoteEnable" xml:space="preserve"><value>Enable Spotnet Remote</value></data>
+  <data name="RemoteStatusLabel" xml:space="preserve"><value>Status: </value></data>
+  <data name="RemoteStopped" xml:space="preserve"><value>Stopped</value></data>
+  <data name="RemoteShowQrCode" xml:space="preserve"><value>📱 Show QR code</value></data>
+  <data name="RemoteConnectionOptions" xml:space="preserve"><value>Ways to connect</value></data>
+  <data name="RemoteAllowLan" xml:space="preserve"><value>Access over the home network (Wi-Fi)</value></data>
+  <data name="RemoteEnableCloudflare" xml:space="preserve"><value>Access away from home over Cloudflare (4G / 5G)</value></data>
+  <data name="RemoteCloudflareHint" xml:space="preserve"><value>Works straight away without opening ports in your router. No account needed.</value></data>
+  <data name="RemoteCloudflareStatusLabel" xml:space="preserve"><value>Cloudflare status: </value></data>
+  <data name="RemoteCloudflareUrlLabel" xml:space="preserve"><value>Cloudflare URL: </value></data>
+  <data name="RemoteAdvancedHeader" xml:space="preserve"><value>Advanced settings (port, password, browser)</value></data>
+  <data name="RemotePortLabel" xml:space="preserve"><value>Port:</value></data>
+  <data name="RemoteOpenInBrowser" xml:space="preserve"><value>Open in browser</value></data>
+  <data name="RemoteRequireAuth" xml:space="preserve"><value>Require a password</value></data>
+  <data name="RemoteSetPassword" xml:space="preserve"><value>Set password…</value></data>
+  <data name="RemoteChangePassword" xml:space="preserve"><value>Change password…</value></data>
+  <data name="RemotePasswordConfigured" xml:space="preserve"><value>Password set</value></data>
+  <data name="RemotePasswordNotConfigured" xml:space="preserve"><value>No password set yet</value></data>
+  <data name="RemoteNoAuthWarning" xml:space="preserve"><value>⚠️ Without a password anyone on your network can operate Spotnet.</value></data>
+  <data name="RemoteKeepAwake" xml:space="preserve"><value>Keep the computer awake while Spotnet Remote is running</value></data>
+  <data name="RemotePairedDevices" xml:space="preserve"><value>Paired mobile devices</value></data>
+  <data name="RemoteRevoke" xml:space="preserve"><value>Unpair</value></data>
+  <data name="RemoteRevokeAll" xml:space="preserve"><value>Unpair all devices</value></data>
+  <data name="RemotePairedAt" xml:space="preserve"><value>Paired: </value></data>
+  <data name="RemoteLastSeen" xml:space="preserve"><value> • Last active: </value></data>
+  <data name="RemoteActive" xml:space="preserve"><value>● Running</value></data>
+  <data name="RemoteStartFailed" xml:space="preserve"><value>● Could not start (the port may be in use)</value></data>
+  <data name="RemoteDisabled" xml:space="preserve"><value>Disabled</value></data>
+  <data name="RemoteNotStarted" xml:space="preserve"><value>Not started</value></data>
+  <data name="RemoteWaitingForServer" xml:space="preserve"><value>Waiting for Spotnet Remote to start…</value></data>
+  <data name="RemoteBrowserOpenFailed" xml:space="preserve"><value>Could not open the browser: </value></data>
+  <data name="RemoteRevokeQuestion" xml:space="preserve"><value>Revoke this device’s access?</value></data>
+  <data name="RemoteRevokeTitle" xml:space="preserve"><value>Unpair device</value></data>
+  <data name="RemoteRevokeAllQuestion" xml:space="preserve"><value>Unpair ALL mobile devices?</value></data>
+  <data name="RemoteRevokeAllTitle" xml:space="preserve"><value>Revoke all devices</value></data>
+  <data name="RemoteSetPasswordFirst" xml:space="preserve"><value>Set a password for Spotnet Remote first.</value></data>
+  <data name="RemotePasswordRequired" xml:space="preserve"><value>Password required</value></data>
+  <data name="RemoteTipCheckingStatus" xml:space="preserve"><value>Status: checking…</value></data>
+  <data name="RemoteTipOpenSettings" xml:space="preserve"><value>Click to open the Spotnet Remote settings</value></data>
+  <data name="RemoteBadgeOn" xml:space="preserve"><value>Remote: on</value></data>
+  <data name="RemoteBadgeOff" xml:space="preserve"><value>Remote: off</value></data>
+  <data name="RemoteBadgeInUseLabel" xml:space="preserve"><value>Remote:</value></data>
+  <data name="RemoteBadgeInUse" xml:space="preserve"><value>📱 In use</value></data>
+  <data name="RemoteBadgeAwake" xml:space="preserve"><value>Awake</value></data>
+  <data name="RemoteTipTitleOff" xml:space="preserve"><value>Spotnet Remote: off</value></data>
+  <data name="RemoteTipTitleOn" xml:space="preserve"><value>Spotnet Remote: on</value></data>
+  <data name="RemoteTipTitleInUse" xml:space="preserve"><value>Spotnet Remote: in use</value></data>
+  <data name="RemoteTipServerOff" xml:space="preserve"><value>The server is currently switched off.</value></data>
+  <data name="RemoteTipSleepNormal" xml:space="preserve"><value>Sleep: normal Windows power management</value></data>
+  <data name="RemoteTipConnectedOnPort" xml:space="preserve"><value>Status: connected on port {0}</value></data>
+  <data name="RemoteTipWaitingOnPort" xml:space="preserve"><value>Status: running and waiting for a connection (port {0})</value></data>
+  <data name="RemoteTipActiveDevice" xml:space="preserve"><value>Active device: {0}</value></data>
+  <data name="RemoteTipConnectedMobile" xml:space="preserve"><value>Connected phone</value></data>
+  <data name="RemoteTipKeepAwakeOn" xml:space="preserve"><value>Keep PC awake: on (sleep blocked)</value></data>
+  <data name="RemoteTipKeepAwakeOff" xml:space="preserve"><value>Keep PC awake: off</value></data>
+  <data name="PairTitle" xml:space="preserve"><value>Pair a mobile device - Spotnet Remote</value></data>
+  <data name="PairHeading" xml:space="preserve"><value>Pair your phone or tablet</value></data>
+  <data name="PairSubHeading" xml:space="preserve"><value>Scan the QR code below with your camera to connect straight away.</value></data>
+  <data name="PairModeLan" xml:space="preserve"><value>🏠 Home network (Wi-Fi)</value></data>
+  <data name="PairModeTunnel" xml:space="preserve"><value>🌐 Away from home (Cloudflare 4G/5G)</value></data>
+  <data name="PairModeLanHint" xml:space="preserve"><value>Connect over the same Wi-Fi network as this computer.</value></data>
+  <data name="PairTunnelTemporary" xml:space="preserve"><value>⚠️ Temporary link: Cloudflare links change every time Spotnet restarts.</value></data>
+  <data name="PairTunnelStarting" xml:space="preserve"><value>⏳ Setting up the Cloudflare Quick Tunnel... the QR code appears once the connection is up.</value></data>
+  <data name="PairTunnelConnecting" xml:space="preserve"><value>Connecting the Cloudflare tunnel...</value></data>
+  <data name="PairEnterCodeManually" xml:space="preserve"><value>Or enter this 6-digit pairing code by hand:</value></data>
+  <data name="PairCodeValidFor" xml:space="preserve"><value>The code is valid for another 5:00 minutes</value></data>
+  <data name="PairSucceeded" xml:space="preserve"><value>✓ Device paired.</value></data>
+  <data name="PairSucceededNamed" xml:space="preserve"><value>✓ Device ‘{0}’ paired.</value></data>
+  <data name="PairCopyLink" xml:space="preserve"><value>Copy pairing link</value></data>
+  <data name="PairTunnelError" xml:space="preserve"><value>⚠️ Cloudflare error: {0}. You can switch to Wi-Fi instead.</value></data>
+  <data name="PairLinkNotReady" xml:space="preserve"><value>The Cloudflare pairing link is not ready yet. One moment please.</value></data>
+  <data name="PairLinkNotReadyTitle" xml:space="preserve"><value>One moment</value></data>
+  <data name="PairCopyFailed" xml:space="preserve"><value>Could not copy the link: </value></data>
+  <data name="RemotePasswordWindowTitle" xml:space="preserve"><value>Password for Spotnet Remote</value></data>
+  <data name="RemotePasswordIntro" xml:space="preserve"><value>Choose a password to sign in with on your phone.</value></data>
+  <data name="RemotePasswordLabel" xml:space="preserve"><value>Password (at least 6 characters)</value></data>
+  <data name="RemotePasswordRepeat" xml:space="preserve"><value>Repeat password</value></data>
+  <data name="RemotePasswordTooShort" xml:space="preserve"><value>Use a password of at least 6 characters.</value></data>
+  <data name="RemotePasswordMismatch" xml:space="preserve"><value>The passwords do not match. Please try again.</value></data>
+  <data name="CloudflareStopped" xml:space="preserve"><value>Stopped</value></data>
+  <data name="CloudflareError" xml:space="preserve"><value>Error: {0}</value></data>
+  <data name="NcWindowTitle" xml:space="preserve"><value>Spotnet notification centre &amp; alerts</value></data>
+  <data name="NcTabNotifications" xml:space="preserve"><value>🔔 Notifications</value></data>
+  <data name="NcTabNotificationsCount" xml:space="preserve"><value>🔔 Notifications ({0})</value></data>
+  <data name="NcHistoryHeader" xml:space="preserve"><value>Notification history</value></data>
+  <data name="NcHistoryIntro" xml:space="preserve"><value>Choose which notifications appear in the history and the counter. Changes are saved straight away; Windows pop-ups are configured separately.</value></data>
+  <data name="NcHistoryDownloadFinished" xml:space="preserve"><value>Download finished</value></data>
+  <data name="NcHistoryDownloadFailed" xml:space="preserve"><value>Download failed</value></data>
+  <data name="NcHistoryDownloadPassword" xml:space="preserve"><value>Download asks for a password</value></data>
+  <data name="NcHistoryDownloadWarning" xml:space="preserve"><value>Download gave a warning</value></data>
+  <data name="NcHistoryFilterRules" xml:space="preserve"><value>Notifications from filters</value></data>
+  <data name="NcHistoryKeywordRules" xml:space="preserve"><value>Notifications from keywords</value></data>
+  <data name="NcRecent" xml:space="preserve"><value>Recent notifications</value></data>
+  <data name="NcRecentCount" xml:space="preserve"><value>Recent notifications ({0})</value></data>
+  <data name="NcMarkAllRead" xml:space="preserve"><value>Mark all as read</value></data>
+  <data name="NcClearAll" xml:space="preserve"><value>Clear all</value></data>
+  <data name="NcEmptyTitle" xml:space="preserve"><value>No notifications yet.</value></data>
+  <data name="NcEmptyHint" xml:space="preserve"><value>Create a notification from a filter or a keyword on the Manage rules tab.</value></data>
+  <data name="NcTabRules" xml:space="preserve"><value>⚙️ Manage rules</value></data>
+  <data name="NcNewRule" xml:space="preserve"><value>Create a notification</value></data>
+  <data name="NcEditRuleHeader" xml:space="preserve"><value>Edit notification</value></data>
+  <data name="NcRuleTypeFilter" xml:space="preserve"><value>📁 Notify from a filter</value></data>
+  <data name="NcRuleTypeKeyword" xml:space="preserve"><value>🏷️ Notify from keywords</value></data>
+  <data name="NcRuleName" xml:space="preserve"><value>Notification name:</value></data>
+  <data name="NcSelectFilter" xml:space="preserve"><value>Select filter:</value></data>
+  <data name="NcCheckEvery" xml:space="preserve"><value>Check every:</value></data>
+  <data name="NcEvery15Minutes" xml:space="preserve"><value>15 minutes</value></data>
+  <data name="NcEvery30Minutes" xml:space="preserve"><value>30 minutes</value></data>
+  <data name="NcEvery1Hour" xml:space="preserve"><value>1 hour</value></data>
+  <data name="NcEvery8Hours" xml:space="preserve"><value>8 hours</value></data>
+  <data name="NcEvery24Hours" xml:space="preserve"><value>24 hours</value></data>
+  <data name="NcCustomInterval" xml:space="preserve"><value>Enter my own...</value></data>
+  <data name="NcCustomIntervalTip" xml:space="preserve"><value>Number of minutes (5 at the least)</value></data>
+  <data name="NcMinutes" xml:space="preserve"><value>minutes</value></data>
+  <data name="NcKeywords" xml:space="preserve"><value>Keyword(s):</value></data>
+  <data name="NcKeywordsTip" xml:space="preserve"><value>For example F1, Formula 1, The Voice (separated by commas)</value></data>
+  <data name="NcCategory" xml:space="preserve"><value>Category:</value></data>
+  <data name="NcAllCategories" xml:space="preserve"><value>All categories</value></data>
+  <data name="NcCatFilms" xml:space="preserve"><value>🎬 Films &amp; video</value></data>
+  <data name="NcCatSeries" xml:space="preserve"><value>📺 Series</value></data>
+  <data name="NcCatMusic" xml:space="preserve"><value>🎵 Music</value></data>
+  <data name="NcCatGames" xml:space="preserve"><value>🎮 Games</value></data>
+  <data name="NcCatApplications" xml:space="preserve"><value>💻 Applications</value></data>
+  <data name="NcCatBooks" xml:space="preserve"><value>📚 Books</value></data>
+  <data name="NcCatErotica" xml:space="preserve"><value>🔞 Erotica</value></data>
+  <data name="NcCheckMode" xml:space="preserve"><value>Check:</value></data>
+  <data name="NcCheckDirect" xml:space="preserve"><value>⚡ On every Usenet sync</value></data>
+  <data name="NcCheckPeriodic" xml:space="preserve"><value>⏱️ Periodically (every 15 min)</value></data>
+  <data name="NcAutoSyncInterval" xml:space="preserve"><value>🔄 Automatic Usenet sync interval:</value></data>
+  <data name="NcSyncEvery5" xml:space="preserve"><value>Every 5 minutes</value></data>
+  <data name="NcSyncEvery10" xml:space="preserve"><value>Every 10 minutes</value></data>
+  <data name="NcSyncEvery15" xml:space="preserve"><value>Every 15 minutes</value></data>
+  <data name="NcSyncEvery30" xml:space="preserve"><value>Every 30 minutes</value></data>
+  <data name="NcSyncEvery60" xml:space="preserve"><value>Every hour (60m)</value></data>
+  <data name="NcWindowsToasts" xml:space="preserve"><value>Show Windows desktop notifications (toasts)</value></data>
+  <data name="NcSaveRule" xml:space="preserve"><value>➕ Save notification</value></data>
+  <data name="NcSaveChanges" xml:space="preserve"><value>💾 Save changes</value></data>
+  <data name="NcActiveRules" xml:space="preserve"><value>Active notifications</value></data>
+  <data name="NcEditRule" xml:space="preserve"><value>✏ Edit</value></data>
+  <data name="NcEditRuleTip" xml:space="preserve"><value>Edit notification</value></data>
+  <data name="NcTestRule" xml:space="preserve"><value>▶ Test</value></data>
+  <data name="NcTestRuleTip" xml:space="preserve"><value>Run this notification now to test it</value></data>
+  <data name="NcDeleteRuleTip" xml:space="preserve"><value>Delete notification</value></data>
+  <data name="NcFilterOrKeyword" xml:space="preserve"><value>Filter/keyword: </value></data>
+  <data name="NcKeywordsRequired" xml:space="preserve"><value>Enter one or more keywords (for example F1, Formula 1).</value></data>
+  <data name="NcKeywordsRequiredTitle" xml:space="preserve"><value>Keywords required</value></data>
+  <data name="NcRuleUpdated" xml:space="preserve"><value>Notification ‘{0}’ has been updated.</value></data>
+  <data name="NcRuleSaved" xml:space="preserve"><value>Notification ‘{0}’ has been saved and is active.</value></data>
+  <data name="NcRuleUpdatedTitle" xml:space="preserve"><value>Notification changed</value></data>
+  <data name="NcRuleSavedTitle" xml:space="preserve"><value>Notification saved</value></data>
+  <data name="NcClearAllQuestion" xml:space="preserve"><value>Clear every notification?</value></data>
+  <data name="NcClearAllTitle" xml:space="preserve"><value>Clear notifications</value></data>
+  <data name="NcOpenSpotFailed" xml:space="preserve"><value>Could not open the spot: </value></data>
+  <data name="NcDeleteRuleQuestion" xml:space="preserve"><value>Delete this notification?</value></data>
+  <data name="NcDeleteRuleTitle" xml:space="preserve"><value>Delete notification</value></data>
+  <data name="NcTestSucceeded" xml:space="preserve"><value>Test passed: {0} spots found and a notification was shown.</value></data>
+  <data name="NcTestResultTitle" xml:space="preserve"><value>Test result</value></data>
+  <data name="NcTestNoResults" xml:space="preserve"><value>No recent spots currently match this rule.</value></data>
+  <data name="NcTestNoResultsTitle" xml:space="preserve"><value>No results</value></data>
+  <data name="NcBellTitle" xml:space="preserve"><value>Spotnet notifications</value></data>
+  <data name="NcBellNoUnread" xml:space="preserve"><value>No new notifications</value></data>
+  <data name="NcBellUnreadOne" xml:space="preserve"><value>1 unread notification</value></data>
+  <data name="NcBellUnreadMany" xml:space="preserve"><value>{0} unread notifications</value></data>
+  <data name="NcBellHint" xml:space="preserve"><value>Click to view or manage notifications</value></data>
+  <data name="NcBellOpenFailed" xml:space="preserve"><value>Could not open the notification centre: </value></data>
+  <data name="NcPanelHeader" xml:space="preserve"><value>NOTIFICATIONS</value></data>
+  <data name="NcPanelOpenCentre" xml:space="preserve"><value>Open the notification centre</value></data>
+  <data name="NcPanelNewRule" xml:space="preserve"><value>New notification...</value></data>
+  <data name="CommTitle" xml:space="preserve"><value>Community</value></data>
+  <data name="CommIntro" xml:space="preserve"><value>Spots, comments and complaints travel over Usenet and always keep working. Below is where this Spotnet gets its moderation lists and community services from.</value></data>
+  <data name="CommNameLabel" xml:space="preserve"><value>Community: </value></data>
+  <data name="CommRefreshNow" xml:space="preserve"><value>Update now</value></data>
+  <data name="CommNewsgroups" xml:space="preserve"><value>Newsgroups</value></data>
+  <data name="CommSpotsGroup" xml:space="preserve"><value>Spots:</value></data>
+  <data name="CommCommentsGroup" xml:space="preserve"><value>Comments:</value></data>
+  <data name="CommReportsGroup" xml:space="preserve"><value>Complaints:</value></data>
+  <data name="CommNzbGroup" xml:space="preserve"><value>NZB:</value></data>
+  <data name="CommModeration" xml:space="preserve"><value>Moderation</value></data>
+  <data name="CommUseModerationLists" xml:space="preserve"><value>Use the moderation lists of the community</value></data>
+  <data name="CommModerationHint" xml:space="preserve"><value>Without these lists you see everything that gets posted, including spam and postings the community has rejected.</value></data>
+  <data name="CommRefreshEvery" xml:space="preserve"><value>Update every</value></data>
+  <data name="CommRefreshEveryUnit" xml:space="preserve"><value>minutes (0 = only at start-up)</value></data>
+  <data name="CommUseClassicLists" xml:space="preserve"><value>Use Spotnet Classic black/whitelist (spotlist.store)</value></data>
+  <data name="CommUseClassicListsHint" xml:space="preserve"><value>Retrieves the active trusted spotters and blacklist from Spotnet Classic (spotlist.store XML format).</value></data>
+  <data name="CommClassicWhitelist" xml:space="preserve"><value>Classic whitelist:</value></data>
+  <data name="CommClassicBlacklist" xml:space="preserve"><value>Classic blacklist:</value></data>
+  <data name="CommServersHeader" xml:space="preserve"><value>Servers of the community</value></data>
+  <data name="CommWhitelist" xml:space="preserve"><value>Whitelist:</value></data>
+  <data name="CommBlacklist" xml:space="preserve"><value>Blacklist:</value></data>
+  <data name="CommSpotWhitelist" xml:space="preserve"><value>Spot whitelist:</value></data>
+  <data name="CommSpotBlacklist" xml:space="preserve"><value>Spot blacklist:</value></data>
+  <data name="CommModeratorKeys" xml:space="preserve"><value>Moderator keys:</value></data>
+  <data name="CommFeedbackSite" xml:space="preserve"><value>Feedback site:</value></data>
+  <data name="CommLogUpload" xml:space="preserve"><value>Log upload:</value></data>
+  <data name="CommUpgradeFailures" xml:space="preserve"><value>Update failures:</value></data>
+  <data name="CommPromoFolder" xml:space="preserve"><value>Promo folder:</value></data>
+  <data name="CommRequireSigned" xml:space="preserve"><value>Only accept signed lists</value></data>
+  <data name="CommRequireSignedHint" xml:space="preserve"><value>Requires the community to publish a .sig file next to every list. Leave off if your community does not sign yet.</value></data>
+  <data name="CommPublicKey" xml:space="preserve"><value>Public key:</value></data>
+  <data name="CommRawHeader" xml:space="preserve"><value>Full configuration (community_config.json)</value></data>
+  <data name="CommApplyRaw" xml:space="preserve"><value>Copy into the fields</value></data>
+  <data name="CommResetDefaults" xml:space="preserve"><value>Restore defaults</value></data>
+  <data name="CommExportProfile" xml:space="preserve"><value>Export profile…</value></data>
+  <data name="CommImportProfile" xml:space="preserve"><value>Import profile…</value></data>
+  <data name="CommShowRaw" xml:space="preserve"><value>Show raw</value></data>
+  <data name="CommHideRaw" xml:space="preserve"><value>Hide raw</value></data>
+  <data name="CommRefreshStarted" xml:space="preserve"><value>Update started…</value></data>
+  <data name="CommListSummary" xml:space="preserve"><value>{0} trusted, {1} blocked{2}</value></data>
+  <data name="CommRawApplied" xml:space="preserve"><value>Copied. Click Save to keep it.</value></data>
+  <data name="CommResetQuestion" xml:space="preserve"><value>Reset every community setting to this Spotnet’s defaults?</value></data>
+  <data name="CommImportNotAProfile" xml:space="preserve"><value>That file does not contain a community profile.</value></data>
+  <data name="CommImportInvalid" xml:space="preserve"><value>The profile is not valid:</value></data>
+  <data name="CommImportLoaded" xml:space="preserve"><value>Profile loaded. Click Save to start using it.</value></data>
+  <data name="CommImportFailed" xml:space="preserve"><value>Import failed: </value></data>
+  <data name="IntegrTitle" xml:space="preserve"><value>External integrations</value></data>
+  <data name="IntegrIntro" xml:space="preserve"><value>Optional links to third-party services. Everything below is empty by default: an integration only does something once you fill in an address or a key yourself. Spots, comments and downloads work entirely without them.</value></data>
+  <data name="IntegrNewznabHeader" xml:space="preserve"><value>Newznab indexer</value></data>
+  <data name="IntegrDisabled" xml:space="preserve"><value>Disabled</value></data>
+  <data name="IntegrDisabledNoServer" xml:space="preserve"><value>Disabled — no server</value></data>
+  <data name="IntegrDisabledNoKey" xml:space="preserve"><value>Disabled — no key</value></data>
+  <data name="IntegrNewznabHint" xml:space="preserve"><value>An alternative spot source next to Usenet. Fill in both the server address and your own API key; while either is empty the indexer is not queried and no Newznab categories appear in the filter list.</value></data>
+  <data name="IntegrServerLabel" xml:space="preserve"><value>Server:</value></data>
+  <data name="IntegrServerHint" xml:space="preserve"><value>For example https://my-indexer.example/. Prefer https.</value></data>
+  <data name="IntegrApiKeyLabel" xml:space="preserve"><value>API key:</value></data>
+  <data name="IntegrReplace" xml:space="preserve"><value>Replace</value></data>
+  <data name="IntegrKeyMaskedHint" xml:space="preserve"><value>The key is shown masked. Click Replace to enter your own key, or to clear it.</value></data>
+  <data name="IntegrOmdbHeader" xml:space="preserve"><value>OMDb (film info)</value></data>
+  <data name="IntegrOmdbHint" xml:space="preserve"><value>Fills the film and series information block in the spot view with title, year, rating and poster. OMDb has required your own key since 2017; without one the block is hidden rather than shown empty.</value></data>
+  <data name="IntegrOmdbKeyHint" xml:space="preserve"><value>A free key can be requested at omdbapi.com. The call goes over https.</value></data>
+  <data name="IntegrNotSet" xml:space="preserve"><value>(not set)</value></data>
+  <data name="CleanupHeader" xml:space="preserve"><value>Cleaning up files</value></data>
+  <data name="CleanupIntro" xml:space="preserve"><value>Delete these file types after a successful download and unpack. An empty list switches cleaning off.</value></data>
+  <data name="CleanupExtensionTip" xml:space="preserve"><value>For example txt, .jpg or docx</value></data>
+  <data name="CleanupAdd" xml:space="preserve"><value>Add</value></data>
+  <data name="CleanupRemove" xml:space="preserve"><value>Remove</value></data>
+  <data name="CleanupAddSuggestions" xml:space="preserve"><value>Add suggestions</value></data>
+  <data name="CleanupSuggestions" xml:space="preserve"><value>Suggestions: nfo, sfv, srr, url, lnk, txt, doc, docx, htm and html. You can add image types yourself; covers are then removed too.</value></data>
+  <data name="CleanupExternalNzbGet" xml:space="preserve"><value>With an external NZBGet you set the cleaning up inside NZBGet.</value></data>
 </root>

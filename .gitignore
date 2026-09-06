@@ -1,4 +1,4 @@
-﻿# Build output
+# Build output
 /artifacts/
 /publish/
 **/bin/
@@ -22,4 +22,6 @@ build_diag.txt
 /spotnet-2.0.0.284-binary/
 /reference/spotnet-2.0.0.284-packages/
 /decompiled_200/
+/decompiled_classic/
+/spotnet-classic-source/
 /src/Spotnet/lib/Spotnet.exe

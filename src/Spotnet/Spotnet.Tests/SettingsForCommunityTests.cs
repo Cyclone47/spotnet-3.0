@@ -134,4 +134,47 @@ public sealed class SettingsForCommunityTests : IDisposable
             Assert.False(pane.VerifyFields());
         });
     }
+
+    [Fact]
+    public void ThePaneShowsClassicListsControls()
+    {
+        OnUiThread(() =>
+        {
+            Spotnet.Controls.SettingsForCommunity pane = new Spotnet.Controls.SettingsForCommunity();
+            CheckBox classicCheck = (CheckBox)pane.FindName("UseClassicListsCheckBox");
+            TextBox classicWhite = (TextBox)pane.FindName("ClassicWhitelistUrlTextBox");
+            TextBox classicBlack = (TextBox)pane.FindName("ClassicBlacklistUrlTextBox");
+
+            Assert.NotNull(classicCheck);
+            Assert.NotNull(classicWhite);
+            Assert.NotNull(classicBlack);
+
+            Assert.False(classicCheck.IsChecked);
+            Assert.Equal("https://spotlist.store/spotnet/whitelist.xml", classicWhite.Text);
+            Assert.Equal("https://spotlist.store/spotnet/blacklist.xml", classicBlack.Text);
+        });
+    }
+
+    [Fact]
+    public void ThePaneValidatesClassicUrlsWhenChecked()
+    {
+        OnUiThread(() =>
+        {
+            Spotnet.Controls.SettingsForCommunity pane = new Spotnet.Controls.SettingsForCommunity();
+            CheckBox classicCheck = (CheckBox)pane.FindName("UseClassicListsCheckBox");
+            TextBox classicWhite = (TextBox)pane.FindName("ClassicWhitelistUrlTextBox");
+
+            classicCheck.IsChecked = true;
+            classicWhite.Text = "";
+
+            Assert.False(pane.VerifyFields());
+
+            classicWhite.Text = "ftp://invalid.example";
+            Assert.False(pane.VerifyFields());
+
+            classicWhite.Text = "https://spotlist.store/spotnet/whitelist.xml";
+            Assert.True(pane.VerifyFields());
+        });
+    }
 }
+

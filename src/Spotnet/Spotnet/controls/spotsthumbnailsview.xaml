@@ -1,4 +1,4 @@
-﻿<controls:SpotsContainer x:Class="Spotnet.Controls.SpotsThumbnailsView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:system="clr-namespace:System;assembly=mscorlib" xmlns:controls="clr-namespace:Spotnet.Controls" xmlns:vm="clr-namespace:Spotnet.ViewModel" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:converters="clr-namespace:Spotnet.Converters" xmlns:i="http://schemas.microsoft.com/xaml/behaviors" xmlns:model="clr-namespace:Spotnet.Model" DataContext="{Binding SpotsList, Source={StaticResource Locator}}">
+<controls:SpotsContainer x:Class="Spotnet.Controls.SpotsThumbnailsView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:Spotnet.Localization" xmlns:system="clr-namespace:System;assembly=mscorlib" xmlns:controls="clr-namespace:Spotnet.Controls" xmlns:vm="clr-namespace:Spotnet.ViewModel" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:converters="clr-namespace:Spotnet.Converters" xmlns:i="http://schemas.microsoft.com/xaml/behaviors" xmlns:model="clr-namespace:Spotnet.Model" DataContext="{Binding SpotsList, Source={StaticResource Locator}}">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -89,7 +89,7 @@
               <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <TextBlock Grid.Row="0" Text="&#xF03E;" FontSize="20" Style="{StaticResource FontAwesome}" />
-            <TextBlock Grid.Row="1" Text="{x:Static p:Words.CannotLoad}" TextAlignment="Center" />
+            <TextBlock Grid.Row="1" Text="{loc:Loc CannotLoad}" TextAlignment="Center" />
           </Grid>
         </Border>
       </DataTemplate>
@@ -179,11 +179,11 @@
                         <StackPanel>
                           <TextBlock MaxWidth="400" Height="Auto" FontWeight="Bold" Margin="0,0,0,5" TextWrapping="Wrap" MaxHeight="70" Text="{Binding Data.TitelUpper, Mode=OneWay}" />
                           <TextBlock FontSize="{DynamicResource ContextMenuFontSize}">
-                            <Run Foreground="#FF4682B4" Text="{x:Static p:Words.ColumnFormat}" /> <Run Foreground="#FF4682B4" Text=":" /> <Run Text="{Binding Data.Formaat, Mode=OneWay}" /><LineBreak /><Run Foreground="#FF4682B4" Text="{x:Static p:Words.ColumnGenre}" /> <Run Foreground="#FF4682B4" Text=":" /> <Run Text="{Binding Data.Genre, Mode=OneWay}" /><LineBreak /><Run Foreground="#FF4682B4" Text="{x:Static p:Words.ColumnSize}" /> <Run Foreground="#FF4682B4" Text=":" /> <Run Text="{Binding Data.Omvang, Mode=OneWay}" /><LineBreak /><Run Foreground="#FF4682B4" Text="{x:Static p:Words.ColumnSender}" /> <Run Foreground="#FF4682B4" Text=":" /> <Run Text="{Binding Data.Afzender, Mode=OneWay}" /> <Run FontSize="{DynamicResource ContentFontSize}" Text=" (" /> <Run Text="{Binding Data.AfzenderId, Mode=OneWay}" /> <Run Text=")" /></TextBlock>
+                            <Run Foreground="#FF4682B4" Text="{loc:Loc ColumnFormat}" /> <Run Foreground="#FF4682B4" Text=":" /> <Run Text="{Binding Data.Formaat, Mode=OneWay}" /><LineBreak /><Run Foreground="#FF4682B4" Text="{loc:Loc ColumnGenre}" /> <Run Foreground="#FF4682B4" Text=":" /> <Run Text="{Binding Data.Genre, Mode=OneWay}" /><LineBreak /><Run Foreground="#FF4682B4" Text="{loc:Loc ColumnSize}" /> <Run Foreground="#FF4682B4" Text=":" /> <Run Text="{Binding Data.Omvang, Mode=OneWay}" /><LineBreak /><Run Foreground="#FF4682B4" Text="{loc:Loc ColumnSender}" /> <Run Foreground="#FF4682B4" Text=":" /> <Run Text="{Binding Data.Afzender, Mode=OneWay}" /> <Run FontSize="{DynamicResource ContentFontSize}" Text=" (" /> <Run Text="{Binding Data.AfzenderId, Mode=OneWay}" /> <Run Text=")" /></TextBlock>
                           <TextBlock TextOptions.TextFormattingMode="Display" RenderOptions.BitmapScalingMode="NearestNeighbor" Visibility="{Binding Data.Tag, Converter={converters:StringNullOrEmptyToVisibilityConverter}}">
-                            <Run Foreground="#FF4682B4" Text="{x:Static p:Words.ColumnTag}" /> <Run Foreground="#FF4682B4" Text=":" /> <Run Text="{Binding Data.Tag, Mode=OneWay}" /></TextBlock>
+                            <Run Foreground="#FF4682B4" Text="{loc:Loc ColumnTag}" /> <Run Foreground="#FF4682B4" Text=":" /> <Run Text="{Binding Data.Tag, Mode=OneWay}" /></TextBlock>
                           <TextBlock TextOptions.TextFormattingMode="Display" RenderOptions.BitmapScalingMode="NearestNeighbor">
-                            <Run Foreground="#FF4682B4" Text="{x:Static p:Words.ColumnDate}" /> <Run Foreground="#FF4682B4" Text=":" /> <Run Text="{Binding Data.Datum, Mode=OneWay}" /><LineBreak /><Run Foreground="#FF4682B4" Text="{x:Static p:Words.NumberOfSpamReports}" /> <Run Foreground="#FF4682B4" Text=":" /> <Run Text="{Binding Data.NumberOfSpamReports, Mode=OneWay}" /></TextBlock>
+                            <Run Foreground="#FF4682B4" Text="{loc:Loc ColumnDate}" /> <Run Foreground="#FF4682B4" Text=":" /> <Run Text="{Binding Data.Datum, Mode=OneWay}" /><LineBreak /><Run Foreground="#FF4682B4" Text="{loc:Loc NumberOfSpamReports}" /> <Run Foreground="#FF4682B4" Text=":" /> <Run Text="{Binding Data.NumberOfSpamReports, Mode=OneWay}" /></TextBlock>
                         </StackPanel>
                         <Grid Row="1" Margin="0,7,0,0" HorizontalAlignment="Left">
                           <Grid.ColumnDefinitions>
@@ -244,7 +244,7 @@
   <Grid>
     <DockPanel Name="Dock" Dock="Bottom" Height="Auto" Width="Auto" LastChildFill="True">
       <Panel.Background><DynamicResource ResourceKey="SpotBackgroundBrush" /></Panel.Background>
-      <controls:WarningTip DockPanel.Dock="Top" Focusable="False" Margin="0,1,0,-5" Text="{x:Static p:Words.DbIsNotUpToDateWarning}" Visibility="{Binding SpotsDbIsNotUpToDateWarningVisibility, Mode=TwoWay}" />
+      <controls:WarningTip DockPanel.Dock="Top" Focusable="False" Margin="0,1,0,-5" Text="{loc:Loc DbIsNotUpToDateWarning}" Visibility="{Binding SpotsDbIsNotUpToDateWarningVisibility, Mode=TwoWay}" />
       <Grid DockPanel.Dock="Top">
         <ListBox Name="MainListBox" ScrollViewer.HorizontalScrollBarVisibility="Disabled" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" ScrollViewer.IsDeferredScrollingEnabled="True" ItemTemplate="{StaticResource ThumbnailTemplate}" ItemContainerStyle="{StaticResource ThumbnailContainerStyle}" SelectionMode="Single" Focusable="True" Style="{DynamicResource ThumbsListBoxStyle}" Visibility="{Binding Items.IsEmpty, Converter={StaticResource BooleanToFalseVisibilityConverter}, ElementName=MainListBox}" ItemsSource="{Binding}" SelectedItem="{Binding SelectedItem, Mode=TwoWay}" PreviewKeyDown="Spots_PreviewKeyDown" MouseDoubleClick="Spots_MouseDoubleClick" PreviewMouseDown="Spots_PreviewMouseDown" ContextMenuOpening="Spots_ContextMenuOpening" ScrollViewer.ScrollChanged="HandleScrollChanged">
           <ItemsControl.ItemsPanel>

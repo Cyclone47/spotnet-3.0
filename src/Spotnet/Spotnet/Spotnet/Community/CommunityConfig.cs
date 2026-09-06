@@ -41,6 +41,15 @@ public class CommunityModeration
     public string ModeratorKeysUrl { get; set; } = "";
 
     /// <summary>
+    /// Wanneer ingeschakeld, worden ook de actieve Spotnet Classic (spotlist.store XML)
+    /// lijsten opgehaald voor vertrouwde spotters en blacklist.
+    /// </summary>
+    public bool UseClassicLists { get; set; } = false;
+
+    public string ClassicWhitelistUrl { get; set; } = "https://spotlist.store/spotnet/whitelist.xml";
+    public string ClassicBlacklistUrl { get; set; } = "https://spotlist.store/spotnet/blacklist.xml";
+
+    /// <summary>
     /// RSA public key, in the same XML form as the update key, against which a list's
     /// detached "&lt;list&gt;.sig" is checked. Empty means the lists are taken unsigned,
     /// which is what the current server serves.
@@ -407,6 +416,11 @@ public class CommunityConfig
         RequireUrl(errors, Moderation.BlacklistUrl, "Blacklist-URL", required: Moderation.Enabled);
         RequireUrl(errors, Moderation.SpotWhitelistUrl, "Spot-whitelist-URL", required: Moderation.Enabled);
         RequireUrl(errors, Moderation.SpotBlacklistUrl, "Spot-blacklist-URL", required: Moderation.Enabled);
+        if (Moderation.Enabled && Moderation.UseClassicLists)
+        {
+            RequireUrl(errors, Moderation.ClassicWhitelistUrl, "Classic-whitelist-URL", required: true);
+            RequireUrl(errors, Moderation.ClassicBlacklistUrl, "Classic-blacklist-URL", required: true);
+        }
         RequireUrl(errors, Moderation.ModeratorKeysUrl, "Moderatorsleutels-URL", required: false);
 
         RequireUrl(errors, Services.ResponseSiteUrl, "Feedbacksite-URL", required: false);

@@ -1,4 +1,4 @@
-<UserControl x:Class="Spotnet.Controls.SettingsForCommon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:controls="clr-namespace:Spotnet.Controls" FontSize="{Binding ElementName=VisibilityVmProxy, Path=DataContext.FontSize, Mode=OneWay}">
+<UserControl x:Class="Spotnet.Controls.SettingsForCommon" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:Spotnet.Localization" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:controls="clr-namespace:Spotnet.Controls" FontSize="{Binding ElementName=VisibilityVmProxy, Path=DataContext.FontSize, Mode=OneWay}">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <Storyboard x:Key="FieldAnimationStoryboard">
@@ -7,14 +7,14 @@
     </ResourceDictionary>
   </FrameworkElement.Resources>
   <StackPanel Orientation="Vertical">
-    <CheckBox Name="ShowSug" Content="{x:Static p:Words.MenuSearchSuggestions}" Margin="0,7,0,0" />
-    <CheckBox Name="SystemTray" Content="{x:Static p:Words.MenuMinimizeToTray}" Margin="0,7,0,0" />
+    <CheckBox Name="ShowSug" Content="{loc:Loc MenuSearchSuggestions}" Margin="0,7,0,0" />
+    <CheckBox Name="SystemTray" Content="{loc:Loc MenuMinimizeToTray}" Margin="0,7,0,0" />
     <StackPanel Orientation="Horizontal" Margin="0,7,0,0">
-      <CheckBox Name="ShowDesktopNotifications" Content="{x:Static p:Words.MenuShowDesktopNotifications}" VerticalAlignment="Center" />
-      <Button Name="TestNotificationButton" Content="{x:Static p:Words.MenuTestNotification}" Margin="12,0,0,0" Padding="8,1" Click="TestNotificationButton_OnClick" />
+      <CheckBox Name="ShowDesktopNotifications" Content="{loc:Loc MenuShowDesktopNotifications}" VerticalAlignment="Center" />
+      <Button Name="TestNotificationButton" Content="{loc:Loc MenuTestNotification}" Margin="12,0,0,0" Padding="8,1" Click="TestNotificationButton_OnClick" />
     </StackPanel>
-    <CheckBox Name="UseSocks5Proxy" Visibility="Collapsed" Content="{x:Static p:Words.UseSocks5Proxy}" Margin="0,7,0,0" />
+    <CheckBox Name="UseSocks5Proxy" Visibility="Collapsed" Content="{loc:Loc UseSocks5Proxy}" Margin="0,7,0,0" />
     <Separator Margin="0,14,0,0" />
-    <TextBlock Text="{x:Static p:Words.VPNAdvice}" TextWrapping="Wrap" Margin="0,10,0,0" Opacity="0.75" />
+    <TextBlock Text="{loc:Loc VPNAdvice}" TextWrapping="Wrap" Margin="0,10,0,0" Opacity="0.75" />
   </StackPanel>
 </UserControl>

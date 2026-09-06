@@ -1,4 +1,4 @@
-<UserControl x:Class="Spotnet.Controls.SpotsListToolbar" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:controls="clr-namespace:Spotnet.Controls">
+<UserControl x:Class="Spotnet.Controls.SpotsListToolbar" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:Spotnet.Localization" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:controls="clr-namespace:Spotnet.Controls">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <BitmapImage x:Key="PlayIcon" UriSource="..\Resources\ImagesInternal\playiconsmall.png" />
@@ -30,8 +30,8 @@
             <Image Source="{StaticResource PlayIcon}" Margin="1,0,1,0" ToolTip="{Binding TooltipPlay}" Cursor="{Binding CursorPlay}" Width="{Binding IconSize}" Visibility="{Binding VisibilityPlay}" Opacity="{Binding OpacityDownloadNzb}" MouseLeftButtonUp="Play_MouseLeftButtonUp" />
             <Image Source="{StaticResource DownloadNzbIcon}" Margin="1,0,1,0" ToolTip="{Binding TooltipDownloadNzb}" Cursor="{Binding CursorDownloadNzb}" Width="{Binding IconSize}" Opacity="{Binding OpacityDownloadNzb}" MouseLeftButtonUp="DownloadNzb_MouseLeftButtonUp" />
             <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="1,0,1,0" />
-            <Image Name="ComplainImg" Source="{StaticResource ComplainIcon}" ToolTip="{x:Static p:Words.ComplainToSpot}" Cursor="Hand" Margin="1,0,1,0" Width="{Binding IconSize}" MouseLeftButtonUp="Complain_MouseLeftButtonUp" />
-            <Image Name="DeleteImg" Source="{StaticResource DeleteIcon}" ToolTip="{x:Static p:Words.SpotRemove}" Cursor="Hand" Margin="1,0,1,0" Visibility="Collapsed" Width="{Binding IconSize}" MouseLeftButtonUp="Delete_MouseLeftButtonUp" />
+            <Image Name="ComplainImg" Source="{StaticResource ComplainIcon}" ToolTip="{loc:Loc ComplainToSpot}" Cursor="Hand" Margin="1,0,1,0" Width="{Binding IconSize}" MouseLeftButtonUp="Complain_MouseLeftButtonUp" />
+            <Image Name="DeleteImg" Source="{StaticResource DeleteIcon}" ToolTip="{loc:Loc SpotRemove}" Cursor="Hand" Margin="1,0,1,0" Visibility="Collapsed" Width="{Binding IconSize}" MouseLeftButtonUp="Delete_MouseLeftButtonUp" />
             <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="1,0,1,0" />
             <Image Source="{StaticResource WhiteListIcon}" Margin="1,0,2,0" ToolTip="{Binding TooltipWhiteList}" Cursor="{Binding CursorWhiteList}" Width="{Binding IconSize}" Opacity="{Binding OpacityWhiteList}" MouseLeftButtonUp="WhiteList_MouseLeftButtonUp" />
             <Image Source="{StaticResource BlackListIcon}" Margin="2,0,-7,0" ToolTip="{Binding TooltipBlackList}" Cursor="{Binding CursorBlackList}" Width="{Binding IconSize}" Opacity="{Binding OpacityBlackList}" MouseLeftButtonUp="BlackList_MouseLeftButtonUp" />

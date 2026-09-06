@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NLog;
 using Spotnet.Helpers;
+using Spotnet.Properties;
 
 namespace Spotnet.Remote;
 
@@ -33,7 +34,7 @@ public class CloudflareTunnelService
 
     public TunnelState State { get; private set; } = TunnelState.Stopped;
     public string TunnelUrl { get; private set; } = "";
-    public string StatusMessage { get; private set; } = "Uitgeschakeld";
+    public string StatusMessage { get; private set; } = Words.RemoteDisabled;
     public int DownloadPercentage { get; private set; } = 0;
 
     public event Action<TunnelState, string> StateChanged;
@@ -129,12 +130,12 @@ public class CloudflareTunnelService
         }
         catch (OperationCanceledException)
         {
-            SetState(TunnelState.Stopped, "Gestopt");
+            SetState(TunnelState.Stopped, Words.CloudflareStopped);
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Fout bij starten van Cloudflare Tunnel: {0}", ex.Message);
-            SetState(TunnelState.Failed, $"Fout: {ex.Message}");
+            SetState(TunnelState.Failed, string.Format(Words.CloudflareError, ex.Message));
         }
     }
 
@@ -295,7 +296,7 @@ public class CloudflareTunnelService
             }
 
             TunnelUrl = "";
-            SetState(TunnelState.Stopped, "Gestopt");
+            SetState(TunnelState.Stopped, Words.CloudflareStopped);
             Log.Info("Cloudflare Tunnel stopped.");
         }
 

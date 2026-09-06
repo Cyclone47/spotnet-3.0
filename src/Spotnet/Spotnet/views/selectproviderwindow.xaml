@@ -1,4 +1,4 @@
-<metro:MetroWindow x:Class="Spotnet.Views.SelectProviderWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:controls="clr-namespace:Spotnet.Controls" xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls" Title="{x:Static p:Words.SelectProvider}" ShowInTaskbar="False" ResizeMode="CanResizeWithGrip" Width="720" Height="700" MinWidth="480" MinHeight="360" WindowStartupLocation="CenterOwner" Topmost="False" GlowBrush="{DynamicResource AccentColorBrush}" WindowTransitionsEnabled="True" Icon="/Resources/ImagesInternal/smallspotnet.ico" ShowIconOnTitleBar="False" ShowTitleBar="True" ShowActivated="True" WindowTitleBrush="{DynamicResource WindowTitleColorBrush}" TitleForeground="{DynamicResource WindowTitleForegroundBrush}" NonActiveWindowTitleBrush="{DynamicResource NonActiveWindowTitleBrush}" xmlns:views="clr-namespace:Spotnet.Views" Background="{DynamicResource GrayBrush10}" FontSize="{Binding ElementName=VisibilityVmProxy, Path=DataContext.FontSize, Mode=OneWay}">
+<metro:MetroWindow x:Class="Spotnet.Views.SelectProviderWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:Spotnet.Localization" xmlns:p="clr-namespace:Spotnet.Properties" xmlns:controls="clr-namespace:Spotnet.Controls" xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls" Title="{loc:Loc SelectProvider}" ShowInTaskbar="False" ResizeMode="CanResizeWithGrip" Width="720" Height="700" MinWidth="480" MinHeight="360" WindowStartupLocation="CenterOwner" Topmost="False" GlowBrush="{DynamicResource AccentColorBrush}" WindowTransitionsEnabled="True" Icon="/Resources/ImagesInternal/smallspotnet.ico" ShowIconOnTitleBar="False" ShowTitleBar="True" ShowActivated="True" WindowTitleBrush="{DynamicResource WindowTitleColorBrush}" TitleForeground="{DynamicResource WindowTitleForegroundBrush}" NonActiveWindowTitleBrush="{DynamicResource NonActiveWindowTitleBrush}" xmlns:views="clr-namespace:Spotnet.Views" Background="{DynamicResource GrayBrush10}" FontSize="{Binding ElementName=VisibilityVmProxy, Path=DataContext.FontSize, Mode=OneWay}">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <!-- The invalid-field cue is a border colour rather than a LemonChiffon fill, so it stays
@@ -74,8 +74,8 @@
     <!-- Header -->
     <Border Grid.Row="0" Background="{DynamicResource WhiteBrush}" BorderBrush="{DynamicResource GrayBrush7}" BorderThickness="0,0,0,1" Padding="24,18,24,18">
       <StackPanel>
-        <TextBlock Text="{x:Static p:Words.SelectProvider}" FontSize="21" FontWeight="SemiBold" Foreground="{DynamicResource GrayBrush1}" TextWrapping="Wrap" />
-        <TextBlock Text="{x:Static p:Words.SelectProviderSubtitle}" Foreground="{DynamicResource GrayBrush2}" TextWrapping="Wrap" Margin="0,3,0,0" />
+        <TextBlock Text="{loc:Loc SelectProvider}" FontSize="21" FontWeight="SemiBold" Foreground="{DynamicResource GrayBrush1}" TextWrapping="Wrap" />
+        <TextBlock Text="{loc:Loc SelectProviderSubtitle}" Foreground="{DynamicResource GrayBrush2}" TextWrapping="Wrap" Margin="0,3,0,0" />
       </StackPanel>
     </Border>
 
@@ -85,8 +85,8 @@
         <!-- Provider -->
         <Border Style="{StaticResource CardStyle}">
           <StackPanel>
-            <TextBlock Style="{StaticResource SectionHeadingStyle}" Text="{x:Static p:Words.Provider}" />
-            <TextBlock Style="{StaticResource HintTextStyle}" Text="{x:Static p:Words.SearchProviderHint}" />
+            <TextBlock Style="{StaticResource SectionHeadingStyle}" Text="{loc:Loc Provider}" />
+            <TextBlock Style="{StaticResource HintTextStyle}" Text="{loc:Loc SearchProviderHint}" />
             <ComboBox Name="ProviderBox" IsEditable="True" IsTextSearchEnabled="False" IsSynchronizedWithCurrentItem="False" StaysOpenOnEdit="True" MaxDropDownHeight="340" Height="32" TabIndex="0" ItemTemplate="{StaticResource ProviderItemTemplate}" GotFocus="ProviderBox_GotFocus" PreviewKeyDown="ProviderBox_PreviewKeyDown" PreviewTextInput="ProviderBox_PreviewTextInput" DropDownClosed="ProviderBox_DropDownClosed">
               <ItemsControl.GroupStyle>
                 <GroupStyle ContainerStyle="{StaticResource ProviderGroupHeaderStyle}" />
@@ -99,8 +99,8 @@
         <!-- Account -->
         <Border Style="{StaticResource CardStyle}">
           <StackPanel>
-            <TextBlock Style="{StaticResource SectionHeadingStyle}" Text="{x:Static p:Words.Account}" />
-            <TextBlock Style="{StaticResource HintTextStyle}" Text="{x:Static p:Words.AccountSectionHint}" />
+            <TextBlock Style="{StaticResource SectionHeadingStyle}" Text="{loc:Loc Account}" />
+            <TextBlock Style="{StaticResource HintTextStyle}" Text="{loc:Loc AccountSectionHint}" />
             <Grid>
               <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -110,13 +110,13 @@
                 <ColumnDefinition Width="150" />
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
-              <TextBlock Name="UsernameLabel" Grid.Row="0" Grid.Column="0" Style="{StaticResource FieldLabelStyle}" Text="{x:Static p:Words.Username}" />
+              <TextBlock Name="UsernameLabel" Grid.Row="0" Grid.Column="0" Style="{StaticResource FieldLabelStyle}" Text="{loc:Loc Username}" />
               <Border Name="UserNameTextBoxBorder" Grid.Row="0" Grid.Column="1" Style="{StaticResource FieldBorderStyle}" Margin="0,0,0,8">
-                <TextBox Name="UserNameTextBox" Height="30" TabIndex="1" ToolTip="{x:Static p:Words.EnterUsername}" GotFocus="UserNameTextBox_GotFocus" TextChanged="UserNameTextBox_OnTextChanged" />
+                <TextBox Name="UserNameTextBox" Height="30" TabIndex="1" ToolTip="{loc:Loc EnterUsername}" GotFocus="UserNameTextBox_GotFocus" TextChanged="UserNameTextBox_OnTextChanged" />
               </Border>
-              <TextBlock Name="PasswordLabel" Grid.Row="1" Grid.Column="0" Style="{StaticResource FieldLabelStyle}" Text="{x:Static p:Words.Password}" />
+              <TextBlock Name="PasswordLabel" Grid.Row="1" Grid.Column="0" Style="{StaticResource FieldLabelStyle}" Text="{loc:Loc Password}" />
               <Border Name="PasswordTextBoxBorder" Grid.Row="1" Grid.Column="1" Style="{StaticResource FieldBorderStyle}">
-                <PasswordBox Name="PasswordTextBox" Height="30" TabIndex="2" ToolTip="{x:Static p:Words.EnterPassword}" GotFocus="PasswordTextBox_GotFocus" PasswordChanged="PasswordTextBox_OnPasswordChanged" />
+                <PasswordBox Name="PasswordTextBox" Height="30" TabIndex="2" ToolTip="{loc:Loc EnterPassword}" GotFocus="PasswordTextBox_GotFocus" PasswordChanged="PasswordTextBox_OnPasswordChanged" />
               </Border>
             </Grid>
           </StackPanel>
@@ -128,7 +128,7 @@
                stays dark under ModernDark. -->
           <Expander Name="AdvancedSettingsExpander" IsExpanded="False" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource GrayBrush1}">
             <Expander.Header>
-              <TextBlock Text="{x:Static p:Words.AdvancedSettings}" FontWeight="SemiBold" Foreground="{DynamicResource GrayBrush1}" VerticalAlignment="Center" />
+              <TextBlock Text="{loc:Loc AdvancedSettings}" FontWeight="SemiBold" Foreground="{DynamicResource GrayBrush1}" VerticalAlignment="Center" />
             </Expander.Header>
             <Grid Margin="0,14,0,6">
               <Grid.RowDefinitions>
@@ -146,12 +146,12 @@
                 <ColumnDefinition Width="110" />
               </Grid.ColumnDefinitions>
 
-              <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource FieldLabelStyle}" Text="{x:Static p:Words.HeadersServer}" />
+              <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource FieldLabelStyle}" Text="{loc:Loc HeadersServer}" />
               <Border Name="HeaderServerTextBoxBorder" Grid.Row="0" Grid.Column="1" Style="{StaticResource FieldBorderStyle}" Margin="0,0,8,8">
-                <TextBox Name="HeaderServerTextBox" Height="30" TabIndex="3" ToolTip="{x:Static p:Words.EnterServerAddress}" GotFocus="HeaderServerTextBox_GotFocus" TextChanged="HeaderServerTextBox_TextChanged" />
+                <TextBox Name="HeaderServerTextBox" Height="30" TabIndex="3" ToolTip="{loc:Loc EnterServerAddress}" GotFocus="HeaderServerTextBox_GotFocus" TextChanged="HeaderServerTextBox_TextChanged" />
               </Border>
               <Border Name="HeaderServerPortComboBoxBorder" Grid.Row="0" Grid.Column="2" Style="{StaticResource FieldBorderStyle}" Margin="0,0,0,8">
-                <ComboBox Name="HeaderServerPortComboBox" IsEditable="True" Height="30" TabIndex="4" ToolTip="{x:Static p:Words.SelectPort}" GotFocus="HeaderServerPortComboBox_GotFocus" TextBoxBase.TextChanged="HeaderServerPortComboBox_OnTextChanged">
+                <ComboBox Name="HeaderServerPortComboBox" IsEditable="True" Height="30" TabIndex="4" ToolTip="{loc:Loc SelectPort}" GotFocus="HeaderServerPortComboBox_GotFocus" TextBoxBase.TextChanged="HeaderServerPortComboBox_OnTextChanged">
                   <ComboBoxItem Content="563" IsSelected="True" />
                   <ComboBoxItem Content="443" />
                   <ComboBoxItem Content="119" />
@@ -159,13 +159,13 @@
                 </ComboBox>
               </Border>
 
-              <CheckBox Name="DownloadServerCheckBox" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Content="{x:Static p:Words.SeparateDownloadServer}" Foreground="{DynamicResource GrayBrush1}" Margin="0,4,0,6" Checked="DownloadServerCheckBox_OnChecked" Unchecked="DownloadServerCheckBox_OnUnchecked" />
-              <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource FieldLabelStyle}" Text="{x:Static p:Words.DownloadServer}" />
+              <CheckBox Name="DownloadServerCheckBox" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Content="{loc:Loc SeparateDownloadServer}" Foreground="{DynamicResource GrayBrush1}" Margin="0,4,0,6" Checked="DownloadServerCheckBox_OnChecked" Unchecked="DownloadServerCheckBox_OnUnchecked" />
+              <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource FieldLabelStyle}" Text="{loc:Loc DownloadServer}" />
               <Border Name="DownloadServerTextBoxBorder" Grid.Row="2" Grid.Column="1" Style="{StaticResource FieldBorderStyle}" Margin="0,0,8,8">
-                <TextBox Name="DownloadServerTextBox" Height="30" TabIndex="5" IsEnabled="False" ToolTip="{x:Static p:Words.EnterServerAddress}" GotFocus="DownloadServerTextBox_GotFocus" TextChanged="DownloadServerTextBox_TextChanged" />
+                <TextBox Name="DownloadServerTextBox" Height="30" TabIndex="5" IsEnabled="False" ToolTip="{loc:Loc EnterServerAddress}" GotFocus="DownloadServerTextBox_GotFocus" TextChanged="DownloadServerTextBox_TextChanged" />
               </Border>
               <Border Name="DownloadServerPortComboBoxBorder" Grid.Row="2" Grid.Column="2" Style="{StaticResource FieldBorderStyle}" Margin="0,0,0,8">
-                <ComboBox Name="DownloadServerPortComboBox" IsEditable="True" Height="30" TabIndex="6" IsEnabled="False" ToolTip="{x:Static p:Words.SelectPort}" GotFocus="DownloadServerPortComboBox_GotFocus">
+                <ComboBox Name="DownloadServerPortComboBox" IsEditable="True" Height="30" TabIndex="6" IsEnabled="False" ToolTip="{loc:Loc SelectPort}" GotFocus="DownloadServerPortComboBox_GotFocus">
                   <ComboBoxItem Content="563" IsSelected="True" />
                   <ComboBoxItem Content="443" />
                   <ComboBoxItem Content="119" />
@@ -173,13 +173,13 @@
                 </ComboBox>
               </Border>
 
-              <CheckBox Name="UploadServerCheckBox" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Content="{x:Static p:Words.SeparateUploadServer}" Foreground="{DynamicResource GrayBrush1}" Margin="0,4,0,6" Checked="UploadServerCheckBox_OnChecked" Unchecked="UploadServerCheckBox_OnUnchecked" />
-              <TextBlock Grid.Row="4" Grid.Column="0" Style="{StaticResource FieldLabelStyle}" Text="{x:Static p:Words.UploadServer}" />
+              <CheckBox Name="UploadServerCheckBox" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Content="{loc:Loc SeparateUploadServer}" Foreground="{DynamicResource GrayBrush1}" Margin="0,4,0,6" Checked="UploadServerCheckBox_OnChecked" Unchecked="UploadServerCheckBox_OnUnchecked" />
+              <TextBlock Grid.Row="4" Grid.Column="0" Style="{StaticResource FieldLabelStyle}" Text="{loc:Loc UploadServer}" />
               <Border Name="UploadServerTextBoxBorder" Grid.Row="4" Grid.Column="1" Style="{StaticResource FieldBorderStyle}" Margin="0,0,8,8">
-                <TextBox Name="UploadServerTextBox" Height="30" TabIndex="7" IsEnabled="False" ToolTip="{x:Static p:Words.EnterServerAddress}" GotFocus="UploadServerTextBox_GotFocus" TextChanged="UploadServerTextBox_TextChanged" />
+                <TextBox Name="UploadServerTextBox" Height="30" TabIndex="7" IsEnabled="False" ToolTip="{loc:Loc EnterServerAddress}" GotFocus="UploadServerTextBox_GotFocus" TextChanged="UploadServerTextBox_TextChanged" />
               </Border>
               <Border Name="UploadServerPortComboBoxBorder" Grid.Row="4" Grid.Column="2" Style="{StaticResource FieldBorderStyle}" Margin="0,0,0,8">
-                <ComboBox Name="UploadServerPortComboBox" IsEditable="True" Height="30" TabIndex="8" IsEnabled="False" ToolTip="{x:Static p:Words.SelectPort}" GotFocus="UploadServerPortComboBox_GotFocus">
+                <ComboBox Name="UploadServerPortComboBox" IsEditable="True" Height="30" TabIndex="8" IsEnabled="False" ToolTip="{loc:Loc SelectPort}" GotFocus="UploadServerPortComboBox_GotFocus">
                   <ComboBoxItem Content="563" IsSelected="True" />
                   <ComboBoxItem Content="443" />
                   <ComboBoxItem Content="119" />
@@ -187,8 +187,8 @@
                 </ComboBox>
               </Border>
 
-              <TextBlock Name="ConnectionsLabel" Grid.Row="5" Grid.Column="0" Style="{StaticResource FieldLabelStyle}" Text="{x:Static p:Words.Connections}" />
-              <ComboBox Name="ConnectionsCombo" Grid.Row="5" Grid.Column="1" IsEditable="True" Height="30" TabIndex="9" ToolTip="{x:Static p:Words.SelectNumberOfConnections}" Margin="0,0,8,0">
+              <TextBlock Name="ConnectionsLabel" Grid.Row="5" Grid.Column="0" Style="{StaticResource FieldLabelStyle}" Text="{loc:Loc Connections}" />
+              <ComboBox Name="ConnectionsCombo" Grid.Row="5" Grid.Column="1" IsEditable="True" Height="30" TabIndex="9" ToolTip="{loc:Loc SelectNumberOfConnections}" Margin="0,0,8,0">
                 <ComboBoxItem Content="Auto" IsSelected="True" />
                 <ComboBoxItem Content="4" />
                 <ComboBoxItem Content="6" />
@@ -201,7 +201,7 @@
                 <ComboBoxItem Content="30" />
               </ComboBox>
 
-              <TextBlock Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3" Style="{StaticResource HintTextStyle}" FontSize="11" Margin="0,12,0,0" Text="{x:Static p:Words.ConnectionSecuredWithSsl}" />
+              <TextBlock Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3" Style="{StaticResource HintTextStyle}" FontSize="11" Margin="0,12,0,0" Text="{loc:Loc ConnectionSecuredWithSsl}" />
             </Grid>
           </Expander>
         </Border>
@@ -220,8 +220,8 @@
           <TextBlock Name="StatusLabel" Foreground="{DynamicResource GrayBrush2}" VerticalAlignment="Center" Margin="10,0,0,0" TextTrimming="CharacterEllipsis" />
         </StackPanel>
         <StackPanel Grid.Column="1" Orientation="Horizontal">
-          <Button Name="CancelButton" MinWidth="118" Height="34" IsEnabled="True" Content="{x:Static p:Words.Cancel}" TabIndex="11" Margin="0,0,10,0" Click="CancelButton_Click" />
-          <Button Name="ConnectButton" MinWidth="140" Height="34" IsDefault="True" IsEnabled="False" TabIndex="10" Content="{x:Static p:Words.Connect}" Style="{DynamicResource MahApps.Styles.Button.Square.Accent}" Click="ConnectButton_Click" />
+          <Button Name="CancelButton" MinWidth="118" Height="34" IsEnabled="True" Content="{loc:Loc Cancel}" TabIndex="11" Margin="0,0,10,0" Click="CancelButton_Click" />
+          <Button Name="ConnectButton" MinWidth="140" Height="34" IsDefault="True" IsEnabled="False" TabIndex="10" Content="{loc:Loc Connect}" Style="{DynamicResource MahApps.Styles.Button.Square.Accent}" Click="ConnectButton_Click" />
         </StackPanel>
       </Grid>
     </Border>

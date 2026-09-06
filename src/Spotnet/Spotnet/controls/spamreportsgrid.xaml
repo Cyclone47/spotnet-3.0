@@ -1,11 +1,11 @@
-<UserControl x:Class="Spotnet.Controls.SpamReportsGrid" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:properties="clr-namespace:Spotnet.Properties" xmlns:controls="clr-namespace:Spotnet.Controls" Width="Auto" Height="Auto">
+<UserControl x:Class="Spotnet.Controls.SpamReportsGrid" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:Spotnet.Localization" xmlns:properties="clr-namespace:Spotnet.Properties" xmlns:controls="clr-namespace:Spotnet.Controls" Width="Auto" Height="Auto">
   <FrameworkElement.Resources>
     <ResourceDictionary>
       <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </ResourceDictionary>
   </FrameworkElement.Resources>
   <StackPanel Name="MainStackPanel">
-    <TextBlock FontFamily="Tahoma" FontWeight="Bold" Text="{x:Static properties:Words.SpamReports}" Margin="0" />
+    <TextBlock FontFamily="Tahoma" FontWeight="Bold" Text="{loc:Loc SpamReports}" Margin="0" />
     <ListBox BorderBrush="#00FFFFFF" Grid.IsSharedSizeScope="True" HorizontalContentAlignment="Stretch" Margin="0,5,5,5" Background="#00FFFFFF" ItemsSource="{Binding Reports}">
       <ItemsControl.ItemTemplate>
         <DataTemplate>
@@ -21,6 +21,6 @@
       </ItemsControl.ItemContainerStyle>
     </ListBox>
     <controls:ProgressRing HorizontalAlignment="Center" VerticalAlignment="Center" Width="15" Height="15" Margin="5,0,5,5" IsActive="{Binding IsReportsLoading, Mode=OneWay}" Visibility="{Binding IsReportsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" />
-    <TextBlock FontFamily="Tahoma" Text="{x:Static properties:Words.NoSpamReportsFound}" Margin="0,0,5,5" Visibility="{Binding IsNoReports, Converter={StaticResource BooleanToVisibilityConverter}}" />
+    <TextBlock FontFamily="Tahoma" Text="{loc:Loc NoSpamReportsFound}" Margin="0,0,5,5" Visibility="{Binding IsNoReports, Converter={StaticResource BooleanToVisibilityConverter}}" />
   </StackPanel>
 </UserControl>
