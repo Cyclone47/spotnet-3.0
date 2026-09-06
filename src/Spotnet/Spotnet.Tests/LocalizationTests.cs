@@ -8,6 +8,7 @@ using System.Threading;
 using System.Windows.Controls;
 using System.Windows.Markup;
 using System.Xml.Linq;
+using Spotnet.Helpers;
 using Spotnet.Localization;
 using Xunit;
 
@@ -225,5 +226,129 @@ public sealed class LocalizationTests
         Assert.Equal(new[] { "Item[]" }, raised);
 
         void Record(object sender, System.ComponentModel.PropertyChangedEventArgs e) => raised.Add(e.PropertyName);
+    }
+
+    [Theory]
+    [InlineData("Nieuw", "New")]
+    [InlineData("Overzicht", "Overview")]
+    [InlineData("Films", "Movies")]
+    [InlineData("Series", "Series")]
+    [InlineData("Boeken", "Books")]
+    [InlineData("Muziek", "Music")]
+    [InlineData("Spellen", "Games")]
+    [InlineData("Applicaties", "Applications")]
+    [InlineData("Erotiek", "Erotica")]
+    [InlineData("Laatste 24 uur", "Last 24 hours")]
+    [InlineData("Beeld", "Movies")]
+    [InlineData("Beeld - Genres", "Movies - Genres")]
+    [InlineData("Beeld - TV Series", "Movies - TV Series")]
+    [InlineData("Muziek - Genres", "Music - Genres")]
+    [InlineData("Spellen - Console", "Games - Console")]
+    [InlineData("Spellen - Mobile", "Games - Mobile")]
+    [InlineData("Applicaties - Mobile", "Applications - Mobile")]
+    [InlineData("Favorieten", "Favorites")]
+    [InlineData("Actie", "Action")]
+    [InlineData("Komedie", "Comedy")]
+    [InlineData("Documentaire", "Documentary")]
+    [InlineData("Oorlog", "War")]
+    public void FilterTranslationHelperTranslatesDefaultFiltersToEnglish(string dutch, string expectedEnglish)
+    {
+        var original = UserLanguageHelper.Culture;
+        try
+        {
+            UserLanguageHelper.Culture = CultureInfo.CreateSpecificCulture("en");
+            Assert.Equal(expectedEnglish, FilterTranslationHelper.GetTranslatedName(dutch));
+        }
+        finally
+        {
+            UserLanguageHelper.Culture = original;
+        }
+    }
+
+    [Theory]
+    [InlineData("New", "Nieuw")]
+    [InlineData("Overview", "Overzicht")]
+    [InlineData("Movies", "Films")]
+    [InlineData("Books", "Boeken")]
+    [InlineData("Music", "Muziek")]
+    [InlineData("Games", "Spellen")]
+    [InlineData("Applications", "Applicaties")]
+    [InlineData("Favorites", "Favorieten")]
+    [InlineData("Action", "Actie")]
+    public void FilterTranslationHelperTranslatesEnglishFiltersBackToDutch(string english, string expectedDutch)
+    {
+        var original = UserLanguageHelper.Culture;
+        try
+        {
+            UserLanguageHelper.Culture = CultureInfo.CreateSpecificCulture("nl");
+            Assert.Equal(expectedDutch, FilterTranslationHelper.GetTranslatedName(english));
+        }
+        finally
+        {
+            UserLanguageHelper.Culture = original;
+        }
+    }
+
+    [Fact]
+    public void FilterTranslationHelperPreservesWhitespaceAndNewCountInFilterViewModel()
+    {
+        var original = UserLanguageHelper.Culture;
+        try
+        {
+            UserLanguageHelper.Culture = CultureInfo.CreateSpecificCulture("en");
+
+            // Leading whitespace preserved
+            Assert.Equal(" New", FilterTranslationHelper.GetTranslatedName(" Nieuw"));
+            Assert.Equal("  Overview", FilterTranslationHelper.GetTranslatedName("  Overzicht"));
+
+            // FilterViewModel DisplayText integration
+            var vm = new Spotnet.ViewModel.FilterViewModel(" Overzicht", "cat!=9");
+            Assert.Equal(" Overview", vm.DisplayText);
+
+            vm.NewCount = 2;
+            Assert.Equal(" Overview (2)", vm.DisplayText);
+
+            var vmBooks = new Spotnet.ViewModel.FilterViewModel("Boeken", "cat=5");
+            vmBooks.NewCount = 1;
+            Assert.Equal("Books (1)", vmBooks.DisplayText);
+        }
+        finally
+        {
+            UserLanguageHelper.Culture = original;
+        }
+    }
+
+    [Fact]
+    public void FilterTranslationHelperLeavesCustomNamesUnchanged()
+    {
+        var original = UserLanguageHelper.Culture;
+        try
+        {
+            UserLanguageHelper.Culture = CultureInfo.CreateSpecificCulture("en");
+            Assert.Equal("Mijn Aangepaste Filter", FilterTranslationHelper.GetTranslatedName("Mijn Aangepaste Filter"));
+        }
+        finally
+        {
+            UserLanguageHelper.Culture = original;
+        }
+    }
+
+    [Fact]
+    public void FilterTranslationHelperTranslatesFilterSetNames()
+    {
+        var original = UserLanguageHelper.Culture;
+        try
+        {
+            UserLanguageHelper.Culture = CultureInfo.CreateSpecificCulture("en");
+            Assert.Equal("Custom", FilterTranslationHelper.GetTranslatedFilterSetName("Aangepast"));
+
+            UserLanguageHelper.Culture = CultureInfo.CreateSpecificCulture("nl");
+            Assert.Equal("Aangepast", FilterTranslationHelper.GetTranslatedFilterSetName("Custom"));
+            Assert.Equal("Aangepast", FilterTranslationHelper.GetTranslatedFilterSetName("Aangepast"));
+        }
+        finally
+        {
+            UserLanguageHelper.Culture = original;
+        }
     }
 }

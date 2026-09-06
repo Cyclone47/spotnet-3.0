@@ -24,6 +24,7 @@ using Spotnet.Extensions;
 using Spotnet.Helpers;
 using Spotnet.Model;
 using Spotnet.Properties;
+using Spotnet.Localization;
 using Spotnet.Utilities;
 using Spotnet.ViewModel;
 using Spotnet.Views;
@@ -250,7 +251,7 @@ public partial class LeftPanelUserControl : UserControl
         {
             MenuItem menuItem3 = new MenuItem
             {
-                Header = unchangableFilterNames,
+                Header = FilterTranslationHelper.GetTranslatedFilterSetName(unchangableFilterNames),
                 Tag = "FILTER|" + unchangableFilterNames,
                 IsChecked = unchangableFilterNames.Equals(Settings.Default.Filter),
                 FontStyle = FontStyles.Italic
@@ -263,7 +264,7 @@ public partial class LeftPanelUserControl : UserControl
         {
             MenuItem menuItem4 = new MenuItem
             {
-                Header = changableFilterNames,
+                Header = FilterTranslationHelper.GetTranslatedFilterSetName(changableFilterNames),
                 Tag = "FILTER|" + changableFilterNames,
                 IsChecked = changableFilterNames.Equals(Settings.Default.Filter)
             };

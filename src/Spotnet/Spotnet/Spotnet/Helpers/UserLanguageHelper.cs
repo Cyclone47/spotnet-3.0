@@ -114,6 +114,7 @@ public static class UserLanguageHelper
 			// what these view models need: their labels are computed in the getters.
 			if (Application.Current.Resources["Locator"] is ViewModelLocator locator)
 			{
+				locator.MainWindow.FiltersDb?.RefreshFilterTitles();
 				locator.MainWindow.RaisePropertyChanged(null);
 				locator.StatusBar.RaisePropertyChanged(null);
 				locator.SpotsList.RaisePropertyChanged(null);

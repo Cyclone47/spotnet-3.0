@@ -65,6 +65,11 @@ internal class Filters
 		FiltersRoot = new FilterViewModel("ROOT", "");
 	}
 
+	public void RefreshFilterTitles()
+	{
+		FiltersRoot?.RefreshDisplayText();
+	}
+
 	internal static bool InitializeDefaultFilters()
 	{
 		if (!AppHelper.EnsureDirectoryExist(AppHelper.FiltersFolder))

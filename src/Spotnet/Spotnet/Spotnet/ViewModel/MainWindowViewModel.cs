@@ -16,6 +16,7 @@ using Spotnet.Extensions;
 using Spotnet.Helpers;
 using Spotnet.Model;
 using Spotnet.Properties;
+using Spotnet.Localization;
 
 namespace Spotnet.ViewModel;
 
@@ -112,7 +113,7 @@ public class MainWindowViewModel : ViewModelBase
 	{
 		get
 		{
-			return Settings.Default.Filter;
+			return FilterTranslationHelper.GetTranslatedFilterSetName(Settings.Default.Filter);
 		}
 		set
 		{

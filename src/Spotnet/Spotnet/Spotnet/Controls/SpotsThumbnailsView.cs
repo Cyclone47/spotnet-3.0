@@ -133,9 +133,24 @@ public partial class SpotsThumbnailsView : SpotsContainer
 
             DispatcherHelper.UIDispatcher.BeginInvoke(DispatcherPriority.Background, (ThreadStart)delegate
             {
-                if (Spots.SelectedItem != null && Sys.MainWindow.IsSpotsTabSelectedAndVisible)
+                try
                 {
-                    Keyboard.Focus((ListBoxItem)Spots.ItemContainerGenerator.ContainerFromItem(Spots.SelectedItem));
+                    if (Spots.SelectedItem != null && Sys.MainWindow.IsSpotsTabSelectedAndVisible)
+                    {
+                        var container = Spots.ItemContainerGenerator.ContainerFromItem(Spots.SelectedItem) as ListBoxItem;
+                        if (container != null)
+                        {
+                            Keyboard.Focus(container);
+                        }
+                        else
+                        {
+                            Spots.Focus();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    SpotsContainer.Log.Exception(ex);
                 }
             });
         }

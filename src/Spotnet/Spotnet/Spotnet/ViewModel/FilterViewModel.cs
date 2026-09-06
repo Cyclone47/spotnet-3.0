@@ -15,6 +15,7 @@ using Spotnet.Helpers;
 using Spotnet.Model;
 using Spotnet.Properties;
 using Spotnet.Views;
+using Spotnet.Localization;
 
 namespace Spotnet.ViewModel;
 
@@ -101,11 +102,21 @@ public class FilterViewModel : ViewModelBase
 			{
 				return "";
 			}
+			string translated = FilterTranslationHelper.GetTranslatedName(Name);
 			if (NewCount > 0)
 			{
-				return Name + " (" + NewCount + ")";
+				return translated + " (" + NewCount + ")";
 			}
-			return Name;
+			return translated;
+		}
+	}
+
+	public void RefreshDisplayText()
+	{
+		RaisePropertyChanged(nameof(DisplayText));
+		foreach (FilterViewModel child in Children ?? Enumerable.Empty<FilterViewModel>())
+		{
+			child.RefreshDisplayText();
 		}
 	}
 

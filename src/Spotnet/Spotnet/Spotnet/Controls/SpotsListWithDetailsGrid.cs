@@ -68,9 +68,24 @@ public partial class SpotsListWithDetailsGrid : SpotsContainer
 
             DispatcherHelper.UIDispatcher.BeginInvoke(DispatcherPriority.Background, (ThreadStart)delegate
             {
-                if (MainDataGrid.SelectedItem != null && MainDataGrid.SelectedCells.Any() && Sys.MainWindow.IsSpotsTabSelectedAndVisible)
+                try
                 {
-                    Keyboard.Focus(GetDataGridCell(MainDataGrid.SelectedCells[0]));
+                    if (MainDataGrid.SelectedItem != null && MainDataGrid.SelectedCells.Any() && Sys.MainWindow.IsSpotsTabSelectedAndVisible)
+                    {
+                        DataGridCell cell = GetDataGridCell(MainDataGrid.SelectedCells[0]);
+                        if (cell != null)
+                        {
+                            Keyboard.Focus(cell);
+                        }
+                        else
+                        {
+                            MainDataGrid.Focus();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    SpotsContainer.Log.Exception(ex);
                 }
             });
         }
@@ -82,13 +97,25 @@ public partial class SpotsListWithDetailsGrid : SpotsContainer
 
     private DataGridCell GetDataGridCell(DataGridCellInfo cellInfo)
     {
-        FrameworkElement cellContent = cellInfo.Column.GetCellContent(cellInfo.Item);
-        if (cellContent == null)
+        try
+        {
+            if (!cellInfo.IsValid || cellInfo.Column == null || cellInfo.Item == null)
+            {
+                return null;
+            }
+
+            FrameworkElement cellContent = cellInfo.Column.GetCellContent(cellInfo.Item);
+            if (cellContent == null)
+            {
+                return null;
+            }
+
+            return cellContent.Parent as DataGridCell;
+        }
+        catch
         {
             return null;
         }
-
-        return (DataGridCell)cellContent.Parent;
     }
 
     public override void SaveCols()
