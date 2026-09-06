@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NLog;
 using Spotnet.DAL;
+using Spotnet.Downloader;
 using Spotnet.Helpers;
 using Spotnet.Properties;
 using Spotnet.Remote;
@@ -25,6 +26,7 @@ public class NotificationManager
     private static string ConfigPath => Path.Combine(AppHelper.SettingsFolder, "notifications_config.json");
 
     private NotificationConfig _config;
+    private readonly string _configPath;
     private Timer _evaluationTimer;
     private bool _initialized;
 
@@ -46,14 +48,38 @@ public class NotificationManager
         {
             lock (Lock)
             {
-                return _config?.Notifications?.Count(n => !n.IsRead) ?? 0;
+                return _config?.Notifications?.Count(n => !n.IsRead && _config.IncludesInHistory(n)) ?? 0;
             }
         }
     }
 
-    public NotificationManager()
+    public NotificationManager() : this(ConfigPath)
     {
-        _config = LoadConfig();
+    }
+
+    internal NotificationManager(string configPath)
+    {
+        _configPath = configPath;
+        _config = LoadConfig(configPath);
+    }
+
+    public List<SpotNotificationItem> GetHistory()
+    {
+        lock (Lock) return _config.Notifications.Where(_config.IncludesInHistory)
+            .OrderByDescending(n => n.CreatedAtUtc).ToList();
+    }
+
+    public void SetHistoryEnabled(NotificationHistoryType type, bool enabled)
+    {
+        lock (Lock)
+        {
+            _config.DisabledHistoryTypes ??= new();
+            if (enabled) _config.DisabledHistoryTypes.Remove(type);
+            else _config.DisabledHistoryTypes.Add(type);
+            SaveConfig();
+        }
+        UnreadCountChanged?.Invoke();
+        NotificationsUpdated?.Invoke();
     }
 
     public void Initialize()
@@ -257,6 +283,7 @@ public class NotificationManager
         if (item == null) return;
         lock (Lock)
         {
+            if (!_config.IncludesInHistory(item)) return;
             _config.Notifications.Insert(0, item);
             if (_config.Notifications.Count > 100)
             {
@@ -268,8 +295,30 @@ public class NotificationManager
         NotificationsUpdated?.Invoke();
     }
 
-    public void NotifyDownloadComplete(string spotTitle, bool success = true)
+    internal static NotificationHistoryType? HistoryTypeForDownload(DownloadStatus status) => status switch
     {
+        DownloadStatus.Success => NotificationHistoryType.DownloadFinished,
+        DownloadStatus.Failure or DownloadStatus.FailureNoSuchArticle => NotificationHistoryType.DownloadFailed,
+        DownloadStatus.WrongPassword => NotificationHistoryType.DownloadPasswordRequired,
+        DownloadStatus.Warning => NotificationHistoryType.DownloadWarning,
+        _ => null
+    };
+
+    internal static string DownloadNotificationTitle(DownloadStatus status) => status switch
+    {
+        DownloadStatus.Success => Words.NotificationDownloadFinished,
+        DownloadStatus.WrongPassword => Words.StatWrongUnpackPassword,
+        DownloadStatus.Warning => Words.Warning,
+        _ => Words.NotificationDownloadProblem
+    };
+
+    public void NotifyDownloadComplete(string spotTitle, bool success = true) =>
+        NotifyDownloadStatus(spotTitle, success ? DownloadStatus.Success : DownloadStatus.Failure);
+
+    public void NotifyDownloadStatus(string spotTitle, DownloadStatus status)
+    {
+        var historyType = HistoryTypeForDownload(status);
+        if (historyType == null) return;
         try
         {
             var item = new SpotNotificationItem
@@ -278,7 +327,8 @@ public class NotificationManager
                 RuleId = "download",
                 RuleName = "Downloads",
                 RuleType = NotificationRuleType.Download,
-                Title = success ? (Words.NotificationDownloadFinished ?? "Download voltooid") : (Words.NotificationDownloadProblem ?? "Download mislukt"),
+                HistoryType = historyType,
+                Title = DownloadNotificationTitle(status),
                 Body = spotTitle ?? "",
                 SpotCount = 1,
                 CreatedAtUtc = DateTime.UtcNow,
@@ -450,26 +500,15 @@ public class NotificationManager
             IsRead = false
         };
 
-        lock (Lock)
-        {
-            // Insert at beginning
-            _config.Notifications.Insert(0, notif);
-            // Cap at 100 entries
-            if (_config.Notifications.Count > 100)
-            {
-                _config.Notifications.RemoveRange(100, _config.Notifications.Count - 100);
-            }
-            SaveConfig();
-        }
+        AddNotification(notif);
+        // Persist rule progress even when this category is excluded from history.
+        lock (Lock) SaveConfig();
 
         // Show Windows desktop notification (Toast / Balloon)
         if (_config.WindowsNotificationsEnabled)
         {
             NotificationHelper.Show(title, body);
         }
-
-        UnreadCountChanged?.Invoke();
-        NotificationsUpdated?.Invoke();
 
         return notif;
     }
@@ -576,13 +615,13 @@ public class NotificationManager
         return list;
     }
 
-    private static NotificationConfig LoadConfig()
+    private static NotificationConfig LoadConfig(string configPath)
     {
         try
         {
-            if (File.Exists(ConfigPath))
+            if (File.Exists(configPath))
             {
-                string json = File.ReadAllText(ConfigPath);
+                string json = File.ReadAllText(configPath);
                 var cfg = JsonSerializer.Deserialize<NotificationConfig>(json);
                 if (cfg != null) return cfg;
             }
@@ -599,7 +638,7 @@ public class NotificationManager
         try
         {
             string json = JsonSerializer.Serialize(_config, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(ConfigPath, json);
+            File.WriteAllText(_configPath, json);
         }
         catch (Exception ex)
         {

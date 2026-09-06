@@ -1,4 +1,4 @@
-﻿# Spotnet 3.0
+# Spotnet 3.0
 
 *[Nederlandse versie](README.md)*
 
@@ -10,7 +10,7 @@ Spotnet is a *client*, not a Usenet service â€” you supply access to a news
 
 | | |
 | --- | --- |
-| **Version** | 3.0.11.0 |
+| **Version** | 3.0.12.0 |
 | **Platform** | Windows 10/11 x64 Â· C# / WPF Â· .NET 10 (shipped inside Setup) |
 | **Tests** | 470 passing on the x64 Release host |
 | **Based on** | Spotnet 2.0 (build 2.0.0.284), with Spotnet 1.8.1 as reference |
@@ -19,8 +19,8 @@ Spotnet is a *client*, not a Usenet service â€” you supply access to a news
 
 ## Download
 
-**[Download Spotnet 3.0.11.0 Setup](https://github.com/Cyclone47/spotnet-3.0/releases/download/v3.0.11.0/Spotnet-3.0-x64-Setup.exe)**
-Â· [Release notes and SHA-256](https://github.com/Cyclone47/spotnet-3.0/releases/tag/v3.0.11.0)
+**[Download Spotnet 3.0.12.0 Setup](https://github.com/Cyclone47/spotnet-3.0/releases/download/v3.0.12.0/Spotnet-3.0-x64-Setup.exe)**
+Â· [Release notes and SHA-256](https://github.com/Cyclone47/spotnet-3.0/releases/tag/v3.0.12.0)
 
 Setup handles both fresh installs and upgrades from a compatible Spotnet 2.x profile. It
 closes Spotnet safely, copies your selected profile into a separate 3.0 data folder, and
@@ -100,7 +100,7 @@ newer) that talks to the same Remote server:
 - viewing and managing the download queue.
 
 The APK (`SpotnetCompanion.apk`) is attached to
-[release v3.0.7.0](https://github.com/Cyclone47/spotnet-3.0/releases/tag/v3.0.11.0); the
+[release v3.0.7.0](https://github.com/Cyclone47/spotnet-3.0/releases/tag/v3.0.12.0); the
 source lives in [`android/`](android/).
 
 ### Notifications and alerts

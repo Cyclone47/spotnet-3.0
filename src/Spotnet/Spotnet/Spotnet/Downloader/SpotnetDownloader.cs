@@ -541,7 +541,7 @@ public class SpotnetDownloader : IDownloader, INotifyPropertyChanged, IDisposabl
 				}
 				else
 				{
-					main.DisplayTooltip(sender.Titel + " " + Words.isComplete, sender.RawStatus == DownloadStatus.Success);
+					main.DisplayTooltip(sender.Titel, sender.RawStatus);
 				}
 				await ProcessShutdownPcAfterDownloads();
 			}

@@ -11,6 +11,16 @@ public enum NotificationRuleType
     Download = 2
 }
 
+public enum NotificationHistoryType
+{
+    DownloadFinished,
+    DownloadFailed,
+    DownloadPasswordRequired,
+    DownloadWarning,
+    Filter,
+    Keyword
+}
+
 public class SpotSummaryItem
 {
     public long Id { get; set; }
@@ -66,6 +76,19 @@ public class NotificationRule
 
 public class SpotNotificationItem
 {
+    public NotificationHistoryType? HistoryType { get; set; }
+
+    [JsonIgnore]
+    public NotificationHistoryType EffectiveHistoryType => HistoryType ?? (RuleType switch
+    {
+        NotificationRuleType.Filter => NotificationHistoryType.Filter,
+        NotificationRuleType.Keyword => NotificationHistoryType.Keyword,
+        // Older versions stored all unsuccessful downloads under one localized title.
+        _ => Title == "Download finished with problems" || Title == "Download voltooid met problemen" ||
+             Title == "Download mislukt"
+            ? NotificationHistoryType.DownloadFailed : NotificationHistoryType.DownloadFinished
+    });
+
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public string RuleId { get; set; } = "";
     public string RuleName { get; set; } = "";
@@ -95,6 +118,12 @@ public class SpotNotificationItem
 
 public class NotificationConfig
 {
+    // Missing in older profiles: keep all existing notification types enabled.
+    public HashSet<NotificationHistoryType> DisabledHistoryTypes { get; set; } = new();
+
+    public bool IncludesInHistory(SpotNotificationItem item) =>
+        DisabledHistoryTypes?.Contains(item.EffectiveHistoryType) != true;
+
     public bool WindowsNotificationsEnabled { get; set; } = true;
     public int AutoSyncIntervalMinutes { get; set; } = 15; // Minimum 5
     public List<NotificationRule> Rules { get; set; } = new List<NotificationRule>();

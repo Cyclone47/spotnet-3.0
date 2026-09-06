@@ -2410,11 +2410,11 @@ public partial class MainWindow : MetroWindow
     /// notification usually never reached the screen at all. NotificationHelper keeps the
     /// icon alive for the life of the notification and restores its visibility afterwards.
     /// </remarks>
-    internal void DisplayTooltip(string sTooltip, bool success = true)
+    internal void DisplayTooltip(string sTooltip, DownloadStatus status)
     {
         try
         {
-            NotificationManager.Instance.NotifyDownloadComplete(sTooltip, success);
+            NotificationManager.Instance.NotifyDownloadStatus(sTooltip, status);
         }
         catch (Exception ex)
         {
@@ -2429,7 +2429,7 @@ public partial class MainWindow : MetroWindow
                 // every finished item as complete, including the ones that failed to
                 // unpack or repair.
                 NotificationHelper.Show(
-                    success ? Words.NotificationDownloadFinished : Words.NotificationDownloadProblem,
+                    NotificationManager.DownloadNotificationTitle(status),
                     sTooltip);
             }
             else
@@ -2442,7 +2442,8 @@ public partial class MainWindow : MetroWindow
             // Spotnet is the window in front, so this belongs in the window rather than on
             // the desktop.
             Log.Debug("Spotnet is in the foreground; reporting the finished download in-app.");
-            AppHelper.ShowPopupMessage(sTooltip, inTheCenter: false, TimeSpan.FromSeconds(3.0));
+            AppHelper.ShowPopupMessage(NotificationManager.DownloadNotificationTitle(status) + ": " + sTooltip,
+                inTheCenter: false, TimeSpan.FromSeconds(3.0));
         }
     }
 

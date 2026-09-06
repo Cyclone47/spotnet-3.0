@@ -407,6 +407,11 @@ public abstract class DownloaderItemViewModel : INotifyPropertyChanged, ICompara
 				_timerUpdatePlayVisibility?.Start();
 			}
 			this.OnStatusChanged?.Invoke(isDownloading, isHistory);
+			// Password requests stay in the queue and never raise IsHistoryChanged.
+			if (value == DownloadStatus.WrongPassword)
+			{
+				Spotnet.Notifications.NotificationManager.Instance.NotifyDownloadStatus(Titel, value);
+			}
 			if (IsHistory && !isHistory)
 			{
 				if (IsPlayActive)

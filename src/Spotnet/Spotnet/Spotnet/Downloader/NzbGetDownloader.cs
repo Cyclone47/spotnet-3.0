@@ -169,7 +169,7 @@ public class NzbGetDownloader : IDownloader, INotifyPropertyChanged, IDisposable
 				}
 				else
 				{
-					main.DisplayTooltip(sender.Titel + " " + Words.isComplete, sender.RawStatus == DownloadStatus.Success);
+					main.DisplayTooltip(sender.Titel, sender.RawStatus);
 				}
 				await ProcessShutdownPcAfterDownloads();
 			}

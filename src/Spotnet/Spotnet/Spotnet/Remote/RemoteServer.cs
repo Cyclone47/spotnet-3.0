@@ -524,8 +524,7 @@ public class RemoteServer
         // Notifications
         protectedGroup.MapGet("/notifications", () =>
         {
-            var cfg = NotificationManager.Instance.Config;
-            var notifs = cfg.Notifications.Select(n => new NotificationItemDto
+            var notifs = NotificationManager.Instance.GetHistory().Select(n => new NotificationItemDto
             {
                 Id = n.Id,
                 RuleId = n.RuleId,

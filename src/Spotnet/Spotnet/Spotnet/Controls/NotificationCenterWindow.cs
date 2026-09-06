@@ -53,6 +53,8 @@ public partial class NotificationCenterWindow : MetroWindow
     {
         var cfg = NotificationManager.Instance.Config;
         WindowsNotificationsCheckBox.IsChecked = cfg.WindowsNotificationsEnabled;
+        foreach (CheckBox choice in HistoryChoices.Children)
+            choice.IsChecked = cfg.DisabledHistoryTypes?.Contains((NotificationHistoryType)choice.Tag) != true;
 
         int currentSync = Math.Max(5, Settings.Default.DbAutoUpdateIntervalMin);
         foreach (ComboBoxItem item in AutoSyncIntervalComboBox.Items)
@@ -103,7 +105,14 @@ public partial class NotificationCenterWindow : MetroWindow
 
     private void RefreshNotifications()
     {
-        var notifs = NotificationManager.Instance.Config.Notifications.OrderByDescending(n => n.CreatedAtUtc).ToList();
+        if (!Dispatcher.CheckAccess())
+        {
+            Dispatcher.BeginInvoke(new Action(RefreshNotifications));
+            return;
+        }
+        foreach (CheckBox choice in HistoryChoices.Children)
+            choice.IsChecked = NotificationManager.Instance.Config.DisabledHistoryTypes?.Contains((NotificationHistoryType)choice.Tag) != true;
+        var notifs = NotificationManager.Instance.GetHistory();
         NotificationsListBox.ItemsSource = null;
         NotificationsListBox.ItemsSource = notifs;
 
@@ -113,6 +122,12 @@ public partial class NotificationCenterWindow : MetroWindow
 
         EmptyNotificationsPanel.Visibility = notifs.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         NotificationsListBox.Visibility = notifs.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void HistoryChoice_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is CheckBox choice && choice.Tag is NotificationHistoryType type)
+            NotificationManager.Instance.SetHistoryEnabled(type, choice.IsChecked == true);
     }
 
     private void RefreshRules()

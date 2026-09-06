@@ -150,7 +150,14 @@ New-Item -ItemType Directory -Force -Path $staleDirectory | Out-Null
 'not a real library' | Set-Content -LiteralPath (Join-Path $staleDirectory 'SQLite.Interop.dll')
 $staleFile = Join-Path $appRoot 'GalaSoft.MvvmLight.dll'
 'retired dependency' | Set-Content -LiteralPath $staleFile
+# Preserve the exact preferences file, including values the wizard cannot represent.
+$preferencesPath = Join-Path $profileRoot 'user.config'
+[xml]$preferences = Get-Content -LiteralPath $preferencesPath -Raw
+$preferences.SelectSingleNode("/configuration/userSettings/Spotnet.Properties.Settings/setting[@name='UserLanguage']/value").InnerText = 'de'
+$preferences.Save($preferencesPath)
+$preferencesHash = (Get-FileHash -LiteralPath $preferencesPath).Hash
 Invoke-SmokeSetup 'upgrade.log'
+if ((Get-FileHash -LiteralPath $preferencesPath).Hash -ne $preferencesHash) { throw 'Upgrade rewrote existing preferences.' }
 if (Test-Path -LiteralPath $staleDirectory) { throw 'Upgrade kept a stale directory from an earlier layout.' }
 if (Test-Path -LiteralPath $staleFile) { throw 'Upgrade kept a retired dependency.' }
 foreach ($link in @($oldLink, $squirrelLink) + $freshLinks) { Assert-TestLink $link (Join-Path $appRoot 'Spotnet.exe') }
@@ -161,6 +168,14 @@ if ((Get-FileHash -LiteralPath $fixture).Hash -ne $fixtureHash) { throw 'Upgrade
 $backups = @(Get-ChildItem (Join-Path $testRoot 'Profile\Backups') -Directory)
 if ($backups.Count -ne 1 -or $backups[0].Name -ne 'previous-backup') { throw 'Upgrade must preserve existing backups without duplicating the profile.' }
 if ((Get-FileHash -LiteralPath (Join-Path $backups[0].FullName 'smoke-personal-data.txt')).Hash -ne $fixtureHash) { throw 'Backup does not match.' }
+# A user who removes Desktop launchers must not get them back on the next upgrade.
+Remove-Item -LiteralPath $oldLink, $freshLinks[0]
+# Uninstall also respects the user's explicit deletion of this original shortcut.
+$originalHashes.Remove($oldLink)
+Invoke-SmokeSetup 'upgrade-without-desktop.log'
+if ((Get-ChildItem -LiteralPath $desktopRoot -Filter '*.lnk').Count -ne 1 -or
+    -not (Test-Path -LiteralPath $unrelatedLink)) { throw 'Upgrade recreated a removed desktop shortcut.' }
+if ((Get-FileHash -LiteralPath $preferencesPath).Hash -ne $preferencesHash) { throw 'Repeat upgrade rewrote existing preferences.' }
 $uninstaller = Join-Path $appRoot 'unins000.exe'
 $process = Start-Process -FilePath $uninstaller -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', ('/LOG="' + (Join-Path $testRoot 'uninstall.log') + '"')) -WindowStyle Hidden -Wait -PassThru
 if ($process.ExitCode -ne 0) { throw "Uninstall failed: $($process.ExitCode)" }

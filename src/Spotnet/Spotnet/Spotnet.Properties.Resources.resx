@@ -50,7 +50,18 @@
   </data>
   <data name="whatsnew" xml:space="preserve">
     <value>&lt;section class="notes-section gh-release"&gt;
-&lt;h3&gt;Spotnet 3.0.11.0 &lt;span class="gh-tag"&gt;New&lt;/span&gt;&lt;span class="gh-date"&gt;Current version&lt;/span&gt;&lt;/h3&gt;
+&lt;h3&gt;Spotnet 3.0.12.0 &lt;span class="gh-tag"&gt;New&lt;/span&gt;&lt;span class="gh-date"&gt;Current version&lt;/span&gt;&lt;/h3&gt;
+&lt;div class="gh-body"&gt;&lt;ul class="section-items tagged"&gt;
+&lt;li&gt;&lt;strong&gt;Choose your notification history:&lt;/strong&gt; Select which events appear in the notification center and unread count: completed downloads, failed downloads, password requests, warnings, filter alerts and keyword alerts. Disabled categories no longer count or add new entries. Choices are saved. Password requests now have their own history notification.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;External browser links fixed:&lt;/strong&gt; Fixed a bug that prevented links from Spotnet from opening in the default browser.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Simpler upgrades:&lt;/strong&gt; When Spotnet 3.0 is already present, Setup opens the upgrade flow with matching instructions and an Upgrade button. Language, style, installation folder and shortcut questions are skipped.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Preferences preserved:&lt;/strong&gt; Upgrades retain your personal data, language and style. Existing shortcuts are updated; removed shortcuts are not recreated.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Fresh installation:&lt;/strong&gt; New installations still offer language, style and shortcut choices.&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section class="notes-section gh-release"&gt;
+&lt;h3&gt;Spotnet 3.0.11.0 &lt;span class="gh-date"&gt;5 September 2026&lt;/span&gt;&lt;/h3&gt;
 &lt;div class="gh-body"&gt;&lt;ul class="section-items tagged"&gt;
 &lt;li&gt;&lt;strong&gt;Safer spot view:&lt;/strong&gt; The spot themes no longer load jQuery 1.8.3 and Bootstrap 2.2.0. Both date from 2012 and carry known cross-site scripting flaws, while the page they render is filled with titles, descriptions and comments written by strangers on Usenet. The parts the themes actually used &amp;#8212; the tab switcher and the accordion &amp;#8212; have been rewritten without them. The styling is untouched.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;Outgoing connections limited:&lt;/strong&gt; A content security policy now limits where a spot page may talk to. Apple's iTunes is the only outside address the themes call, and the only one still allowed.&lt;/li&gt;
@@ -8119,7 +8130,18 @@ if (browserok) {
   </data>
   <data name="whatsnew_nl" xml:space="preserve">
     <value>&lt;section class="notes-section gh-release"&gt;
-&lt;h3&gt;Spotnet 3.0.11.0 &lt;span class="gh-tag"&gt;Nieuw&lt;/span&gt;&lt;span class="gh-date"&gt;Huidige versie&lt;/span&gt;&lt;/h3&gt;
+&lt;h3&gt;Spotnet 3.0.12.0 &lt;span class="gh-tag"&gt;Nieuw&lt;/span&gt;&lt;span class="gh-date"&gt;Huidige versie&lt;/span&gt;&lt;/h3&gt;
+&lt;div class="gh-body"&gt;&lt;ul class="section-items tagged"&gt;
+&lt;li&gt;&lt;strong&gt;Meldinghistorie naar wens:&lt;/strong&gt; Kies in het meldingencentrum welke meldingen in de historie en de teller verschijnen: download klaar, mislukt, wachtwoord nodig, waarschuwing, filtermeldingen en trefwoordmeldingen. Uitgeschakelde soorten tellen niet meer mee en worden niet meer toegevoegd. Uw keuzes worden bewaard. Wachtwoordverzoeken hebben nu ook een eigen historiemelding.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Links openen in externe browser hersteld:&lt;/strong&gt; Een bug is opgelost waardoor links vanuit Spotnet niet in de standaardbrowser konden worden geopend.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Eenvoudiger bijwerken:&lt;/strong&gt; Bij een bestaande Spotnet 3.0-installatie toont Setup direct de upgradeflow, met passende uitleg en een knop Bijwerken. Vragen over taal, stijl, installatiemap en snelkoppelingen worden overgeslagen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Voorkeuren blijven behouden:&lt;/strong&gt; Een upgrade behoudt uw persoonlijke gegevens, taal en stijl. Bestaande snelkoppelingen worden bijgewerkt; verwijderde snelkoppelingen worden niet opnieuw aangemaakt.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Nieuwe installatie:&lt;/strong&gt; Bij een nieuwe installatie blijven de keuzes voor taal, stijl en snelkoppelingen beschikbaar.&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section class="notes-section gh-release"&gt;
+&lt;h3&gt;Spotnet 3.0.11.0 &lt;span class="gh-date"&gt;5 september 2026&lt;/span&gt;&lt;/h3&gt;
 &lt;div class="gh-body"&gt;&lt;ul class="section-items tagged"&gt;
 &lt;li&gt;&lt;strong&gt;Veiliger spotweergave:&lt;/strong&gt; De spotthema's laden jQuery 1.8.3 en Bootstrap 2.2.0 niet meer. Beide stammen uit 2012 en dragen bekende XSS-lekken, terwijl de pagina die zij opbouwen juist vol staat met titels, omschrijvingen en reacties van onbekenden op Usenet. Wat de thema's er werkelijk van gebruikten &amp;#8212; de tabwissel en het accordeon &amp;#8212; is zonder die bibliotheken opnieuw geschreven. De opmaak is ongemoeid gebleven.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;Beperkte uitgaande verbindingen:&lt;/strong&gt; Een content security policy begrenst met wie een spotpagina nog mag praten. Apple's iTunes is het enige externe adres dat de thema's zelf aanroepen, en het enige dat toegestaan blijft.&lt;/li&gt;

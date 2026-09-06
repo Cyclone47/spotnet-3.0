@@ -1,5 +1,16 @@
 <section class="notes-section gh-release">
-<h3>Spotnet 3.0.11.0 <span class="gh-tag">Nieuw</span><span class="gh-date">Huidige versie</span></h3>
+<h3>Spotnet 3.0.12.0 <span class="gh-tag">Nieuw</span><span class="gh-date">Huidige versie</span></h3>
+<div class="gh-body"><ul class="section-items tagged">
+<li><strong>Meldinghistorie naar wens:</strong> Kies in het meldingencentrum welke meldingen in de historie en de teller verschijnen: download klaar, mislukt, wachtwoord nodig, waarschuwing, filtermeldingen en trefwoordmeldingen. Uitgeschakelde soorten tellen niet meer mee en worden niet meer toegevoegd. Uw keuzes worden bewaard. Wachtwoordverzoeken hebben nu ook een eigen historiemelding.</li>
+<li><strong>Links openen in externe browser hersteld:</strong> Een bug is opgelost waardoor links vanuit Spotnet niet in de standaardbrowser konden worden geopend.</li>
+<li><strong>Eenvoudiger bijwerken:</strong> Bij een bestaande Spotnet 3.0-installatie toont Setup direct de upgradeflow, met passende uitleg en een knop Bijwerken. Vragen over taal, stijl, installatiemap en snelkoppelingen worden overgeslagen.</li>
+<li><strong>Voorkeuren blijven behouden:</strong> Een upgrade behoudt uw persoonlijke gegevens, taal en stijl. Bestaande snelkoppelingen worden bijgewerkt; verwijderde snelkoppelingen worden niet opnieuw aangemaakt.</li>
+<li><strong>Nieuwe installatie:</strong> Bij een nieuwe installatie blijven de keuzes voor taal, stijl en snelkoppelingen beschikbaar.</li>
+</ul></div>
+</section>
+
+<section class="notes-section gh-release">
+<h3>Spotnet 3.0.11.0 <span class="gh-date">5 september 2026</span></h3>
 <div class="gh-body"><ul class="section-items tagged">
 <li><strong>Veiliger spotweergave:</strong> De spotthema's laden jQuery 1.8.3 en Bootstrap 2.2.0 niet meer. Beide stammen uit 2012 en dragen bekende XSS-lekken, terwijl de pagina die zij opbouwen juist vol staat met titels, omschrijvingen en reacties van onbekenden op Usenet. Wat de thema's er werkelijk van gebruikten &#8212; de tabwissel en het accordeon &#8212; is zonder die bibliotheken opnieuw geschreven. De opmaak is ongemoeid gebleven.</li>
 <li><strong>Beperkte uitgaande verbindingen:</strong> Een content security policy begrenst met wie een spotpagina nog mag praten. Apple's iTunes is het enige externe adres dat de thema's zelf aanroepen, en het enige dat toegestaan blijft.</li>

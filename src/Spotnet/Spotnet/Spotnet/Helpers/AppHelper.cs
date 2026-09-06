@@ -1754,14 +1754,22 @@ public static class AppHelper
 
 	public static void LaunchInExternalProgram(string sUrl)
 	{
+		if (string.IsNullOrWhiteSpace(sUrl))
+		{
+			return;
+		}
+
 		try
 		{
-			Process.Start(sUrl);
+			Process.Start(new ProcessStartInfo(sUrl.Trim())
+			{
+				UseShellExecute = true
+			});
 		}
 		catch (Exception ex)
 		{
 			Log.Exception(ex);
-			Error("LaunchInExternalProgram:: " + Information.Err().Description);
+			Error("LaunchInExternalProgram:: " + ex.Message);
 		}
 	}
 

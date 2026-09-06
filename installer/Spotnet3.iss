@@ -1,4 +1,4 @@
-﻿; Compile using build-installer.ps1 with Inno Setup 7.1 or newer.
+; Compile using build-installer.ps1 with Inno Setup 7.1 or newer.
 #ifndef PayloadDir
   #error PayloadDir must be supplied by build-installer.ps1
 #endif
@@ -28,6 +28,7 @@ MinVersion=10.0
 WizardStyle=modern
 DisableProgramGroupPage=yes
 DisableWelcomePage=no
+ShowLanguageDialog=auto
 #ifdef SmokeTestRoot
 UsePreviousAppDir=no
 #else
@@ -47,7 +48,11 @@ SolidCompression=yes
 CloseApplications=yes
 CloseApplicationsFilter=Spotnet.exe
 RestartApplications=no
+#ifdef SmokeTestRoot
+SetupMutex=Spotnet3SetupSmoke
+#else
 SetupMutex=Spotnet3Setup
+#endif
 ; Complete file provenance. Inno leaves copyright and original file name empty by
 ; default, and a packer-produced binary with blank provenance fields is one of the
 ; things generic "bundler" heuristics weigh.
@@ -209,6 +214,16 @@ english.ShortcutUpgradeNotice=Setup keeps the shortcut mode selected during the 
 dutch.ShortcutUpgradeNotice=Setup behoudt de snelkoppelingsmodus die tijdens de oorspronkelijke installatie van Spotnet 3.0 is gekozen.
 english.Welcome1=Install Spotnet 3.0 for this Windows user.
 dutch.Welcome1=Spotnet 3.0 voor deze Windows-gebruiker installeren.
+english.UpgradeTitle=Upgrade Spotnet 3.0 (64-bit)
+dutch.UpgradeTitle=Spotnet 3.0 (64-bit) bijwerken
+english.UpgradeWelcome=Spotnet 3.0 is already present. Setup will update it to version %1.%n%nYour personal data, language and style are retained. Existing shortcuts are updated; no additional shortcuts are added.%n%nSetup will ask Spotnet to exit safely and wait for it to close. Click Next to review the upgrade.
+dutch.UpgradeWelcome=Spotnet 3.0 is al aanwezig. Setup werkt het programma bij naar versie %1.%n%nUw persoonlijke gegevens, taal en stijl blijven behouden. Bestaande snelkoppelingen worden bijgewerkt; er worden geen extra snelkoppelingen toegevoegd.%n%nSetup vraagt Spotnet veilig af te sluiten en wacht tot het programma is gestopt. Klik op Volgende om de upgrade te controleren.
+english.UpgradeReady=Setup is ready to update your existing Spotnet 3.0 installation. Click Upgrade to continue.
+dutch.UpgradeReady=Setup is klaar om uw bestaande Spotnet 3.0-installatie bij te werken. Klik op Bijwerken om door te gaan.
+english.UpgradeButton=&Upgrade
+dutch.UpgradeButton=&Bijwerken
+english.Upgraded=Spotnet 3.0 (64-bit) has been updated.
+dutch.Upgraded=Spotnet 3.0 (64-bit) is bijgewerkt.
 english.Welcome2=If an installed Spotnet Classic 1.8/2.x profile is found, Setup offers four simple migrate/clean and replace/alongside choices. A new system starts clean without migration questions. Existing 3.0 profiles are backed up before an upgrade.
 dutch.Welcome2=Als een geïnstalleerd Spotnet Classic 1.8/2.x-profiel wordt gevonden, biedt Setup vier eenvoudige keuzes voor migreren/schoon en vervangen/naast elkaar. Een nieuw systeem start schoon zonder migratievragen. Van bestaande 3.0-profielen wordt vóór een upgrade een back-up gemaakt.
 english.Welcome3=Setup will ask Spotnet to exit safely and wait for it to close. Large databases require extra disk space and copying time.
@@ -336,6 +351,7 @@ var
   StyleCaption: TLabel;
   ProgressPage: TOutputProgressWizardPage;
   ExistingProfile, ClassicAvailable, MoveIncomplete: Boolean;
+  UpgradeInstall: Boolean;
   Prepared: Boolean;
   ShortcutFailure: Boolean;
   RemovePersonalData: Boolean;
@@ -516,7 +532,7 @@ end;
 procedure InitializeWizard;
 var
   ExitCode, Count, Index: Integer;
-  Description, DetectionParameters: String;
+  Description, DetectionParameters, InstalledAppRoot: String;
 begin
   ExtractTemporaryFile('Spotnet.SetupHelper.exe');
   Helper := ExpandConstant('{tmp}\Spotnet.SetupHelper.exe');
@@ -532,6 +548,16 @@ begin
   if not Exec(Helper, DetectionParameters, '', SW_HIDE, ewWaitUntilTerminated, ExitCode) or (ExitCode <> 0) then
     RaiseException(CM('DetectionFailed'));
   ExistingProfile := FileExists(ProfileRoot + '\Data\profile.ready');
+#ifdef SmokeTestRoot
+  InstalledAppRoot := '{#SmokeTestRoot}\App';
+#else
+  if not RegQueryStringValue(HKCU64,
+    'Software\Microsoft\Windows\CurrentVersion\Uninstall\{76851D20-501E-45B0-9869-853F814BE60E}_is1',
+    'Inno Setup: App Path', InstalledAppRoot) then
+    InstalledAppRoot := ExpandConstant('{localappdata}\Programs\Spotnet3');
+#endif
+  UpgradeInstall := ExistingProfile or
+    (FileExists(InstalledAppRoot + '\Spotnet.install') and FileExists(InstalledAppRoot + '\Spotnet.exe'));
   ClassicAvailable := GetIniInt('Detection', 'ClassicAvailable', 0, 0, 1, DetectionFile) = 1;
   ClassicName := GetIniString('Detection', 'ClassicName', '', DetectionFile);
   ClassicData := GetIniString('Detection', 'ClassicData', '', DetectionFile);
@@ -595,21 +621,38 @@ begin
   WizardForm.WelcomeLabel2.Caption := CM('Welcome1') + #13#10#13#10 +
     CM('Welcome2') + #13#10#13#10 + CM('Welcome3') + #13#10#13#10 +
     CM('Welcome4') + #13#10#13#10 + CM('Welcome5');
+  if UpgradeInstall then begin
+    WizardForm.WelcomeLabel1.Caption := CM('UpgradeTitle');
+    WizardForm.WelcomeLabel2.Caption := FmtMessage(CM('UpgradeWelcome'), ['{#AppVersion}']);
+    WizardForm.ReadyLabel.Caption := CM('UpgradeReady');
+  end;
   ProgressPage := CreateOutputProgressPage(CM('ProgressTitle'), CM('ProgressDescription'));
 end;
 
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
+  if UpgradeInstall then begin
+    Result := (PageID = LanguagePage.ID) or (PageID = StylePage.ID) or
+      (PageID = wpSelectDir) or (PageID = wpSelectTasks) or
+      (PageID = MigrationPage.ID) or (PageID = SourcePage.ID);
+    exit;
+  end;
   { A fresh machine and a normal 3.0 upgrade never see migration source UI. }
   Result := (PageID = MigrationPage.ID) and (ExistingProfile or not ClassicAvailable);
   if PageID = SourcePage.ID then
     Result := ExistingProfile or not ClassicAvailable or (MigrationPage.SelectedValueIndex > 1) or (GetArrayLength(ClassicSources) <= 1);
 end;
 
+procedure CurPageChanged(CurPageID: Integer);
+begin
+  if UpgradeInstall and (CurPageID = wpReady) then
+    WizardForm.NextButton.Caption := CM('UpgradeButton');
+end;
+
 function SelectedData: String;
 begin
   Result := '';
-  if ExistingProfile or not ClassicAvailable then exit;
+  if UpgradeInstall or not ClassicAvailable then exit;
   if MigrationPage.SelectedValueIndex <= 1 then begin
     if (GetArrayLength(ClassicSources) > 1) and (SourcePage.SelectedValueIndex >= 0) then
       Result := ClassicSources[SourcePage.SelectedValueIndex]
@@ -620,7 +663,7 @@ end;
 function SelectedSettings: String;
 begin
   Result := '';
-  if ExistingProfile or not ClassicAvailable then exit;
+  if UpgradeInstall or not ClassicAvailable then exit;
   if MigrationPage.SelectedValueIndex <= 1 then begin
     if (GetArrayLength(ClassicSources) > 1) and (SourcePage.SelectedValueIndex >= 0) then
       Result := ClassicSourceSettings[SourcePage.SelectedValueIndex]
@@ -630,25 +673,25 @@ end;
 
 function MoveClassicData: Boolean;
 begin
-  Result := ClassicAvailable and not ExistingProfile and (MigrationPage.SelectedValueIndex = 0);
+  Result := ClassicAvailable and not UpgradeInstall and (MigrationPage.SelectedValueIndex = 0);
 end;
 
 function UseAlongsideShortcuts: Boolean;
 begin
-  Result := ClassicAvailable and not ExistingProfile and
+  Result := ClassicAvailable and not UpgradeInstall and
     ((MigrationPage.SelectedValueIndex = 1) or (MigrationPage.SelectedValueIndex = 2));
 end;
 
 function ClassicShortcutMode: String;
 begin
-  if ExistingProfile then Result := 'auto'
+  if UpgradeInstall then Result := 'auto'
   else if UseAlongsideShortcuts then Result := 'alongside'
   else Result := 'replace';
 end;
 
 function SelectedModeSummary: String;
 begin
-  if ExistingProfile then Result := CM('KeepProfile')
+  if UpgradeInstall then Result := CM('KeepProfile')
   else if SelectedData = '' then Result := CM('CleanInstallSummary')
   else if MoveClassicData then Result := CM('MigrateMoveSummary')
   else Result := CM('MigrateCopySummary');
@@ -702,7 +745,7 @@ var
   InstalledVersion, PackageVersion: Int64;
 begin
   Result := True;
-  if CurPageID = wpSelectDir then begin
+  if (CurPageID = wpSelectDir) or (CurPageID = wpReady) then begin
     { Never install over a legacy binary tree. Same-family upgrades require our marker. }
     if FileExists(ExpandConstant('{app}\Spotnet.exe')) and not FileExists(ExpandConstant('{app}\Spotnet.install')) then begin
       SuppressibleMsgBox(CM('SeparateFolder'), mbError, MB_OK, IDOK);
@@ -724,7 +767,7 @@ begin
     Result := SuppressibleMsgBox(FmtMessage(CM('MoveConfirmation'), [SelectedData]),
       mbConfirmation, MB_YESNO, IDNO) = IDYES;
   { Unattended first installs must opt out of migration explicitly; never guess a profile. }
-  if (CurPageID = wpReady) and WizardSilent and not ExistingProfile then begin
+  if (CurPageID = wpReady) and WizardSilent and not UpgradeInstall then begin
     if ExpandConstant('{param:FRESH|0}') <> '1' then begin
       Log('Silent first installation requires /FRESH=1. Use the interactive wizard for migration.');
       Result := False;
@@ -756,12 +799,13 @@ begin
     else
       Result := Result + FmtMessage(CM('SpaceMemo'), [FormatMB(SpaceBytesMB), FormatMB(SpaceFreeMB), SpaceDrive]) + NewLine;
   end;
-  Result := Result + NewLine + CM('QueueNotice') + NewLine;
-  if ExistingProfile then Result := Result + CM('ShortcutUpgradeNotice') + NewLine
+  if not UpgradeInstall then Result := Result + NewLine + CM('QueueNotice') + NewLine;
+  if UpgradeInstall then Result := Result + CM('ShortcutUpgradeNotice') + NewLine
   else if UseAlongsideShortcuts then Result := Result + CM('ShortcutAlongsideNotice') + NewLine
   else Result := Result + CM('ShortcutReplaceNotice') + NewLine;
   Result := Result +
-    CM('WebViewNotice') + NewLine + CM('UninstallNotice') + NewLine + MemoTasksInfo;
+    CM('WebViewNotice') + NewLine + CM('UninstallNotice');
+  if not UpgradeInstall then Result := Result + NewLine + MemoTasksInfo;
 end;
 
 function PrepareToInstall(var NeedsRestart: Boolean): String;
@@ -850,8 +894,10 @@ begin
   Parameters := 'prepare --profile ' + Quote(ProfileRoot) + ' --report ' + Quote(ReportFile);
   { A new profile starts in the language and style picked on the wizard's first two
     pages; an imported profile keeps whatever it already states. }
-  Parameters := Parameters + ' --language ' + SelectedLanguage;
-  Parameters := Parameters + ' --app-theme ' + SelectedTheme;
+  if not UpgradeInstall then begin
+    Parameters := Parameters + ' --language ' + SelectedLanguage;
+    Parameters := Parameters + ' --app-theme ' + SelectedTheme;
+  end;
   if SelectedData <> '' then Parameters := Parameters + ' --source-data ' + Quote(SelectedData);
   if SelectedSettings <> '' then Parameters := Parameters + ' --source-settings ' + Quote(SelectedSettings);
   if MoveClassicData then Parameters := Parameters + ' --move-source 1';
@@ -1007,6 +1053,10 @@ function ShortcutCreation: String;
 var
   Wanted: String;
 begin
+  if UpgradeInstall then begin
+    Result := ' --create none';
+    exit;
+  end;
   Wanted := '';
   if WizardIsTaskSelected('programsicon') then Wanted := 'programs';
   if WizardIsTaskSelected('desktopicon') then begin
@@ -1108,6 +1158,7 @@ begin
       end;
     end;
     Heading := CM('Installed');
+    if UpgradeInstall then Heading := CM('Upgraded');
     if ShortcutFailure or MoveIncomplete then Heading := CM('InstalledAttention');
     WizardForm.FinishedLabel.Caption := Heading + #13#10#13#10 + Summary + #13#10#13#10 +
       CM('ProfileLabel') + ' ' + ProfileRoot + '\Data';
