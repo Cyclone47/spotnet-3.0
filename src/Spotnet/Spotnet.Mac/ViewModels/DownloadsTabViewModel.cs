@@ -85,12 +85,22 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
     /// <summary>Whether the current remove dialog offered the remember-answer checkbox.</summary>
     public Func<bool>? RequestRememberRemoveFilesAnswer;
 
+    private readonly Action<string, bool>? _downloadNotificationRecorder;
 
-    public DownloadsTabViewModel(DownloadHistoryService history, UserPreferencesService? preferences = null, MacNotificationService? notificationService = null)
+    /// <summary>
+    /// Legt een voltooide download vast in het meldingcentrum — dezelfde regel die
+    /// Windows' DisplayTooltip naar NotificationManager.NotifyDownloadComplete
+    /// stuurt; de desktop-melding zelf gaat via MacNotificationService.
+    /// </summary>
+    private void RecordDownloadComplete(string title, bool success) => _downloadNotificationRecorder?.Invoke(title, success);
+
+
+    public DownloadsTabViewModel(DownloadHistoryService history, UserPreferencesService? preferences = null, MacNotificationService? notificationService = null, Action<string, bool>? downloadNotificationRecorder = null)
     {
         _history = history;
         _preferences = preferences;
         _notificationService = notificationService ?? new MacNotificationService(preferences);
+        _downloadNotificationRecorder = downloadNotificationRecorder;
 
         foreach (var item in _history.Load())
         {
@@ -460,6 +470,7 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
                 item.SetStage(DownloadStage.Success);
                 Persist();
                 _notificationService.NotifyDownloadFinished(item.Title, success: true);
+                RecordDownloadComplete(item.Title, success: true);
             });
             return;
         }
@@ -527,18 +538,22 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
                 case PostProcessOutcome.Success:
                     item.SetStage(DownloadStage.Success);
                     _notificationService.NotifyDownloadFinished(item.Title, success: true);
+                    RecordDownloadComplete(item.Title, success: true);
                     break;
                 case PostProcessOutcome.Warning:
                     item.SetStage(DownloadStage.Warning, "nabewerking gaf problemen, zie log");
                     _notificationService.NotifyDownloadFinished(item.Title, success: false, detail: "problemen tijdens nabewerking");
+                    RecordDownloadComplete(item.Title, success: false);
                     break;
                 case PostProcessOutcome.ArchiveDamaged:
                     item.SetStage(DownloadStage.Warning, "archief beschadigd, reparatie niet gelukt");
                     _notificationService.NotifyDownloadFinished(item.Title, success: false, detail: "archief beschadigd");
+                    RecordDownloadComplete(item.Title, success: false);
                     break;
                 case PostProcessOutcome.ArchiveDamagedNoPar2:
                     item.SetStage(DownloadStage.Warning, "archief beschadigd, geen par2 om te herstellen");
                     _notificationService.NotifyDownloadFinished(item.Title, success: false, detail: "geen par2 herstelbestanden");
+                    RecordDownloadComplete(item.Title, success: false);
                     break;
                 case PostProcessOutcome.PasswordRequired:
                     item.SetStage(DownloadStage.WrongPassword,
@@ -546,6 +561,7 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
                             ? "wachtwoord vereist"
                             : "wachtwoord onjuist");
                     _notificationService.NotifyDownloadFinished(item.Title, success: false, detail: "wachtwoord vereist");
+                    RecordDownloadComplete(item.Title, success: false);
                     break;
                 case PostProcessOutcome.Cancelled:
                     item.SetStage(DownloadStage.Cancelled);
@@ -553,6 +569,7 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
                 default:
                     item.SetStage(DownloadStage.Failure, "nabewerking mislukt, zie log");
                     _notificationService.NotifyDownloadFinished(item.Title, success: false, detail: "nabewerking mislukt");
+                    RecordDownloadComplete(item.Title, success: false);
                     break;
             }
             Persist();

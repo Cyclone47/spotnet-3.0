@@ -8,7 +8,7 @@ namespace Spotnet.Mac.Platform;
 /// <summary>
 /// Native macOS notification service that posts alerts to the Notification Center via osascript.
 /// </summary>
-public sealed class MacNotificationService
+public sealed class MacNotificationService : Spotnet.Notifications.ISpotnetNotifier
 {
     private static readonly Logger Log = LogManager.GetCurrentClassLogger();
     private readonly UserPreferencesService? _preferences;
@@ -64,6 +64,13 @@ public sealed class MacNotificationService
             return false;
         }
     }
+
+    /// <summary>
+    /// The shared notification engine's desktop toast. Same preference gate as
+    /// the other notifications on this platform; the engine's own checkbox
+    /// (meldingcentrum) gates it one level up.
+    /// </summary>
+    public bool Show(string title, string body) => ShowNotification(body, title: title);
 
     public void NotifyDownloadFinished(string spotTitle, bool success, string? detail = null)
     {

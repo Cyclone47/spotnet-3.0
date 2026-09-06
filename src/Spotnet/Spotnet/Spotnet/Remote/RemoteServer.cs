@@ -497,7 +497,7 @@ public class RemoteServer
         // Notifications
         protectedGroup.MapGet("/notifications", () =>
         {
-            var cfg = NotificationManager.Instance.Config;
+            var cfg = NotificationHost.Instance.Engine.Config;
             var notifs = cfg.Notifications.Select(n => new NotificationItemDto
             {
                 Id = n.Id,
@@ -524,32 +524,32 @@ public class RemoteServer
 
             return Results.Json(new NotificationsResponseDto
             {
-                UnreadCount = NotificationManager.Instance.UnreadCount,
+                UnreadCount = NotificationHost.Instance.Engine.UnreadCount,
                 Notifications = notifs
             });
         });
 
         protectedGroup.MapPost("/notifications/{id}/read", (string id) =>
         {
-            NotificationManager.Instance.MarkAsRead(id);
-            return Results.Json(new { success = true, unreadCount = NotificationManager.Instance.UnreadCount });
+            NotificationHost.Instance.Engine.MarkAsRead(id);
+            return Results.Json(new { success = true, unreadCount = NotificationHost.Instance.Engine.UnreadCount });
         });
 
         protectedGroup.MapPost("/notifications/read-all", () =>
         {
-            NotificationManager.Instance.MarkAllAsRead();
+            NotificationHost.Instance.Engine.MarkAllAsRead();
             return Results.Json(new { success = true, unreadCount = 0 });
         });
 
         protectedGroup.MapDelete("/notifications/{id}", (string id) =>
         {
-            NotificationManager.Instance.DeleteNotification(id);
-            return Results.Json(new { success = true, unreadCount = NotificationManager.Instance.UnreadCount });
+            NotificationHost.Instance.Engine.DeleteNotification(id);
+            return Results.Json(new { success = true, unreadCount = NotificationHost.Instance.Engine.UnreadCount });
         });
 
         protectedGroup.MapDelete("/notifications", () =>
         {
-            NotificationManager.Instance.ClearAllNotifications();
+            NotificationHost.Instance.Engine.ClearAllNotifications();
             return Results.Json(new { success = true, unreadCount = 0 });
         });
     }

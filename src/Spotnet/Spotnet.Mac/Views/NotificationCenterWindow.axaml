@@ -1,0 +1,176 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Spotnet.Mac.ViewModels"
+        x:Class="Spotnet.Mac.Views.NotificationCenterWindow"
+        x:DataType="vm:NotificationCenterViewModel"
+        Title="Meldingcentrum"
+        Width="820" Height="560"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource AppWindowBackground}">
+
+  <Window.Styles>
+    <Style Selector="TextBlock.SectionHeader">
+      <Setter Property="FontSize" Value="10"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="Foreground" Value="{DynamicResource AppMutedTextBrush}"/>
+      <Setter Property="LetterSpacing" Value="1"/>
+    </Style>
+    <Style Selector="ListBox.ItemBox">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+  </Window.Styles>
+
+  <Grid RowDefinitions="Auto,*,Auto" Margin="16">
+
+    <!-- Header -->
+    <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,12">
+      <TextBlock Text="Meldingcentrum" FontSize="20" FontWeight="Bold"
+                 Foreground="{DynamicResource AppTextBrush}"/>
+      <TextBlock Text="Regels die nieuwe spots in de gaten houden, en de meldingen die ze opleverden."
+                 FontSize="12" Foreground="{DynamicResource AppMutedTextBrush}"/>
+    </StackPanel>
+
+    <Grid Grid.Row="1" ColumnDefinitions="*,8,380">
+
+      <!-- ── Left: notifications + rules ───────────────────────────────────── -->
+      <Grid Grid.Column="0" RowDefinitions="Auto,*,Auto,Auto,*">
+
+        <TextBlock Grid.Row="0" Classes="SectionHeader" Text="MELDINGEN" Margin="0,0,0,4"/>
+        <ListBox Grid.Row="1"
+                 ItemsSource="{Binding Notifications}"
+                 SelectedItem="{Binding SelectedNotification, Mode=TwoWay}"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 MinHeight="120">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <Grid ColumnDefinitions="Auto,*,Auto" Margin="2,4">
+                <TextBlock Grid.Column="0" Text="{Binding UnreadDot}" FontSize="10"
+                           Foreground="{DynamicResource AppAccentBrush}"
+                           VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <StackPanel Grid.Column="1" Spacing="1">
+                  <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12"
+                             Foreground="{DynamicResource AppTextBrush}"
+                             TextTrimming="CharacterEllipsis"/>
+                  <TextBlock Text="{Binding Body}" FontSize="11"
+                             Foreground="{DynamicResource AppMutedTextBrush}"
+                             TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+                <TextBlock Grid.Column="2" Text="{Binding TimeAgo}" FontSize="10"
+                           Foreground="{DynamicResource AppMutedTextBrush}"
+                           VerticalAlignment="Top"/>
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="6" Margin="0,6,0,10">
+          <Button Content="Alles gelezen" Command="{Binding MarkAllReadCommand}" FontSize="11" Padding="8,3"/>
+          <Button Content="Verwijder geselecteerde" Command="{Binding DeleteNotificationCommand}" FontSize="11" Padding="8,3"/>
+          <Button Content="Lijst leegmaken" Command="{Binding ClearAllNotificationsCommand}" FontSize="11" Padding="8,3"/>
+        </StackPanel>
+
+        <TextBlock Grid.Row="3" Classes="SectionHeader" Text="REGELS" Margin="0,0,0,4"/>
+        <ListBox Grid.Row="4"
+                 ItemsSource="{Binding Rules}"
+                 SelectedItem="{Binding SelectedRule, Mode=TwoWay}"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 MinHeight="120">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <Grid ColumnDefinitions="*,Auto,Auto,Auto" Margin="2,3">
+                <StackPanel Grid.Column="0" Spacing="1">
+                  <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="12"
+                             Foreground="{DynamicResource AppTextBrush}"
+                             TextTrimming="CharacterEllipsis"/>
+                  <TextBlock FontSize="10" Foreground="{DynamicResource AppMutedTextBrush}">
+                    <Run Text="{Binding TypeLabel}"/><Run Text=" • "/><Run Text="{Binding Description}"/><Run Text=" • "/><Run Text="{Binding IntervalDescription}"/>
+                  </TextBlock>
+                </StackPanel>
+                <ToggleButton Grid.Column="1" IsChecked="{Binding Enabled, Mode=OneWay}"
+                              Command="{Binding $parent[Window].DataContext.ToggleRuleCommand}"
+                              CommandParameter="{Binding}"
+                              Content="⏻" FontSize="10" Padding="4,1" Margin="4,0,0,0"
+                              ToolTip.Tip="Regel aan/uit"/>
+                <Button Grid.Column="2" Content="▶" FontSize="10" Padding="4,1" Margin="4,0,0,0"
+                        Command="{Binding $parent[Window].DataContext.TestRuleCommand}"
+                        CommandParameter="{Binding}"
+                        ToolTip.Tip="Regel nu testen"/>
+                <Button Grid.Column="3" Content="✕" FontSize="10" Padding="4,1" Margin="4,0,0,0"
+                        Command="{Binding $parent[Window].DataContext.DeleteRuleCommand}"
+                        CommandParameter="{Binding}"
+                        ToolTip.Tip="Regel verwijderen"/>
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Grid>
+
+      <GridSplitter Grid.Column="1" Background="Transparent"/>
+
+      <!-- ── Right: rule form + options ────────────────────────────────────── -->
+      <Grid Grid.Column="2" RowDefinitions="Auto,*,Auto">
+
+        <StackPanel Grid.Row="0" Spacing="8">
+          <TextBlock Classes="SectionHeader" Text="{Binding RuleFormHeaderText}"/>
+          <TextBox Watermark="Naam van de regel" Text="{Binding RuleFormName, Mode=TwoWay}"/>
+          <StackPanel Orientation="Horizontal" Spacing="12">
+            <RadioButton Content="Filter" GroupName="RuleType" IsChecked="{Binding RuleFormIsFilter}"/>
+            <RadioButton Content="Trefwoord" GroupName="RuleType" IsChecked="{Binding !RuleFormIsFilter}"/>
+          </StackPanel>
+
+          <!-- Filter fields -->
+          <StackPanel Spacing="6" IsVisible="{Binding RuleFormIsFilter}">
+            <TextBox Watermark="Filternaam (zoals in de zijbalk)" Text="{Binding RuleFormFilterName, Mode=TwoWay}"/>
+            <TextBox Watermark="Filterexpressie, bv. cat = 1 AND filesize > 4GB"
+                     Text="{Binding RuleFormFilterQuery, Mode=TwoWay}"
+                     TextWrapping="Wrap" Height="52"
+                     AcceptsReturn="False"/>
+          </StackPanel>
+
+          <!-- Keyword fields -->
+          <StackPanel Spacing="6" IsVisible="{Binding !RuleFormIsFilter}">
+            <TextBox Watermark="Trefwoorden, gescheiden door komma of spatie" Text="{Binding RuleFormKeywords, Mode=TwoWay}"/>
+            <ComboBox ItemsSource="{Binding CategoryLabels}"
+                      SelectedIndex="{Binding RuleFormCategoryIndex}"/>
+          </StackPanel>
+
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="Controle:" VerticalAlignment="Center" FontSize="12"
+                       Foreground="{DynamicResource AppTextBrush}"/>
+            <ComboBox ItemsSource="{Binding RuleIntervalLabels}"
+                      SelectedIndex="{Binding RuleFormIntervalIndex}"/>
+          </StackPanel>
+
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Button Content="Regel opslaan" Classes="accent" Command="{Binding SaveRuleCommand}"/>
+            <Button Content="Nieuw" Command="{Binding NewRuleCommand}"/>
+          </StackPanel>
+        </StackPanel>
+
+        <Border Grid.Row="2" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="0,1,0,0"
+                Margin="0,12,0,0" Padding="0,12,0,0">
+          <StackPanel Spacing="8">
+          <TextBlock Classes="SectionHeader" Text="OPTIES"/>
+          <CheckBox Content="Desktop-meldingen tonen"
+                    IsChecked="{Binding ShowDesktopNotifications, Mode=TwoWay}"/>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="Automatisch synchroniseren:" VerticalAlignment="Center" FontSize="12"
+                       Foreground="{DynamicResource AppTextBrush}"/>
+            <ComboBox ItemsSource="{Binding AutoSyncIntervalLabels}"
+                      SelectedIndex="{Binding AutoSyncIntervalIndex}"/>
+          </StackPanel>
+          </StackPanel>
+        </Border>
+      </Grid>
+    </Grid>
+
+    <!-- Footer -->
+    <Border Grid.Row="2" Margin="0,12,0,0">
+      <TextBlock Text="{Binding StatusText}" FontSize="11"
+                 Foreground="{DynamicResource AppMutedTextBrush}"
+                 TextTrimming="CharacterEllipsis"/>
+    </Border>
+  </Grid>
+</Window>

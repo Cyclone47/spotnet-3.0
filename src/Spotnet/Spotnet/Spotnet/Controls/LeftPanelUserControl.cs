@@ -72,8 +72,8 @@ public partial class LeftPanelUserControl : UserControl
 
         try
         {
-            NotificationManager.Instance.UnreadCountChanged += NotificationManager_UnreadCountChanged;
-            UpdateUnreadNotificationsCount(NotificationManager.Instance.UnreadCount);
+            NotificationHost.Instance.Engine.UnreadCountChanged += NotificationManager_UnreadCountChanged;
+            UpdateUnreadNotificationsCount(NotificationHost.Instance.Engine.UnreadCount);
         }
         catch (Exception ex)
         {
@@ -1332,7 +1332,7 @@ public partial class LeftPanelUserControl : UserControl
 
     private void NotificationManager_UnreadCountChanged()
     {
-        this.DispatchAsync(() => UpdateUnreadNotificationsCount(NotificationManager.Instance.UnreadCount));
+        this.DispatchAsync(() => UpdateUnreadNotificationsCount(NotificationHost.Instance.Engine.UnreadCount));
     }
 
     private void UpdateUnreadNotificationsCount(int unreadCount)

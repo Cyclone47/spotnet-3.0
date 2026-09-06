@@ -16,14 +16,14 @@ public partial class NotificationBellTitleBarControl : UserControl
 
         Loaded += (s, e) =>
         {
-            NotificationManager.Instance.Initialize();
-            NotificationManager.Instance.UnreadCountChanged += OnUnreadCountChanged;
+            NotificationHost.Instance.Initialize();
+            NotificationHost.Instance.Engine.UnreadCountChanged += OnUnreadCountChanged;
             UpdateUi();
         };
 
         Unloaded += (s, e) =>
         {
-            NotificationManager.Instance.UnreadCountChanged -= OnUnreadCountChanged;
+            NotificationHost.Instance.Engine.UnreadCountChanged -= OnUnreadCountChanged;
         };
     }
 
@@ -34,7 +34,7 @@ public partial class NotificationBellTitleBarControl : UserControl
 
     public void UpdateUi()
     {
-        int unread = NotificationManager.Instance.UnreadCount;
+        int unread = NotificationHost.Instance.Engine.UnreadCount;
 
         if (unread <= 0)
         {

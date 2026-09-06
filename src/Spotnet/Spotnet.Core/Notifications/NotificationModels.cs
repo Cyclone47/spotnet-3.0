@@ -44,7 +44,7 @@ public class NotificationRule
     public bool Enabled { get; set; } = true;
 
     // State tracking
-    public long LastCheckedRowId { get; set; } = 0;
+    public long LastCheckedRowId { get; set; }
     public DateTime LastCheckedUtc { get; set; } = DateTime.MinValue;
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
@@ -77,20 +77,24 @@ public class SpotNotificationItem
     public List<SpotSummaryItem> Spots { get; set; } = new List<SpotSummaryItem>();
 
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
-    public bool IsRead { get; set; } = false;
+    public bool IsRead { get; set; }
 
     [JsonIgnore]
     public string TimeAgo
     {
         get
         {
-            var diff = DateTime.UtcNow - CreatedAtUtc;
+            var diff = UtcNowProvider() - CreatedAtUtc;
             if (diff.TotalMinutes < 1) return "Zojuist";
             if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes} min geleden";
             if (diff.TotalHours < 24) return $"{(int)diff.TotalHours} uur geleden";
             return CreatedAtUtc.ToLocalTime().ToString("dd-MM HH:mm");
         }
     }
+
+    /// <summary>Overridable clock so tests can freeze time; defaults to the real clock.</summary>
+    [JsonIgnore]
+    public static Func<DateTime> UtcNowProvider { get; set; } = static () => DateTime.UtcNow;
 }
 
 public class NotificationConfig

@@ -33,10 +33,40 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private readonly SpotBodyService _bodyService;
     private readonly IUiDispatcher _dispatcher;
     private readonly TrustService _trustService;
+    private readonly Spotnet.Notifications.NotificationManager _notifications;
+    private System.Threading.Timer? _notificationEvalTimer;
 
     public UserPreferencesService PreferencesService => _prefsService;
     public TrustService TrustService => _trustService;
     public ComplaintService ComplaintService => _complaintService;
+
+    /// <summary>
+    /// The shared notification engine (Spotnet.Core): rules over de spots-database,
+    /// ongelezen meldingen en de configuratie in notifications_config.json.
+    /// </summary>
+    public Spotnet.Notifications.NotificationManager Notifications => _notifications;
+
+    private int _unreadNotificationCount;
+
+    /// <summary>Ongelezen meldingen voor de bel in de statusbalk.</summary>
+    public int UnreadNotificationCount
+    {
+        get => _unreadNotificationCount;
+        private set
+        {
+            if (SetProperty(ref _unreadNotificationCount, value))
+            {
+                OnPropertyChanged(nameof(HasUnreadNotifications));
+            }
+        }
+    }
+
+    /// <summary>Toont de gelezen/ongelezen-badge op de bel.</summary>
+    public bool HasUnreadNotifications => UnreadNotificationCount > 0;
+
+    /// <summary>View-event: opent het meldingcentrum-venster.</summary>
+    public event Action? RequestOpenNotificationCenter;
+
     private System.Threading.Timer? _autoSyncTimer;
 
     // ── State ─────────────────────────────────────────────────────────────────
@@ -289,6 +319,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public ICommand OpenSpotlinkCommand { get; }
     public ICommand DeleteSelectedCommand { get; }
     public ICommand OpenReleaseNotesCommand { get; }
+    public ICommand OpenNotificationCenterCommand { get; }
     public ICommand QuickRepairDbCommand { get; }
     public ICommand ToggleSocksProxyCommand { get; }
 
@@ -440,14 +471,54 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             IsSyncing = _syncService.IsSyncing;
         };
 
+        // Meldingen (fase 4): de gedeelde engine uit Spotnet.Core, gevoed door de
+        // Mac-database en de macOS-meldingen. Windows doet dit via NotificationHost.
+        _notifications = new Spotnet.Notifications.NotificationManager(
+            new MacNotificationSpotQuery(dbService),
+            new MacNotificationService(_prefsService),
+            _appPaths.DataFolder);
+        _notifications.AutoUpdateSettingsApplier = (intervalMinutes, force) =>
+        {
+            var prefs = _prefsService.Current;
+            if (force)
+            {
+                prefs.DbAutoUpdateIntervalMin = intervalMinutes;
+            }
+            else if (prefs.DbAutoUpdateIntervalMin < 5)
+            {
+                prefs.DbAutoUpdateIntervalMin = Math.Max(5, intervalMinutes);
+            }
+            prefs.DbAutoUpdateEnabled = true;
+            _prefsService.Save(prefs);
+            StartAutoSyncTimer();
+        };
+        _notifications.UnreadCountChanged += () =>
+        {
+            void Update()
+            {
+                UnreadNotificationCount = _notifications.UnreadCount;
+            }
+
+            if (_dispatcher.CheckAccess())
+            {
+                Update();
+            }
+            else
+            {
+                _dispatcher.Invoke(Update);
+            }
+        };
+
         SpotDetail = new SpotDetailViewModel(_dbService, _nzbService, _commentService, _bodyService);
 
-        DownloadsTab = new DownloadsTabViewModel(new DownloadHistoryService(_appPaths), _prefsService);
+        DownloadsTab = new DownloadsTabViewModel(new DownloadHistoryService(_appPaths), _prefsService,
+            downloadNotificationRecorder: (title, success) => _notifications.NotifyDownloadComplete(title, success));
         SpotDetail.NzbFetched += OnNzbFetched;
         SpotDetail.RequestClose += () => SelectedSpot = null;
         SpotDetail.RequestComplain += spot => RequestOpenComplaintDialog?.Invoke(spot);
 
         OpenReleaseNotesCommand = new RelayCommand(() => RequestOpenReleaseNotes?.Invoke());
+        OpenNotificationCenterCommand = new RelayCommand(() => RequestOpenNotificationCenter?.Invoke());
         QuickRepairDbCommand = new RelayCommand(async () =>
         {
             StatusText = "Database herstellen en optimaliseren...";
@@ -476,6 +547,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             IsSyncing = false;
             await RefreshSpotsAsync();
             await UpdateFilterCountsAsync();
+            _notifications.OnSyncFinished();
         });
 
         CloseDetailCommand = new RelayCommand(() => SelectedSpot = null);
@@ -919,6 +991,15 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             await UpdateFilterCountsAsync();
             StartAutoSyncTimer();
 
+            // Meldingen (fase 4): engine initialiseren, de periodeke-regelcontrole
+            // starten (Windows: een Timer van 60 s in NotificationManager.Initialize)
+            // en direct de ongelezen teller vullen.
+            _notifications.Initialize();
+            _notificationEvalTimer = new System.Threading.Timer(
+                _ => _notifications.OnPeriodicTimer(), null,
+                TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(60));
+            UnreadNotificationCount = _notifications.UnreadCount;
+
             // .nzb-bestanden en spotnet://-links van bij het opstarten (Open With,
             // URL-scheme), zoals Windows die uit de pipe-parameters haalt.
             await HandleStartupTargetsAsync(Program.StartupTargets);
@@ -1183,6 +1264,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 IsSyncing = false;
                 await RefreshSpotsAsync();
                 await UpdateFilterCountsAsync();
+                _notifications.OnSyncFinished();
             }
             catch (Exception ex)
             {
@@ -1282,6 +1364,8 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public void Dispose()
     {
         StopAutoSyncTimer();
+        _notificationEvalTimer?.Dispose();
+        _notificationEvalTimer = null;
         _trustService.Dispose();
     }
 }

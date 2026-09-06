@@ -1,42 +1,49 @@
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using NLog;
-using Spotnet.DAL;
-using Spotnet.Helpers;
-using Spotnet.Properties;
-using Spotnet.Remote;
 
 namespace Spotnet.Notifications;
+
+/// <summary>
+/// The notification engine: rules over the spots database, bundled unread
+/// notifications, persistence in notifications_config.json. Platform-neutral;
+/// both clients construct it with their own database adapter and desktop
+/// notifier. The periodic timer is the callers' responsibility (they own their
+/// own sync timers); the engine exposes <see cref="EvaluateRulesAsync"/> for it.
+/// </summary>
+/// <summary>
+/// Host hook for the auto-sync preferences: <paramref name="intervalMinutes"/> is the
+/// interval to store, <paramref name="force"/> distinguishes the user's explicit choice
+/// (always write) from the direct-rule minimum (only raise a too-low interval).
+/// </summary>
+public delegate void AutoUpdateSettingsHandler(int intervalMinutes, bool force);
 
 public class NotificationManager
 {
     private static readonly Logger Log = LogManager.GetCurrentClassLogger();
-    private static readonly Lazy<NotificationManager> InstanceHolder = new Lazy<NotificationManager>(() => new NotificationManager());
-    public static NotificationManager Instance => InstanceHolder.Value;
 
-    private static readonly object Lock = new object();
-    private static string ConfigPath => Path.Combine(AppHelper.SettingsFolder, "notifications_config.json");
+    private readonly object _lock = new object();
+    private readonly string _configPath;
+    private readonly INotificationSpotQuery _spotQuery;
+    private readonly ISpotnetNotifier? _notifier;
 
     private NotificationConfig _config;
-    private Timer _evaluationTimer;
     private bool _initialized;
 
-    public event Action UnreadCountChanged;
-    public event Action NotificationsUpdated;
-    public event Action RulesUpdated;
+    public event Action? UnreadCountChanged;
+    public event Action? NotificationsUpdated;
+    public event Action? RulesUpdated;
 
     public NotificationConfig Config
     {
         get
         {
-            lock (Lock) return _config;
+            lock (_lock) return _config;
         }
     }
 
@@ -44,94 +51,119 @@ public class NotificationManager
     {
         get
         {
-            lock (Lock)
+            lock (_lock)
             {
                 return _config?.Notifications?.Count(n => !n.IsRead) ?? 0;
             }
         }
     }
 
-    public NotificationManager()
+    public NotificationManager(INotificationSpotQuery spotQuery, ISpotnetNotifier? notifier, string settingsFolder)
     {
+        _spotQuery = spotQuery ?? throw new ArgumentNullException(nameof(spotQuery));
+        _notifier = notifier;
+        _configPath = Path.Combine(settingsFolder ?? "", "notifications_config.json");
         _config = LoadConfig();
     }
 
     public void Initialize()
     {
-        lock (Lock)
+        lock (_lock)
         {
             if (_initialized) return;
             _initialized = true;
-
-            // Hook to DbUpdater so Direct alerts trigger immediately when new spots arrive
-            DbUpdater.OnDbUpdateEnd += OnDbUpdateFinished;
-
-            // Start background evaluation timer for periodic rules (every 60s)
-            _evaluationTimer = new Timer(_ =>
-            {
-                try
-                {
-                    EvaluateRules(onlyDirect: false);
-                }
-                catch (Exception ex)
-                {
-                    Log.Warn("Error evaluating notification rules: {0}", ex.Message);
-                }
-            }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(60));
-
-            // Ensure auto-sync interval is valid if any direct rules exist
             SyncAutoUpdateSettings();
-
             Log.Info("NotificationManager initialized with {0} rules and {1} notifications.", _config.Rules.Count, _config.Notifications.Count);
         }
     }
 
-    private void OnDbUpdateFinished()
+    /// <summary>
+    /// Called by the host after a spots sync finished, so "Direct bij elke sync"
+    /// rules evaluate right away. Safe to call from any thread.
+    /// </summary>
+    public void OnSyncFinished()
     {
-        Task.Run(() =>
+        Task.Run(async () =>
         {
             try
             {
-                EvaluateRules(onlyDirect: true);
+                await EvaluateRulesAsync(onlyDirect: true).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                Log.Warn("Error in OnDbUpdateFinished notification evaluation: {0}", ex.Message);
+                Log.Warn("Error in OnSyncFinished notification evaluation: {0}", ex.Message);
             }
         });
     }
 
+    /// <summary>
+    /// Called by the host when its periodic evaluation timer fires (Windows: every
+    /// 60 s). Evaluates the non-direct rules whose interval has elapsed.
+    /// </summary>
+    public void OnPeriodicTimer()
+    {
+        Task.Run(async () =>
+        {
+            try
+            {
+                await EvaluateRulesAsync(onlyDirect: false).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Log.Warn("Error evaluating notification rules: {0}", ex.Message);
+            }
+        });
+    }
+
+    /// <summary>
+    /// Aligns the host's auto-sync with the rules: any enabled direct rule forces
+    /// auto-sync on and its interval to at least the configured minimum.
+    /// </summary>
     public void SyncAutoUpdateSettings()
     {
-        lock (Lock)
+        lock (_lock)
         {
             bool hasDirectRules = _config.Rules.Any(r => r.Enabled && r.IsDirectOnSync);
-            if (hasDirectRules)
-            {
-                // Ensure AutoUpdate is active and minimum 5 minutes
-                int currentInterval = Settings.Default.DbAutoUpdateIntervalMin;
-                if (currentInterval < 5)
-                {
-                    Settings.Default.DbAutoUpdateIntervalMin = Math.Max(5, _config.AutoSyncIntervalMinutes);
-                }
-                Settings.Default.DbAutoUpdateEnabled = true;
-                Settings.Default.Save();
-                DbUpdater.DbUpdateTimerStart();
-            }
+            SyncAutoUpdateSettingsCore(hasDirectRules);
+        }
+    }
+
+    /// <summary>Host hook: apply the computed auto-sync settings to the app preferences.
+    /// True from <see cref="SetAutoSyncInterval"/> (the user picked the interval — write
+    /// it unconditionally), false from the direct-rule check (only raise the host's
+    /// interval to the minimum when it is lower).</summary>
+    public AutoUpdateSettingsHandler? AutoUpdateSettingsApplier { get; set; }
+
+    private void SyncAutoUpdateSettingsCore(bool hasDirectRules)
+    {
+        if (hasDirectRules && AutoUpdateSettingsApplier != null)
+        {
+            // The applier enforces the minimum itself (5 minutes) and restarts the
+            // host's auto-sync timer, like Windows' DbUpdateTimerStart does.
+            AutoUpdateSettingsApplier(Math.Max(5, _config.AutoSyncIntervalMinutes), force: false);
+        }
+    }
+
+    /// <summary>
+    /// Toggles the desktop toast and persists it — the checkbox in the
+    /// notification-center window.
+    /// </summary>
+    public void SetDesktopNotificationsEnabled(bool enabled)
+    {
+        lock (_lock)
+        {
+            _config.WindowsNotificationsEnabled = enabled;
+            SaveConfig();
         }
     }
 
     public void SetAutoSyncInterval(int minutes)
     {
-        lock (Lock)
+        lock (_lock)
         {
-            if (minutes < 5) minutes = 5; // Minimum 5 minutes per user requirement
+            if (minutes < 5) minutes = 5; // Minimum 5 minuten
             _config.AutoSyncIntervalMinutes = minutes;
-            Settings.Default.DbAutoUpdateIntervalMin = minutes;
-            Settings.Default.DbAutoUpdateEnabled = true;
-            Settings.Default.Save();
-            DbUpdater.DbUpdateTimerStop();
-            DbUpdater.DbUpdateTimerStart();
+            AutoUpdateSettingsApplier?.Invoke(minutes, force: true);
             SaveConfig();
         }
     }
@@ -139,12 +171,12 @@ public class NotificationManager
     public void AddOrUpdateRule(NotificationRule rule)
     {
         if (rule == null) return;
-        lock (Lock)
+        lock (_lock)
         {
             // If new rule, initialize LastCheckedRowId to current max rowid to avoid alerting on all past spots
             if (rule.LastCheckedRowId <= 0)
             {
-                rule.LastCheckedRowId = GetMaxSpotRowId();
+                rule.LastCheckedRowId = _spotQuery.GetMaxSpotRowIdAsync().GetAwaiter().GetResult();
                 rule.LastCheckedUtc = DateTime.UtcNow;
             }
 
@@ -167,7 +199,7 @@ public class NotificationManager
     public void DeleteRule(string ruleId)
     {
         if (string.IsNullOrEmpty(ruleId)) return;
-        lock (Lock)
+        lock (_lock)
         {
             _config.Rules.RemoveAll(r => r.Id == ruleId);
             SaveConfig();
@@ -178,7 +210,7 @@ public class NotificationManager
     public void ToggleRule(string ruleId)
     {
         if (string.IsNullOrEmpty(ruleId)) return;
-        lock (Lock)
+        lock (_lock)
         {
             var rule = _config.Rules.FirstOrDefault(r => r.Id == ruleId);
             if (rule != null)
@@ -194,7 +226,7 @@ public class NotificationManager
     public void MarkAsRead(string notificationId)
     {
         if (string.IsNullOrEmpty(notificationId)) return;
-        lock (Lock)
+        lock (_lock)
         {
             var notif = _config.Notifications.FirstOrDefault(n => n.Id == notificationId);
             if (notif != null && !notif.IsRead)
@@ -209,7 +241,7 @@ public class NotificationManager
 
     public void MarkAllAsRead()
     {
-        lock (Lock)
+        lock (_lock)
         {
             bool changed = false;
             foreach (var n in _config.Notifications)
@@ -232,7 +264,7 @@ public class NotificationManager
     public void DeleteNotification(string notificationId)
     {
         if (string.IsNullOrEmpty(notificationId)) return;
-        lock (Lock)
+        lock (_lock)
         {
             _config.Notifications.RemoveAll(n => n.Id == notificationId);
             SaveConfig();
@@ -243,7 +275,7 @@ public class NotificationManager
 
     public void ClearAllNotifications()
     {
-        lock (Lock)
+        lock (_lock)
         {
             _config.Notifications.Clear();
             SaveConfig();
@@ -255,7 +287,7 @@ public class NotificationManager
     public void AddNotification(SpotNotificationItem item)
     {
         if (item == null) return;
-        lock (Lock)
+        lock (_lock)
         {
             _config.Notifications.Insert(0, item);
             if (_config.Notifications.Count > 100)
@@ -268,6 +300,10 @@ public class NotificationManager
         NotificationsUpdated?.Invoke();
     }
 
+    /// <summary>
+    /// Records a finished download as a notification (the Windows client does this
+    /// from DisplayTooltip), plus a desktop toast when enabled.
+    /// </summary>
     public void NotifyDownloadComplete(string spotTitle, bool success = true)
     {
         try
@@ -278,7 +314,7 @@ public class NotificationManager
                 RuleId = "download",
                 RuleName = "Downloads",
                 RuleType = NotificationRuleType.Download,
-                Title = success ? (Words.NotificationDownloadFinished ?? "Download voltooid") : (Words.NotificationDownloadProblem ?? "Download mislukt"),
+                Title = success ? "Download voltooid" : "Download mislukt",
                 Body = spotTitle ?? "",
                 SpotCount = 1,
                 CreatedAtUtc = DateTime.UtcNow,
@@ -301,31 +337,10 @@ public class NotificationManager
         }
     }
 
-    public long GetMaxSpotRowId()
-    {
-        try
-        {
-            using ISqlDb db = SqlDbFactory.CreateSqlDbSpots(isReadOnly: true);
-            using ISqlDbTransaction tx = db.BeginReadTransaction();
-            using DbCommand cmd = db.CreateCommand(tx);
-            cmd.CommandText = "SELECT MAX(rowid) FROM spots";
-            var res = cmd.ExecuteScalar();
-            if (res != null && res != DBNull.Value && long.TryParse(res.ToString(), out long maxId))
-            {
-                return maxId;
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.Warn("Failed to get max spot rowid: {0}", ex.Message);
-        }
-        return 0;
-    }
-
-    public void EvaluateRules(bool onlyDirect = false, string specificRuleId = null, bool isManualTest = false)
+    public async Task EvaluateRulesAsync(bool onlyDirect = false, string? specificRuleId = null, bool isManualTest = false)
     {
         List<NotificationRule> rulesToEvaluate;
-        lock (Lock)
+        lock (_lock)
         {
             if (specificRuleId != null)
             {
@@ -353,7 +368,7 @@ public class NotificationManager
         {
             try
             {
-                EvaluateSingleRule(rule, isManualTest);
+                await EvaluateSingleRuleAsync(rule, isManualTest).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -362,32 +377,32 @@ public class NotificationManager
         }
     }
 
-    public SpotNotificationItem TestRuleNow(string ruleId)
+    public async Task<SpotNotificationItem?> TestRuleNowAsync(string ruleId)
     {
-        NotificationRule rule;
-        lock (Lock)
+        NotificationRule? rule;
+        lock (_lock)
         {
             rule = _config.Rules.FirstOrDefault(r => r.Id == ruleId);
         }
         if (rule == null) return null;
 
-        return EvaluateSingleRule(rule, isManualTest: true);
+        return await EvaluateSingleRuleAsync(rule, isManualTest: true).ConfigureAwait(false);
     }
 
-    private SpotNotificationItem EvaluateSingleRule(NotificationRule rule, bool isManualTest = false)
+    private async Task<SpotNotificationItem?> EvaluateSingleRuleAsync(NotificationRule rule, bool isManualTest = false)
     {
         long sinceRowId = isManualTest ? Math.Max(0, rule.LastCheckedRowId - 50) : rule.LastCheckedRowId;
 
         // If rule has never been run and this is not a manual test, initialize rowid to max
         if (sinceRowId <= 0 && !isManualTest)
         {
-            rule.LastCheckedRowId = GetMaxSpotRowId();
+            rule.LastCheckedRowId = await _spotQuery.GetMaxSpotRowIdAsync().ConfigureAwait(false);
             rule.LastCheckedUtc = DateTime.UtcNow;
-            lock (Lock) SaveConfig();
+            lock (_lock) SaveConfig();
             return null;
         }
 
-        var matchingSpots = QuerySpotsForRule(rule, sinceRowId, limit: isManualTest ? 5 : 50);
+        var matchingSpots = await _spotQuery.QuerySpotsForRuleAsync(rule, sinceRowId, limit: isManualTest ? 5 : 50).ConfigureAwait(false);
 
         rule.LastCheckedUtc = DateTime.UtcNow;
         if (matchingSpots.Count > 0 && !isManualTest)
@@ -397,7 +412,7 @@ public class NotificationManager
 
         if (matchingSpots.Count == 0)
         {
-            lock (Lock) SaveConfig();
+            lock (_lock) SaveConfig();
             return null;
         }
 
@@ -450,7 +465,7 @@ public class NotificationManager
             IsRead = false
         };
 
-        lock (Lock)
+        lock (_lock)
         {
             // Insert at beginning
             _config.Notifications.Insert(0, notif);
@@ -462,10 +477,17 @@ public class NotificationManager
             SaveConfig();
         }
 
-        // Show Windows desktop notification (Toast / Balloon)
+        // Show the desktop toast when the user wants them
         if (_config.WindowsNotificationsEnabled)
         {
-            NotificationHelper.Show(title, body);
+            try
+            {
+                _notifier?.Show(title, body);
+            }
+            catch (Exception ex)
+            {
+                Log.Warn("Desktop notifier failed: {0}", ex.Message);
+            }
         }
 
         UnreadCountChanged?.Invoke();
@@ -474,115 +496,13 @@ public class NotificationManager
         return notif;
     }
 
-    public List<SpotSummaryItem> QuerySpotsForRule(NotificationRule rule, long sinceRowId, int limit = 50)
-    {
-        var list = new List<SpotSummaryItem>();
-        try
-        {
-            using ISqlDb db = SqlDbFactory.CreateSqlDbSpots(isReadOnly: true);
-            using ISqlDbTransaction tx = db.BeginReadTransaction();
-            using DbCommand cmd = db.CreateCommand(tx);
-
-            var clauses = new List<string>
-            {
-                "spots.key != 2 AND spots.key != 5"
-            };
-
-            if (sinceRowId > 0)
-            {
-                clauses.Add($"spots.rowid > {sinceRowId}");
-            }
-
-            if (rule.Type == NotificationRuleType.Filter)
-            {
-                if (!string.IsNullOrWhiteSpace(rule.FilterQuery))
-                {
-                    string clean = RemoteCatalogService.CleanFilterQuery(rule.FilterQuery);
-                    clauses.Add($"({clean})");
-                }
-                else if (!string.IsNullOrWhiteSpace(rule.FilterId) && rule.FilterId.StartsWith("cat_") && int.TryParse(rule.FilterId.Substring(4), out int cId))
-                {
-                    clauses.Add($"spots.cat = {cId}");
-                }
-            }
-            else // Keyword
-            {
-                if (rule.Category.HasValue && rule.Category.Value > 0)
-                {
-                    clauses.Add($"spots.cat = {rule.Category.Value}");
-                }
-
-                if (!string.IsNullOrWhiteSpace(rule.Keywords))
-                {
-                    // Split keywords by comma or spaces
-                    var rawTerms = rule.Keywords.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
-                                               .Select(t => t.Trim())
-                                               .Where(t => t.Length > 0)
-                                               .ToList();
-
-                    if (rawTerms.Count > 0)
-                    {
-                        var termClauses = new List<string>();
-                        int pIdx = 0;
-                        foreach (var term in rawTerms)
-                        {
-                            string pName = $"@kw_{pIdx++}";
-                            termClauses.Add($"spots.subject LIKE {pName}");
-                            var param = cmd.CreateParameter();
-                            param.ParameterName = pName;
-                            param.Value = $"%{term}%";
-                            cmd.Parameters.Add(param);
-                        }
-                        clauses.Add($"({string.Join(" OR ", termClauses)})");
-                    }
-                }
-            }
-
-            cmd.CommandText = $@"
-                SELECT spots.rowid, spots.msgid, spots.subject, spots.cat, spots.filesize, spots.date
-                FROM spots
-                WHERE {string.Join(" AND ", clauses)}
-                ORDER BY spots.rowid ASC
-                LIMIT {limit}";
-
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
-            {
-                long rowId = reader.GetInt64(0);
-                string msgId = reader.IsDBNull(1) ? "" : reader.GetString(1);
-                string subject = reader.IsDBNull(2) ? "" : reader.GetString(2);
-                int cat = reader.IsDBNull(3) ? 0 : reader.GetInt32(3);
-                long filesize = reader.IsDBNull(4) ? 0 : reader.GetInt64(4);
-                long date = reader.IsDBNull(5) ? 0 : reader.GetInt64(5);
-
-                list.Add(new SpotSummaryItem
-                {
-                    Id = rowId,
-                    MessageId = msgId,
-                    Title = subject,
-                    Category = cat,
-                    CategoryName = RemoteCatalogService.GetCategoryName(cat),
-                    FormattedSize = RemoteCatalogService.FormatFileSize(filesize),
-                    Date = date,
-                    FormattedDate = RemoteCatalogService.FormatDate(date)
-                });
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.Warn("Failed to query spots for rule '{0}': {1}", rule.Name, ex.Message);
-        }
-
-        return list;
-    }
-
-    private static NotificationConfig LoadConfig()
+    private static NotificationConfig LoadConfigFrom(string path)
     {
         try
         {
-            if (File.Exists(ConfigPath))
+            if (File.Exists(path))
             {
-                string json = File.ReadAllText(ConfigPath);
+                string json = File.ReadAllText(path);
                 var cfg = JsonSerializer.Deserialize<NotificationConfig>(json);
                 if (cfg != null) return cfg;
             }
@@ -594,12 +514,16 @@ public class NotificationManager
         return new NotificationConfig();
     }
 
+    private NotificationConfig LoadConfig() => LoadConfigFrom(_configPath);
+
+    private static readonly JsonSerializerOptions ConfigJsonOptions = new() { WriteIndented = true };
+
     private void SaveConfig()
     {
         try
         {
-            string json = JsonSerializer.Serialize(_config, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(ConfigPath, json);
+            string json = JsonSerializer.Serialize(_config, ConfigJsonOptions);
+            File.WriteAllText(_configPath, json);
         }
         catch (Exception ex)
         {

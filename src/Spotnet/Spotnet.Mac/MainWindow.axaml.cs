@@ -47,6 +47,7 @@ public partial class MainWindow : Window
         _viewModel.RequestConfirmRemoveDownload = ShowConfirmRemoveDownloadDialog;
         _viewModel.RequestConfirmClearDownloads = ShowConfirmClearDownloadsDialog;
         _viewModel.RequestOpenSpotlinkDialog += () => _ = ShowOpenSpotlinkDialogAsync();
+        _viewModel.RequestOpenNotificationCenter += () => _ = ShowNotificationCenterWindowAsync();
 
         // Afsluiten na downloads (fase 3, item 3): de Downloads-tab geeft het teken,
         // het venster toont het aftelvenster van Windows' ShutdownComputerDialog.
@@ -94,6 +95,12 @@ public partial class MainWindow : Window
     private async void ShowReleaseNotesWindow()
     {
         var window = new ReleaseNotesWindow();
+        await window.ShowDialog(this);
+    }
+
+    private async Task ShowNotificationCenterWindowAsync()
+    {
+        var window = new NotificationCenterWindow(_viewModel.Notifications);
         await window.ShowDialog(this);
     }
 

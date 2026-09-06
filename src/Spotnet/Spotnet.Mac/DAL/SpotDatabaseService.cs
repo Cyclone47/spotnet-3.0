@@ -780,6 +780,129 @@ public sealed class SpotDatabaseService
         return inserted;
     }
 
+    /// <summary>
+    /// Highest rowid in the spots table — the notification engine's starting
+    /// watermark for a new rule (0 when the table is empty).
+    /// </summary>
+    public async Task<long> GetMaxSpotRowIdAsync()
+    {
+        using var conn = _db.OpenConnection(readOnly: true);
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT IFNULL(MAX(rowid), 0) FROM spots;";
+        var result = await cmd.ExecuteScalarAsync();
+        return result != null && long.TryParse(result.ToString(), out long val) ? val : 0;
+    }
+
+    /// <summary>
+    /// Spots matching a notification rule above a watermark rowid, oldest first —
+    /// the same clause set Windows' NotificationManager.QuerySpotsForRule runs on
+    /// its own SQLite engine. The rule's filter mini-language is compiled here,
+    /// keyword terms are bound as parameters.
+    /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review CA2100 query string", Justification = "Filter text is compiled by FilterExpressionCompiler; keyword terms are parameterized")]
+    public async Task<List<Spotnet.Notifications.SpotSummaryItem>> QuerySpotsForNotificationRuleAsync(
+        Spotnet.Notifications.NotificationRule rule, long sinceRowId, int limit)
+    {
+        var list = new List<Spotnet.Notifications.SpotSummaryItem>();
+        using var conn = _db.OpenConnection(readOnly: true);
+        using var cmd = conn.CreateCommand();
+
+        var clauses = new List<string> { FilterQueryBuilder.KeyGuard };
+
+        if (sinceRowId > 0)
+        {
+            clauses.Add("spots.rowid > @sinceRowId");
+            cmd.Parameters.AddWithValue("@sinceRowId", sinceRowId);
+        }
+
+        if (rule.Type == Spotnet.Notifications.NotificationRuleType.Filter)
+        {
+            if (!string.IsNullOrWhiteSpace(rule.FilterQuery))
+            {
+                string clean = Spotnet.Notifications.NotificationSpotFormatting.CleanFilterQuery(rule.FilterQuery);
+                var values = new List<SqlValue>();
+                string? predicate = FilterQueryBuilder.BuildPredicate(clean, DateTimeOffset.UtcNow.ToUnixTimeSeconds(), RowNew, values, showErotica: true);
+                if (predicate != null)
+                {
+                    clauses.Add($"({predicate})");
+                    foreach (var value in values)
+                    {
+                        cmd.Parameters.AddWithValue(value.Name, value.Value);
+                    }
+                }
+                else
+                {
+                    Log.Warn("Notification rule '{0}': unsupported filter expression '{1}', rule matches nothing.", rule.Name, rule.FilterQuery);
+                    return list;
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(rule.FilterId) && rule.FilterId.StartsWith("cat_") && int.TryParse(rule.FilterId.Substring(4), out int cId))
+            {
+                clauses.Add($"spots.cat = {cId}");
+            }
+        }
+        else // Keyword
+        {
+            if (rule.Category.HasValue && rule.Category.Value > 0)
+            {
+                clauses.Add("spots.cat = @kwCat");
+                cmd.Parameters.AddWithValue("@kwCat", rule.Category.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(rule.Keywords))
+            {
+                var rawTerms = rule.Keywords.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
+                                           .Select(t => t.Trim())
+                                           .Where(t => t.Length > 0)
+                                           .ToList();
+                if (rawTerms.Count > 0)
+                {
+                    var termClauses = new List<string>();
+                    int pIdx = 0;
+                    foreach (var term in rawTerms)
+                    {
+                        string pName = $"@kw_{pIdx++}";
+                        termClauses.Add($"spots.subject LIKE {pName}");
+                        cmd.Parameters.AddWithValue(pName, $"%{term}%");
+                    }
+                    clauses.Add($"({string.Join(" OR ", termClauses)})");
+                }
+            }
+        }
+
+        cmd.CommandText = $@"
+            SELECT spots.rowid, spots.msgid, spots.subject, spots.cat, spots.filesize, spots.date
+            FROM spots
+            WHERE {string.Join(" AND ", clauses)}
+            ORDER BY spots.rowid ASC
+            LIMIT @limit";
+        cmd.Parameters.AddWithValue("@limit", limit);
+
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            long rowId = reader.GetInt64(0);
+            string msgId = reader.IsDBNull(1) ? "" : reader.GetString(1);
+            string subject = reader.IsDBNull(2) ? "" : reader.GetString(2);
+            int cat = reader.IsDBNull(3) ? 0 : reader.GetInt32(3);
+            long filesize = reader.IsDBNull(4) ? 0 : reader.GetInt64(4);
+            long date = reader.IsDBNull(5) ? 0 : reader.GetInt64(5);
+
+            list.Add(new Spotnet.Notifications.SpotSummaryItem
+            {
+                Id = rowId,
+                MessageId = msgId,
+                Title = subject,
+                Category = cat,
+                CategoryName = Spotnet.Notifications.NotificationSpotFormatting.GetCategoryName(cat),
+                FormattedSize = Spotnet.Notifications.NotificationSpotFormatting.FormatFileSize(filesize),
+                Date = date,
+                FormattedDate = Spotnet.Notifications.NotificationSpotFormatting.FormatDate(date)
+            });
+        }
+        return list;
+    }
+
     public async Task<Dictionary<int, int>> GetCategoryCountsAsync()
     {
         var counts = new Dictionary<int, int>();

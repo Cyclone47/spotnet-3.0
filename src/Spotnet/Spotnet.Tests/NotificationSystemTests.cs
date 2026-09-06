@@ -40,7 +40,7 @@ public class NotificationSystemTests
     [Fact]
     public void NotificationManager_AutoSyncInterval_ClampsToMinimum5Minutes()
     {
-        var mgr = NotificationManager.Instance;
+        var mgr = NotificationHost.Instance.Engine;
 
         // Attempting to set below 5 minutes should clamp to 5
         mgr.SetAutoSyncInterval(1);
@@ -60,7 +60,7 @@ public class NotificationSystemTests
     [Fact]
     public void NotificationManager_AddUpdateDeleteRule_WorksCorrectly()
     {
-        var mgr = NotificationManager.Instance;
+        var mgr = NotificationHost.Instance.Engine;
         string ruleId = Guid.NewGuid().ToString("N");
 
         var rule = new NotificationRule
@@ -93,7 +93,7 @@ public class NotificationSystemTests
     [Fact]
     public void NotificationManager_NotificationsUnreadAndBundling_TracksCorrectly()
     {
-        var mgr = NotificationManager.Instance;
+        var mgr = NotificationHost.Instance.Engine;
 
         // Clear existing notifications for isolated test
         mgr.ClearAllNotifications();
@@ -196,7 +196,7 @@ public class NotificationSystemTests
     [Fact]
     public void NotificationManager_UpdateExistingRule_PreservesIdentityAndUpdatesParameters()
     {
-        var mgr = NotificationManager.Instance;
+        var mgr = NotificationHost.Instance.Engine;
         string ruleId = Guid.NewGuid().ToString("N");
 
         var rule = new NotificationRule

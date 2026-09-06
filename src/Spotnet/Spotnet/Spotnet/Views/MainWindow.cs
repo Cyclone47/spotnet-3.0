@@ -2417,7 +2417,7 @@ public partial class MainWindow : MetroWindow
     {
         try
         {
-            NotificationManager.Instance.NotifyDownloadComplete(sTooltip, success);
+            NotificationHost.Instance.Engine.NotifyDownloadComplete(sTooltip, success);
         }
         catch (Exception ex)
         {

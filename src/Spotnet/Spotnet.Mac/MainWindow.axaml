@@ -190,6 +190,7 @@
         <MenuItem Header="_Installatie Wizard opnieuw openen..." Command="{Binding OpenOnboardingCommand}"/>
       </MenuItem>
       <MenuItem Header="_Help">
+        <MenuItem Header="Meldingen centrum..." Command="{Binding OpenNotificationCenterCommand}"/>
         <MenuItem Header="Wat is er _nieuw (Release Notes)..." Command="{Binding OpenReleaseNotesCommand}"/>
         <MenuItem Header="_Database controleren &amp; herstellen..." Command="{Binding QuickRepairDbCommand}"/>
         <Separator/>
@@ -716,7 +717,7 @@
             BorderBrush="{DynamicResource AppBorderBrush}"
             BorderThickness="0,1,0,0"
             Padding="12,4">
-      <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+      <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto">
         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
           <TextBlock Text="{Binding StatusText}" FontSize="11" VerticalAlignment="Center"/>
           <ProgressBar IsVisible="{Binding IsSyncing}"
@@ -727,6 +728,21 @@
         </StackPanel>
         <Button Grid.Column="1"
                 Classes="StatusIcon"
+                Command="{Binding OpenNotificationCenterCommand}"
+                Margin="0,0,10,0"
+                ToolTip.Tip="Meldingcentrum">
+          <Panel>
+            <TextBlock Text="🔔" FontSize="12" VerticalAlignment="Center"/>
+            <Border Classes="CountBadge" IsVisible="{Binding HasUnreadNotifications}"
+                    Margin="10,-6,0,0" Padding="4,0" CornerRadius="6"
+                    Background="#FFD9534F" HorizontalAlignment="Left" VerticalAlignment="Top">
+              <TextBlock Text="{Binding UnreadNotificationCount}" FontSize="9" FontWeight="Bold"
+                         Foreground="White" VerticalAlignment="Center"/>
+            </Border>
+          </Panel>
+        </Button>
+        <Button Grid.Column="2"
+                Classes="StatusIcon"
                 Command="{Binding ToggleSocksProxyCommand}"
                 Margin="0,0,10,0"
                 ToolTip.Tip="{Binding SocksProxyToolTip}">
@@ -735,14 +751,14 @@
                      Foreground="{Binding SocksProxyForeground}"
                      VerticalAlignment="Center"/>
         </Button>
-        <Button Grid.Column="2"
+        <Button Grid.Column="3"
                 Classes="StatusIcon"
                 Command="{Binding RefreshCommand}"
                 IsEnabled="{Binding !IsLoading}"
                 Margin="0,0,10,0"
                 ToolTip.Tip="Nieuwe spots ophalen (Cmd+R)"
                 Content="&#x21BB;"/>
-        <TextBlock Grid.Column="3" Text="{Binding ArchitectureInfo}"
+        <TextBlock Grid.Column="4" Text="{Binding ArchitectureInfo}"
                    FontSize="11"
                    Foreground="{DynamicResource AppMutedTextBrush}"
                    VerticalAlignment="Center"/>

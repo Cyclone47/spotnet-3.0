@@ -33,8 +33,8 @@ public partial class NotificationCenterWindow : MetroWindow
                 MainTabControl.SelectedIndex = initialTabIndex;
             }
 
-            NotificationManager.Instance.NotificationsUpdated += RefreshNotifications;
-            NotificationManager.Instance.RulesUpdated += RefreshRules;
+            NotificationHost.Instance.Engine.NotificationsUpdated += RefreshNotifications;
+            NotificationHost.Instance.Engine.RulesUpdated += RefreshRules;
 
             LoadSettings();
             LoadFilters();
@@ -44,14 +44,14 @@ public partial class NotificationCenterWindow : MetroWindow
 
         Unloaded += (s, e) =>
         {
-            NotificationManager.Instance.NotificationsUpdated -= RefreshNotifications;
-            NotificationManager.Instance.RulesUpdated -= RefreshRules;
+            NotificationHost.Instance.Engine.NotificationsUpdated -= RefreshNotifications;
+            NotificationHost.Instance.Engine.RulesUpdated -= RefreshRules;
         };
     }
 
     private void LoadSettings()
     {
-        var cfg = NotificationManager.Instance.Config;
+        var cfg = NotificationHost.Instance.Engine.Config;
         WindowsNotificationsCheckBox.IsChecked = cfg.WindowsNotificationsEnabled;
 
         int currentSync = Math.Max(5, Settings.Default.DbAutoUpdateIntervalMin);
@@ -103,7 +103,7 @@ public partial class NotificationCenterWindow : MetroWindow
 
     private void RefreshNotifications()
     {
-        var notifs = NotificationManager.Instance.Config.Notifications.OrderByDescending(n => n.CreatedAtUtc).ToList();
+        var notifs = NotificationHost.Instance.Engine.Config.Notifications.OrderByDescending(n => n.CreatedAtUtc).ToList();
         NotificationsListBox.ItemsSource = null;
         NotificationsListBox.ItemsSource = notifs;
 
@@ -117,7 +117,7 @@ public partial class NotificationCenterWindow : MetroWindow
 
     private void RefreshRules()
     {
-        var rules = NotificationManager.Instance.Config.Rules.OrderBy(r => r.Name).ToList();
+        var rules = NotificationHost.Instance.Engine.Config.Rules.OrderBy(r => r.Name).ToList();
         RulesListBox.ItemsSource = null;
         RulesListBox.ItemsSource = rules;
     }
@@ -145,13 +145,13 @@ public partial class NotificationCenterWindow : MetroWindow
     {
         if (AutoSyncIntervalComboBox.SelectedItem is ComboBoxItem item && int.TryParse(item.Tag?.ToString(), out int tag))
         {
-            NotificationManager.Instance.SetAutoSyncInterval(tag);
+            NotificationHost.Instance.Engine.SetAutoSyncInterval(tag);
         }
     }
 
     private void WindowsNotificationsCheckBox_Click(object sender, RoutedEventArgs e)
     {
-        NotificationManager.Instance.Config.WindowsNotificationsEnabled = WindowsNotificationsCheckBox.IsChecked == true;
+        NotificationHost.Instance.Engine.Config.WindowsNotificationsEnabled = WindowsNotificationsCheckBox.IsChecked == true;
     }
 
     private void SaveRuleButton_Click(object sender, RoutedEventArgs e)
@@ -164,7 +164,7 @@ public partial class NotificationCenterWindow : MetroWindow
 
         if (isEditing)
         {
-            rule = NotificationManager.Instance.Config.Rules.FirstOrDefault(r => r.Id == _editingRuleId);
+            rule = NotificationHost.Instance.Engine.Config.Rules.FirstOrDefault(r => r.Id == _editingRuleId);
             if (rule == null)
             {
                 rule = new NotificationRule
@@ -264,7 +264,7 @@ public partial class NotificationCenterWindow : MetroWindow
 
         rule.Name = ruleName;
 
-        NotificationManager.Instance.AddOrUpdateRule(rule);
+        NotificationHost.Instance.Engine.AddOrUpdateRule(rule);
 
         ResetRuleForm();
 
@@ -281,7 +281,7 @@ public partial class NotificationCenterWindow : MetroWindow
     {
         if (sender is Button btn && btn.Tag is string id)
         {
-            var rule = NotificationManager.Instance.Config.Rules.FirstOrDefault(r => r.Id == id);
+            var rule = NotificationHost.Instance.Engine.Config.Rules.FirstOrDefault(r => r.Id == id);
             if (rule == null) return;
 
             _editingRuleId = rule.Id;
@@ -385,14 +385,14 @@ public partial class NotificationCenterWindow : MetroWindow
 
     private void MarkAllReadButton_Click(object sender, RoutedEventArgs e)
     {
-        NotificationManager.Instance.MarkAllAsRead();
+        NotificationHost.Instance.Engine.MarkAllAsRead();
     }
 
     private void ClearAllButton_Click(object sender, RoutedEventArgs e)
     {
         if (MessageBox.Show("Weet je zeker dat je alle meldingen wilt wissen?", "Meldingen wissen", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
         {
-            NotificationManager.Instance.ClearAllNotifications();
+            NotificationHost.Instance.Engine.ClearAllNotifications();
         }
     }
 
@@ -400,7 +400,7 @@ public partial class NotificationCenterWindow : MetroWindow
     {
         if (sender is Button btn && btn.Tag is string id)
         {
-            NotificationManager.Instance.DeleteNotification(id);
+            NotificationHost.Instance.Engine.DeleteNotification(id);
         }
     }
 
@@ -436,7 +436,7 @@ public partial class NotificationCenterWindow : MetroWindow
     {
         if (sender is CheckBox cb && cb.Tag is string id)
         {
-            NotificationManager.Instance.ToggleRule(id);
+            NotificationHost.Instance.Engine.ToggleRule(id);
         }
     }
 
@@ -450,16 +450,16 @@ public partial class NotificationCenterWindow : MetroWindow
                 {
                     ResetRuleForm();
                 }
-                NotificationManager.Instance.DeleteRule(id);
+                NotificationHost.Instance.Engine.DeleteRule(id);
             }
         }
     }
 
-    private void TestRule_Click(object sender, RoutedEventArgs e)
+    private async void TestRule_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is string id)
         {
-            var notif = NotificationManager.Instance.TestRuleNow(id);
+            var notif = await NotificationHost.Instance.Engine.TestRuleNowAsync(id);
             if (notif != null)
             {
                 MessageBox.Show($"Test geslaagd! Er zijn {notif.SpotCount} spots gevonden en een melding is getoond.", "Test Resultaat", MessageBoxButton.OK, MessageBoxImage.Information);
