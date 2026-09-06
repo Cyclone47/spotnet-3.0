@@ -151,6 +151,12 @@ public sealed class UserPreferences
     public bool HideBlacklistedSpots { get; set; }
 
     /// <summary>
+    /// Windows' "Uitgebreid"-vinkje in het ZOEKEN-paneel
+    /// (Settings.Default.AdvancedSearch, default true): prefix-zoekopdracht per term.
+    /// </summary>
+    public bool AdvancedSearch { get; set; } = true;
+
+    /// <summary>
     /// Whether only spots from whitelist or verified posters are shown.
     /// Matches Windows MainWindowVm.ShowTrustedOnlyMode (default false).
     /// </summary>

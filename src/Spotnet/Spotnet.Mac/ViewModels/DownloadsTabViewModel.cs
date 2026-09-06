@@ -39,6 +39,7 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
 
     public override string Header => "Downloads";
     public override bool CanClose => false;
+    public override string TabIcon => "⬇";
 
     public ObservableCollection<DownloadItem> Downloads { get; } = new();
 

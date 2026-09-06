@@ -63,6 +63,41 @@ public sealed class FilterItem : INotifyPropertyChanged
     /// <summary>SQLite category id (1=Beeld, 2=Geluid, etc.); null = no category filter</summary>
     public int? CategoryId { get; init; }
 
+    /// <summary>
+    /// De gekleurde stip rechts in de boom, zoals Windows' ColoringFilters: alleen
+    /// voor filters met een herkenbare hoofdcategorie (cat 1 t/m 999, zoals Windows'
+    /// FilterViewModel.GetCatFromQuery).
+    /// </summary>
+    public string GenreDotColor
+    {
+        get
+        {
+            if (CategoryId is > 0 and < 1000)
+            {
+                return SpotItem.CategoryToColor(CategoryId.Value);
+            }
+            // Uit de query vissen: "cat = 3"-stijl expressies.
+            string compact = Query.Replace(" ", "");
+            foreach (var prefix in new[] { "cat=", "spots.cat=" })
+            {
+                int at = compact.IndexOf(prefix, StringComparison.Ordinal);
+                if (at >= 0)
+                {
+                    int start = at + prefix.Length;
+                    int end = start;
+                    while (end < compact.Length && char.IsDigit(compact[end])) end++;
+                    if (end > start && int.TryParse(compact[start..end], out int cat) && cat > 0 && cat < 1000)
+                    {
+                        return SpotItem.CategoryToColor(cat);
+                    }
+                }
+            }
+            return ""; // geen stip
+        }
+    }
+
+    public bool HasGenreDot => !string.IsNullOrEmpty(GenreDotColor);
+
     /// <summary>cats column prefix to LIKE filter on (e.g. "1a3"); null = no subcat filter</summary>
     public string? SubcatTag { get; init; }
 

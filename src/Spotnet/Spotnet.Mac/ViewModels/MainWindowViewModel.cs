@@ -73,6 +73,9 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private FilterItem? _selectedFilter;
     private SpotItem? _selectedSpot;
     private string _searchText = "";
+    private string _searchField = "subject";
+    private bool _extensiveSearch = true;
+    private bool _favoritesOnly;
     private bool _isLoading;
     private string _statusText = "Gereed";
     private int _totalSpotsCount;
@@ -111,7 +114,10 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 hideBlacklisted: prefs.HideBlacklistedSpots,
                 showTrustedOnly: prefs.ShowTrustedOnlyMode,
                 showErotica: prefs.ShowEroticaInSearchResults,
-                spamReportsThreshold: prefs.NumOfSpamReportsToSpotHide);
+                spamReportsThreshold: prefs.NumOfSpamReportsToSpotHide,
+                searchField: _searchField,
+                extensiveSearch: _extensiveSearch,
+                favoritesOnly: _favoritesOnly);
         }
         catch (Exception ex)
         {
@@ -241,6 +247,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 if (previous != null) previous.IsSelected = false;
                 if (value != null) value.IsSelected = true;
 
+                OnPropertyChanged(nameof(SelectedFilterLabel));
                 _ = RefreshSpotsAsync();
             }
         }
@@ -268,6 +275,58 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         get => _searchText;
         set => SetProperty(ref _searchText, value);
     }
+
+    /// <summary>
+    /// Waar het ZOEKEN-paneel in zoekt: "subject" (Titel), "sender" (Afzender) of
+    /// "tag" (Label) — de FTS-kolommen, zoals Windows' zoekradioknoppen.
+    /// </summary>
+    public string SearchField
+    {
+        get => _searchField;
+        set
+        {
+            if (SetProperty(ref _searchField, value))
+            {
+                _ = RefreshSpotsAsync();
+            }
+        }
+    }
+
+    /// <summary>Windows' "Uitgebreid"-vinkje: prefix-zoekopdracht per term.</summary>
+    public bool ExtensiveSearch
+    {
+        get => _extensiveSearch;
+        set
+        {
+            if (SetProperty(ref _extensiveSearch, value))
+            {
+                var prefs = _prefsService.Current;
+                prefs.AdvancedSearch = value;
+                _prefsService.Save(prefs);
+                _ = RefreshSpotsAsync();
+            }
+        }
+    }
+
+    /// <summary>Windows' "Favorieten"-vinkje: alleen favoriete spots tonen.</summary>
+    public bool FavoritesOnly
+    {
+        get => _favoritesOnly;
+        set
+        {
+            if (SetProperty(ref _favoritesOnly, value))
+            {
+                _ = RefreshSpotsAsync();
+            }
+        }
+    }
+
+    public bool IsSearchFieldTitle => _searchField == "subject";
+    public bool IsSearchFieldSender => _searchField == "sender";
+    public bool IsSearchFieldTag => _searchField == "tag";
+
+    /// <summary>De naam van de gekozen filter, zoals in Windows' "FILTERS <naam> ▾"-kop.</summary>
+    public string SelectedFilterLabel => SelectedFilter?.Name is { Length: > 0 } name ? name : "Aangepast";
 
     public bool IsLoading
     {
@@ -301,6 +360,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     // ── Commands ──────────────────────────────────────────────────────────────
     public ICommand SearchCommand { get; }
+    public ICommand SetSearchFieldCommand { get; }
     public ICommand ClearSearchCommand { get; }
     public ICommand RefreshCommand { get; }
     public ICommand CloseDetailCommand { get; }
@@ -445,6 +505,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         _secretStore = secretStore;
         _dbService = dbService;
         _prefsService = prefsService ?? new UserPreferencesService(_appPaths);
+        _extensiveSearch = _prefsService.Current.AdvancedSearch;
         _customFilterService = new CustomFilterService(_appPaths);
         _trustService = trustService ?? new TrustService(_appPaths, _prefsService);
 
@@ -531,6 +592,16 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
         // Commands
         SearchCommand = new RelayCommand(async () => await RefreshSpotsAsync());
+        SetSearchFieldCommand = new RelayCommand(param =>
+        {
+            if (param is string field)
+            {
+                SearchField = field;
+                OnPropertyChanged(nameof(IsSearchFieldTitle));
+                OnPropertyChanged(nameof(IsSearchFieldSender));
+                OnPropertyChanged(nameof(IsSearchFieldTag));
+            }
+        });
         ClearSearchCommand = new RelayCommand(async () =>
         {
             SearchText = "";
@@ -1144,7 +1215,10 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 hideBlacklisted: prefs.HideBlacklistedSpots,
                 showTrustedOnly: prefs.ShowTrustedOnlyMode,
                 showErotica: prefs.ShowEroticaInSearchResults,
-                spamReportsThreshold: prefs.NumOfSpamReportsToSpotHide);
+                spamReportsThreshold: prefs.NumOfSpamReportsToSpotHide,
+                searchField: _searchField,
+                extensiveSearch: _extensiveSearch,
+                favoritesOnly: _favoritesOnly);
 
             var previous = Spots;
             Spots = new VirtualSpotCollection(

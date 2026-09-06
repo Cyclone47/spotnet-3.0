@@ -307,6 +307,25 @@ public sealed class SpotItem : INotifyPropertyChanged
     public string FormatLabel => SpotCategories.FormatFromSubcat(Subcat);
 
     /// <summary>
+    /// De kleurstreep links in de rij en de stip in de filterboom — dezelfde mapping
+    /// als Windows' Spots.CategoryToColor.
+    /// </summary>
+    public static string CategoryToColor(int cat) => cat switch
+    {
+        1 => "#21409A", // Films
+        2 => "#FFFFAA", // Muziek
+        3 => "#FF4D25", // Spellen
+        4 => "#FF7BAC", // Applicaties
+        5 => "#7AC943", // Boeken
+        6 => "#3FA9F5", // Series
+        9 => "#BDCCD4", // Erotiek
+        _ => "#FF4500"  // OrangeRed, zoals Windows' default
+    };
+
+    /// <summary>Kleur van de categoriestreep voor deze spot.</summary>
+    public string CategoryStripeColor => CategoryToColor(Category);
+
+    /// <summary>
     /// The "Genre" column: the spot's first named genre subcategory — Televisie,
     /// Waargebeurd, Komedie, Systeem, Kantoor … Blank when the spot has none.
     /// </summary>

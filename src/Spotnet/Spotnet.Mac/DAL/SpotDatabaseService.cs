@@ -190,14 +190,17 @@ public sealed class SpotDatabaseService
         bool hideBlacklisted = false,
         bool showTrustedOnly = false,
         bool showErotica = false,
-        int spamReportsThreshold = 0)
+        int spamReportsThreshold = 0,
+        string searchField = "subject",
+        bool extensiveSearch = true,
+        bool favoritesOnly = false)
     {
         var spots = new List<SpotItem>();
         using var conn = _db.OpenConnection(readOnly: true);
         using var cmd = conn.CreateCommand();
 
         string order = sortDirection.Equals("ASC", StringComparison.OrdinalIgnoreCase) ? "ASC" : "DESC";
-        string where = BuildFilterWhere(filterQuery, searchText, cmd, hideBlacklisted, showTrustedOnly, showErotica, spamReportsThreshold);
+        string where = BuildFilterWhere(filterQuery, searchText, cmd, hideBlacklisted, showTrustedOnly, showErotica, spamReportsThreshold, searchField, extensiveSearch, favoritesOnly);
 
         cmd.CommandText =
             $"SELECT {FilterQueryBuilder.SpotColumns} FROM spots LEFT JOIN spamgroup s USING (msgid) LEFT JOIN favorites f USING (msgid){where} ORDER BY {SpotSort.ToSqlColumn(sortColumn)} {order}, spots.rowid {order} LIMIT @take OFFSET @skip;";
@@ -219,12 +222,15 @@ public sealed class SpotDatabaseService
         bool hideBlacklisted = false,
         bool showTrustedOnly = false,
         bool showErotica = false,
-        int spamReportsThreshold = 0)
+        int spamReportsThreshold = 0,
+        string searchField = "subject",
+        bool extensiveSearch = true,
+        bool favoritesOnly = false)
     {
         using var conn = _db.OpenConnection(readOnly: true);
         using var cmd = conn.CreateCommand();
 
-        string where = BuildFilterWhere(filterQuery, searchText, cmd, hideBlacklisted, showTrustedOnly, showErotica, spamReportsThreshold);
+        string where = BuildFilterWhere(filterQuery, searchText, cmd, hideBlacklisted, showTrustedOnly, showErotica, spamReportsThreshold, searchField, extensiveSearch, favoritesOnly);
         cmd.CommandText = $"SELECT COUNT(1) FROM spots LEFT JOIN spamgroup s USING (msgid) LEFT JOIN favorites f USING (msgid){where};";
 
         var result = await cmd.ExecuteScalarAsync();
@@ -349,7 +355,10 @@ public sealed class SpotDatabaseService
         bool hideBlacklisted = false,
         bool showTrustedOnly = false,
         bool showErotica = false,
-        int spamReportsThreshold = 0)
+        int spamReportsThreshold = 0,
+        string searchField = "subject",
+        bool extensiveSearch = true,
+        bool favoritesOnly = false)
     {
         var clauses = new List<string>();
         var values = new List<SqlValue>();
@@ -394,10 +403,19 @@ public sealed class SpotDatabaseService
             clauses.Add("spots.cat < 9");
         }
 
+        if (favoritesOnly)
+        {
+            clauses.Add("spots.msgid IN (SELECT msgid FROM favorites)");
+        }
+
         if (!string.IsNullOrWhiteSpace(searchText))
         {
+            // Windows' ZOEKEN-paneel: Afzender/Label zoeken in die FTS-kolom, Titel
+            // (en de oude aanroepen) in alle kolommen. "Uitgebreid" zoekt met prefix
+            // per term (partiële treffers), anders alleen hele termen.
+            string field = searchField is "sender" or "tag" ? searchField : "";
             clauses.Add("spots.rowid IN (SELECT rowid FROM search WHERE search MATCH @fts)");
-            cmd.Parameters.AddWithValue("@fts", SanitizeFtsQuery(searchText));
+            cmd.Parameters.AddWithValue("@fts", SanitizeFtsQuery(searchText, field, extensiveSearch));
         }
 
         foreach (var value in values)
@@ -984,7 +1002,7 @@ public sealed class SpotDatabaseService
         await cmd.ExecuteNonQueryAsync();
     }
 
-    private static string SanitizeFtsQuery(string input)
+    private static string SanitizeFtsQuery(string input, string field = "", bool extensive = true)
     {
         // Quote terms or clean up FTS5 special operators
         var words = input.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
@@ -994,7 +1012,8 @@ public sealed class SpotDatabaseService
             string clean = word.Replace("\"", "").Replace("'", "").Replace("*", "");
             if (!string.IsNullOrWhiteSpace(clean))
             {
-                terms.Add($"\"{clean}\"*");
+                string prefix = field.Length > 0 ? field + ":" : "";
+                terms.Add(extensive ? $"{prefix}\"{clean}\"*" : $"{prefix}\"{clean}\"");
             }
         }
         return terms.Count > 0 ? string.Join(" ", terms) : "\"\"";
