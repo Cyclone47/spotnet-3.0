@@ -50,7 +50,16 @@
   </data>
   <data name="whatsnew" xml:space="preserve">
     <value>&lt;section class="notes-section gh-release"&gt;
-&lt;h3&gt;Spotnet 3.0.12.0 &lt;span class="gh-tag"&gt;New&lt;/span&gt;&lt;span class="gh-date"&gt;Current version&lt;/span&gt;&lt;/h3&gt;
+&lt;h3&gt;Spotnet 3.0.13.0 &lt;span class="gh-tag"&gt;New&lt;/span&gt;&lt;span class="gh-date"&gt;Current version&lt;/span&gt;&lt;/h3&gt;
+&lt;div class="gh-body"&gt;&lt;ul class="section-items tagged"&gt;
+&lt;li&gt;&lt;strong&gt;Live language switching:&lt;/strong&gt; Switching between Dutch and English now takes effect immediately across the user interface without restarting Spotnet.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Classic moderation lists:&lt;/strong&gt; Full support for classic Spotnet blacklists and whitelists in the moderation and community settings.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Automatic filter translation:&lt;/strong&gt; Standard categories, genres, time filters, and filter sets in the left panel are dynamically translated to the active language while keeping custom user filters and filters.xml untouched.&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section class="notes-section gh-release"&gt;
+&lt;h3&gt;Spotnet 3.0.12.0 &lt;span class="gh-date"&gt;6 September 2026&lt;/span&gt;&lt;/h3&gt;
 &lt;div class="gh-body"&gt;&lt;ul class="section-items tagged"&gt;
 &lt;li&gt;&lt;strong&gt;Choose your notification history:&lt;/strong&gt; Select which events appear in the notification center and unread count: completed downloads, failed downloads, password requests, warnings, filter alerts and keyword alerts. Disabled categories no longer count or add new entries. Choices are saved. Password requests now have their own history notification.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;External browser links fixed:&lt;/strong&gt; Fixed a bug that prevented links from Spotnet from opening in the default browser.&lt;/li&gt;
@@ -8130,7 +8139,16 @@ if (browserok) {
   </data>
   <data name="whatsnew_nl" xml:space="preserve">
     <value>&lt;section class="notes-section gh-release"&gt;
-&lt;h3&gt;Spotnet 3.0.12.0 &lt;span class="gh-tag"&gt;Nieuw&lt;/span&gt;&lt;span class="gh-date"&gt;Huidige versie&lt;/span&gt;&lt;/h3&gt;
+&lt;h3&gt;Spotnet 3.0.13.0 &lt;span class="gh-tag"&gt;Nieuw&lt;/span&gt;&lt;span class="gh-date"&gt;Huidige versie&lt;/span&gt;&lt;/h3&gt;
+&lt;div class="gh-body"&gt;&lt;ul class="section-items tagged"&gt;
+&lt;li&gt;&lt;strong&gt;Live taalwissel zonder herstart:&lt;/strong&gt; Schakelen tussen Nederlands en Engels werkt direct in de hele gebruikersinterface zonder dat u de app opnieuw hoeft te starten.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Klassieke moderatielijsten:&lt;/strong&gt; Volledige ondersteuning voor klassieke Spotnet blacklists en whitelists in de moderatie- en community-instellingen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Automatische filtervertaling:&lt;/strong&gt; Standaardcategorieën, genres, tijdsfilters en filtersets in het linkerpaneel worden automatisch vertaald naar de gekozen taal, met behoud van eigen filters en zonder filters.xml aan te passen.&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section class="notes-section gh-release"&gt;
+&lt;h3&gt;Spotnet 3.0.12.0 &lt;span class="gh-date"&gt;6 september 2026&lt;/span&gt;&lt;/h3&gt;
 &lt;div class="gh-body"&gt;&lt;ul class="section-items tagged"&gt;
 &lt;li&gt;&lt;strong&gt;Meldinghistorie naar wens:&lt;/strong&gt; Kies in het meldingencentrum welke meldingen in de historie en de teller verschijnen: download klaar, mislukt, wachtwoord nodig, waarschuwing, filtermeldingen en trefwoordmeldingen. Uitgeschakelde soorten tellen niet meer mee en worden niet meer toegevoegd. Uw keuzes worden bewaard. Wachtwoordverzoeken hebben nu ook een eigen historiemelding.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;Links openen in externe browser hersteld:&lt;/strong&gt; Een bug is opgelost waardoor links vanuit Spotnet niet in de standaardbrowser konden worden geopend.&lt;/li&gt;
