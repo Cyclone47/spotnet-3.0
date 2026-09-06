@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Spotnet.Mac.ViewModels"
              xmlns:models="using:Spotnet.Mac.Models"
+             xmlns:services="using:Spotnet.Mac.Services"
              x:Class="Spotnet.Mac.Views.SpotDetailView"
              x:DataType="vm:SpotDetailViewModel">
 
@@ -163,6 +164,58 @@
                        Foreground="{Binding FavoriteForeground}"/>
           </Button>
         </Grid>
+
+        <!-- IMDb- of Links & iTunes-paneel, zoals Windows' ImdbPanel op de spotpagina:
+             alleen bij Films/Series/Muziek, opengeklapt via de IMDb-knop of (met de
+             SpotImdbShow-voorkeur) vanzelf. -->
+        <Border Background="{DynamicResource AppGridBackground}"
+                BorderBrush="{DynamicResource AppBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="14"
+                IsVisible="{Binding HasImdbPanel}">
+          <StackPanel Spacing="8">
+            <Grid ColumnDefinitions="*,Auto">
+              <Button Grid.Column="0" Classes="LinkButton" HorizontalAlignment="Left"
+                      Command="{Binding ToggleImdbPanelCommand}">
+                <TextBlock Text="{Binding ImdbPanelHeader}" FontWeight="Bold" FontSize="14"/>
+              </Button>
+              <Button Grid.Column="1" Classes="IconButton" Padding="4,0"
+                      Command="{Binding ToggleImdbPanelCommand}"
+                      IsVisible="{Binding IsImdbPanelOpen}"
+                      Content="&#x2715;" ToolTip.Tip="Paneel sluiten"/>
+            </Grid>
+
+            <StackPanel Spacing="4" IsVisible="{Binding IsImdbPanelOpen}">
+              <TextBlock Text="{Binding ImdbStatus}" Foreground="#D9534F" FontSize="12"
+                         IsVisible="{Binding ImdbStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+              <TextBlock Text="Informatie ophalen..." FontSize="12" FontStyle="Italic"
+                         Foreground="{DynamicResource AppMutedTextBrush}"
+                         IsVisible="{Binding IsImdbLoading}"/>
+              <ItemsControl ItemsSource="{Binding ImdbRows}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate DataType="services:SpotInfoRow">
+                    <Grid ColumnDefinitions="100,*" Margin="0,2">
+                      <TextBlock Grid.Column="0" Text="{Binding Label}"
+                                 HorizontalAlignment="Right" Margin="0,0,12,0"
+                                 FontWeight="SemiBold"
+                                 Foreground="{DynamicResource AppMutedTextBrush}"/>
+                      <Button Grid.Column="1" Classes="LinkButton" HorizontalAlignment="Left"
+                              Command="{Binding $parent[UserControl].((vm:SpotDetailViewModel)DataContext).OpenWebLinkCommand}"
+                              CommandParameter="{Binding Value}"
+                              Content="{Binding Value}"
+                              ToolTip.Tip="Openen in de browser"
+                              IsVisible="{Binding IsLink}"/>
+                      <TextBlock Grid.Column="1" Text="{Binding Value}" TextWrapping="Wrap"
+                                 Foreground="{DynamicResource AppTextBrush}"
+                                 IsVisible="{Binding !IsLink}"/>
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </StackPanel>
+        </Border>
 
         <!-- A long description gets its own scrollbar rather than pushing the comments
              and the reply form off the bottom of the column. -->

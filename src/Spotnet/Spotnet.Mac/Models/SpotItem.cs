@@ -29,6 +29,16 @@ public sealed class SpotItem : INotifyPropertyChanged
     public bool HasThumb => _thumbImage != null;
 
     /// <summary>
+    /// Deze spot is nieuwer dan het rownew-watermerk van de laatste synchronisatie —
+    /// Windows' <c>SpotsContainer.UpdateItemStyle</c>: vetgedrukte titel en een
+    /// 3-pixels-rand in de thema-accentkleur.
+    /// </summary>
+    public bool IsNew { get; set; }
+
+    /// <summary>Vetgedrukte titel voor nieuwe spots, zoals Windows' FontWeight.</summary>
+    public Avalonia.Media.FontWeight TitleFontWeight => IsNew ? Avalonia.Media.FontWeight.Bold : Avalonia.Media.FontWeight.Normal;
+
+    /// <summary>
     /// True while this row is a stand-in for a spot the virtual list has not fetched
     /// yet. The grid binds it to show an em dash instead of an empty row.
     /// </summary>
@@ -67,6 +77,7 @@ public sealed class SpotItem : INotifyPropertyChanged
         PosterIdent = source.PosterIdent;
         NumberOfSpamReports = source.NumberOfSpamReports;
         IsFavorite = source.IsFavorite;
+        IsNew = source.IsNew;
         IsPlaceholder = false;
 
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
@@ -308,6 +319,22 @@ public sealed class SpotItem : INotifyPropertyChanged
         4 => "Applicaties",
         9 => "Erotiek",
         _ => "Overig"
+    };
+
+    /// <summary>
+    /// De categorienaam zoals Windows' [SN:CAT] in de spotthema's
+    /// (AppHelper.CatDesc(Category, 0)): Films, Series, Muziek, Spellen, Applicaties,
+    /// Erotiek. Het IMDb-/iTunes-paneel stuurt hierop.
+    /// </summary>
+    public string SpotnetCategoryName => Category switch
+    {
+        1 => (Subcat == 12 || Subcat == 13) ? "Afbeeldingen" : "Films",
+        2 => "Muziek",
+        3 => "Spellen",
+        4 => "Applicaties",
+        6 => "Series",
+        9 => "Erotiek",
+        _ => ""
     };
 
     public string CategoryIcon => Category switch

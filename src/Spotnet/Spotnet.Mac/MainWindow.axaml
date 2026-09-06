@@ -110,6 +110,12 @@
       <Setter Property="Background" Value="{DynamicResource AppFormatBadgeBackground}"/>
       <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
+    <!-- Nieuwe spots (boven het rownew-watermerk): vetgedrukte titel in de
+         GrayBrush2-kleur van het thema, zoals Windows' SpotsContainer.UpdateItemStyle. -->
+    <Style Selector="TextBlock.newspot">
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="Foreground" Value="{DynamicResource AppNewSpotTextBrush}"/>
+    </Style>
     <!-- Spot list -->
     <Style Selector="DataGridColumnHeader">
       <Setter Property="Background" Value="{DynamicResource AppHeaderBackground}"/>
@@ -377,7 +383,7 @@
                             <Ellipse Grid.Column="2" Width="8" Height="8" Margin="6,0,2,0"
                                      VerticalAlignment="Center"
                                      Fill="{Binding GenreDotColor, Converter={x:Static views:HexToBrushConverter.Instance}}"
-                                     IsVisible="{Binding HasGenreDot}"/>
+                                     IsVisible="{Binding HasGenreDot, Converter={x:Static views:BoolAndConverter.Instance}, ConverterParameter={Binding $parent[Window].DataContext.ColoringFilters}}"/>
                             <Button Grid.Column="2"
                                     Content="✕" FontSize="9" Padding="3,1" Margin="2,0,0,0"
                                     VerticalAlignment="Center"
@@ -411,7 +417,7 @@
                                 <Ellipse Grid.Column="2" Width="8" Height="8" Margin="6,0,2,0"
                                          VerticalAlignment="Center"
                                          Fill="{Binding GenreDotColor, Converter={x:Static views:HexToBrushConverter.Instance}}"
-                                         IsVisible="{Binding HasGenreDot}"/>
+                                         IsVisible="{Binding HasGenreDot, Converter={x:Static views:BoolAndConverter.Instance}, ConverterParameter={Binding $parent[Window].DataContext.ColoringFilters}}"/>
                                 <Button Grid.Column="2"
                                         Content="✕" FontSize="9" Padding="3,1" Margin="2,0,0,0"
                                         VerticalAlignment="Center"
@@ -580,12 +586,14 @@
                 <DataGridTemplateColumn Header="Formaat" Width="72" SortMemberPath="FormatLabel">
                   <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate DataType="models:SpotItem">
-                      <!-- De categoriestreep, zoals Windows' 4px-lijn vóór het formaat -->
+                      <!-- De categoriestreep, zoals Windows' 4px-lijn vóór het formaat.
+                           Windows' ColoringSpots-schakelaar: de streep verdwijnt bij uit. -->
                       <Panel Margin="4,2">
                         <Border HorizontalAlignment="Left" Width="4" Height="22"
                                 CornerRadius="2"
                                 Background="{Binding CategoryStripeColor, Converter={x:Static views:HexToBrushConverter.Instance}}"
-                                VerticalAlignment="Center"/>
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding $parent[Window].DataContext.ColoringSpots}"/>
                         <Border Classes="FmtBadge" Margin="10,0,0,0" HorizontalAlignment="Left"
                                 IsVisible="{Binding FormatLabel, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                           <TextBlock Text="{Binding FormatLabel}"
@@ -610,7 +618,8 @@
                             <TextBlock Text="{Binding NumberOfSpamReports}" FontSize="10" FontWeight="Bold" Foreground="#D9534F" VerticalAlignment="Center"/>
                           </StackPanel>
                         </Border>
-                        <TextBlock Text="{Binding Subject}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Subject}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
+                                   Classes.newspot="{Binding IsNew}"/>
                       </DockPanel>
                     </DataTemplate>
                   </DataGridTemplateColumn.CellTemplate>

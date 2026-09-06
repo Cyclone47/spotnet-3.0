@@ -507,6 +507,33 @@ public sealed class SettingsViewModel : ViewModelBase
         set => SetProperty(ref _showEroticaInSearchResults, value);
     }
 
+    private bool _coloringSpots;
+
+    /// <summary>Matches Windows Settings.Default.ColoringSpots: de categoriestreep in de spotrijen.</summary>
+    public bool ColoringSpots
+    {
+        get => _coloringSpots;
+        set => SetProperty(ref _coloringSpots, value);
+    }
+
+    private bool _coloringFilters;
+
+    /// <summary>Matches Windows Settings.Default.ColoringFilters: de stippen in de filterboom.</summary>
+    public bool ColoringFilters
+    {
+        get => _coloringFilters;
+        set => SetProperty(ref _coloringFilters, value);
+    }
+
+    private bool _spotImdbShow;
+
+    /// <summary>Matches Windows Settings.Default.SpotImdbShow: het IMDb-/iTunes-paneel opent vanzelf.</summary>
+    public bool SpotImdbShow
+    {
+        get => _spotImdbShow;
+        set => SetProperty(ref _spotImdbShow, value);
+    }
+
     /// <summary>
     /// Accept a TLS certificate that fails validation. Off by default, as on Windows.
     /// Without this escape hatch a provider with a self-signed certificate would be
@@ -789,6 +816,9 @@ public sealed class SettingsViewModel : ViewModelBase
         _hideBlacklistedSpots = prefs.HideBlacklistedSpots;
         _showTrustedOnlyMode = prefs.ShowTrustedOnlyMode;
         _showEroticaInSearchResults = prefs.ShowEroticaInSearchResults;
+        _coloringSpots = prefs.ColoringSpots;
+        _coloringFilters = prefs.ColoringFilters;
+        _spotImdbShow = prefs.SpotImdbShow;
         _nickname = string.IsNullOrWhiteSpace(prefs.Nickname) ? "Spotter" : prefs.Nickname;
 
         OnPropertyChanged(nameof(SelectedDownloadMode));
@@ -824,6 +854,9 @@ public sealed class SettingsViewModel : ViewModelBase
         OnPropertyChanged(nameof(HideBlacklistedSpots));
         OnPropertyChanged(nameof(ShowTrustedOnlyMode));
         OnPropertyChanged(nameof(ShowEroticaInSearchResults));
+        OnPropertyChanged(nameof(ColoringSpots));
+        OnPropertyChanged(nameof(ColoringFilters));
+        OnPropertyChanged(nameof(SpotImdbShow));
         OnPropertyChanged(nameof(Nickname));
 
         if (string.IsNullOrEmpty(Server))
@@ -945,6 +978,9 @@ public sealed class SettingsViewModel : ViewModelBase
             prefs.HideBlacklistedSpots = HideBlacklistedSpots;
             prefs.ShowTrustedOnlyMode = ShowTrustedOnlyMode;
             prefs.ShowEroticaInSearchResults = ShowEroticaInSearchResults;
+            prefs.ColoringSpots = ColoringSpots;
+            prefs.ColoringFilters = ColoringFilters;
+            prefs.SpotImdbShow = SpotImdbShow;
             prefs.Nickname = string.IsNullOrWhiteSpace(Nickname) ? "Spotter" : Nickname.Trim();
             _prefsService.Save(prefs);
 

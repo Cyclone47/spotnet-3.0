@@ -244,6 +244,17 @@
                           Content="Toon erotiek in de zoekresultaten"
                           ToolTip.Tip="Neem spots uit categorie 9 (Erotiek) mee in zoekresultaten"/>
 
+                <TextBlock Text="Kleurgebruik:" FontWeight="Medium"/>
+                <CheckBox IsChecked="{Binding ColoringSpots}" Margin="24,0,0,0"
+                          Content="Gekleurde categoriestreep in de spotlijst"
+                          ToolTip.Tip="Windows' ColoringSpots: de kleurstreep v\u00f3\u00f3r het formaat in elke spotrij"/>
+                <CheckBox IsChecked="{Binding ColoringFilters}" Margin="24,0,0,0"
+                          Content="Gekleurde stippen in de filterboom"
+                          ToolTip.Tip="Windows' ColoringFilters: de kleurstip achter filters met een hoofdcategorie"/>
+                <CheckBox IsChecked="{Binding SpotImdbShow}" Margin="24,0,0,0"
+                          Content="IMDb-paneel automatisch openklappen (Films, Series &amp; Muziek)"
+                          ToolTip.Tip="Windows' SpotImdbShow: opent het IMDb- of Links &amp; iTunes-paneel bij elke spot"/>
+
                 <TextBlock Text="Database onderhoud &amp; optimalisatie:" FontWeight="Medium"/>
                 <Button Content="Database controleren &amp; repareren"
                         Command="{Binding QuickRepairCommand}"

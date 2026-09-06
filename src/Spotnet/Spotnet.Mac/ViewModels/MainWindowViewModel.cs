@@ -108,7 +108,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         try
         {
             var prefs = _prefsService.Current;
-            return await _dbService.QueryByFilterAsync(
+            var rows = await _dbService.QueryByFilterAsync(
                 filterQuery: filterQuery,
                 searchText: keyword,
                 skip: skip,
@@ -122,6 +122,21 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 searchField: _searchField,
                 extensiveSearch: _extensiveSearch,
                 favoritesOnly: _favoritesOnly);
+
+            // Nieuwe spots markeren zoals Windows' SpotsContainer.UpdateItemStyle:
+            // alles boven het rownew-watermerk van de laatste synchronisatie is "nieuw"
+            // (vetgedrukte titel + rand), maar nooit bij een verse database waar het
+            // watermerk nog op 0 staat.
+            long rowNew = _dbService.RowNew;
+            if (rowNew > 1)
+            {
+                foreach (var row in rows)
+                {
+                    row.IsNew = row.Id > rowNew;
+                }
+            }
+
+            return rows;
         }
         catch (Exception ex)
         {
@@ -362,6 +377,42 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             {
                 var prefs = _prefsService.Current;
                 prefs.SpotsFontSize = clamped;
+                _prefsService.Save(prefs);
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Windows' ColoringSpots: de gekleurde categoriestreep in de spotrijen.
+    /// </summary>
+    public bool ColoringSpots
+    {
+        get => _prefsService.Current.ColoringSpots;
+        set
+        {
+            if (_prefsService.Current.ColoringSpots != value)
+            {
+                var prefs = _prefsService.Current;
+                prefs.ColoringSpots = value;
+                _prefsService.Save(prefs);
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Windows' ColoringFilters: de gekleurde stippen in de filterboom.
+    /// </summary>
+    public bool ColoringFilters
+    {
+        get => _prefsService.Current.ColoringFilters;
+        set
+        {
+            if (_prefsService.Current.ColoringFilters != value)
+            {
+                var prefs = _prefsService.Current;
+                prefs.ColoringFilters = value;
                 _prefsService.Save(prefs);
                 OnPropertyChanged();
             }
@@ -837,7 +888,17 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             }
         };
 
-        SpotDetail = new SpotDetailViewModel(_dbService, _nzbService, _commentService, _bodyService);
+        SpotDetail = new SpotDetailViewModel(_dbService, _nzbService, _commentService, _bodyService,
+            spotImdbShowProvider: () => _prefsService.Current.SpotImdbShow,
+            spotImdbShowSetter: value =>
+            {
+                var prefs = _prefsService.Current;
+                if (prefs.SpotImdbShow != value)
+                {
+                    prefs.SpotImdbShow = value;
+                    _prefsService.Save(prefs);
+                }
+            });
 
         DownloadsTab = new DownloadsTabViewModel(new DownloadHistoryService(_appPaths), _prefsService,
             downloadNotificationRecorder: (title, success) => _notifications.NotifyDownloadComplete(title, success));
@@ -1172,7 +1233,17 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             return;
         }
 
-        var detail = new SpotDetailViewModel(_dbService, _nzbService, _commentService, _bodyService);
+        var detail = new SpotDetailViewModel(_dbService, _nzbService, _commentService, _bodyService,
+                spotImdbShowProvider: () => _prefsService.Current.SpotImdbShow,
+                spotImdbShowSetter: value =>
+                {
+                    var prefs = _prefsService.Current;
+                    if (prefs.SpotImdbShow != value)
+                    {
+                        prefs.SpotImdbShow = value;
+                        _prefsService.Save(prefs);
+                    }
+                });
         var tab = new SpotTabViewModel(spot, detail);
         detail.RequestClose += () => CloseTabCommand.Execute(tab);
         detail.NzbFetched += OnNzbFetched;
@@ -1215,7 +1286,17 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 var spot = await _dbService.GetSpotByMsgIdAsync(saved.MessageId);
                 if (spot == null) continue;
 
-                var detail = new SpotDetailViewModel(_dbService, _nzbService, _commentService, _bodyService);
+                var detail = new SpotDetailViewModel(_dbService, _nzbService, _commentService, _bodyService,
+                spotImdbShowProvider: () => _prefsService.Current.SpotImdbShow,
+                spotImdbShowSetter: value =>
+                {
+                    var prefs = _prefsService.Current;
+                    if (prefs.SpotImdbShow != value)
+                    {
+                        prefs.SpotImdbShow = value;
+                        _prefsService.Save(prefs);
+                    }
+                });
                 var tab = new SpotTabViewModel(spot, detail);
                 detail.RequestClose += () => CloseTabCommand.Execute(tab);
                 detail.NzbFetched += OnNzbFetched;

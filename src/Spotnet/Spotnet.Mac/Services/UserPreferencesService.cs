@@ -352,6 +352,24 @@ public sealed class UserPreferences
     public string ThumbsGroup { get; set; } = "free.at";
 
     /// <summary>
+    /// Windows' ColoringSpots (default true): de gekleurde categoriestreep in de
+    /// spotrijen tonen.
+    /// </summary>
+    public bool ColoringSpots { get; set; } = true;
+
+    /// <summary>
+    /// Windows' ColoringFilters (default true): de gekleurde stippen in de filterboom
+    /// tonen.
+    /// </summary>
+    public bool ColoringFilters { get; set; } = true;
+
+    /// <summary>
+    /// Windows' SpotImdbShow (default false): het IMDb-paneel (Films/Series) of het
+    /// Links &amp; iTunes-paneel (Muziek) op de spotpagina openklappen.
+    /// </summary>
+    public bool SpotImdbShow { get; set; }
+
+    /// <summary>
     /// A host is a provider cache server when it ends in one of these suffixes.
     /// Windows: CachingSystem.MasterHostnameSnelNl / MasterHostname5Euro.
     /// </summary>

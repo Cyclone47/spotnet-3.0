@@ -23,6 +23,7 @@
   <!-- Text -->
   <SolidColorBrush x:Key="AppTextBrush"      Color="#FFF1F5F9"/> <!-- SpotRowForegroundBrush -->
   <SolidColorBrush x:Key="AppMutedTextBrush" Color="#FF94A3B8"/> <!-- SpotRowMutedBrush -->
+  <SolidColorBrush x:Key="AppNewSpotTextBrush" Color="#FFE2E8F0"/> <!-- GrayBrush2: kleur van de titel van nieuwe spots -->
 
   <!-- Filter tree -->
   <SolidColorBrush x:Key="AppTreeSelectedBackground" Color="#FF253040"/>

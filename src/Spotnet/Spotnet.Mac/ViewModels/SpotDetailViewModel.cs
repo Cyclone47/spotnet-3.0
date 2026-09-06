@@ -17,6 +17,8 @@ public sealed class SpotDetailViewModel : ViewModelBase
     private static readonly Logger Log = LogManager.GetCurrentClassLogger();
     private readonly SpotDatabaseService _dbService;
     private readonly NzbService? _nzbService;
+    private readonly Func<bool> _spotImdbShowProvider;
+    private readonly Action<bool> _spotImdbShowSetter;
 
     private SpotItem? _spot;
     private string _description = "";
@@ -48,10 +50,24 @@ public sealed class SpotDetailViewModel : ViewModelBase
 
                 PosterImage = null;
                 RebuildFields();
+                ResetImdbPanel();
+
+                OnPropertyChanged(nameof(HasImdbPanel));
+                OnPropertyChanged(nameof(ImdbPanelHeader));
 
                 if (value != null)
                 {
                     _ = LoadSpotDetailsAsync(value);
+
+                    // Windows' ImdbPanel display:true: met de SpotImdbShow-voorkeur aan
+                    // klapt het paneel vanzelf open bij elke Films/Series/Muziek-spot.
+                    if (_spotImdbShowProvider() && HasImdbPanel)
+                    {
+                        IsImdbPanelOpen = true;
+                        _ = LoadImdbPanelAsync();
+                    }
+                    OnPropertyChanged(nameof(HasImdbPanel));
+                    OnPropertyChanged(nameof(ImdbPanelHeader));
                 }
                 else
                 {
@@ -217,6 +233,127 @@ public sealed class SpotDetailViewModel : ViewModelBase
 
     public IReadOnlyList<KeyValuePair<string, string>> Smileys => SpotMarkup.SmileyList;
 
+    // ── IMDb / Links & iTunes paneel (fase 6) ─────────────────────────────────
+    // Windows' spotthema klapt bij Films/Series het IMDb-paneel open en bij Muziek
+    // het Links & iTunes-paneel, gestuurd door de SpotImdbShow-voorkeur.
+
+    private bool _isImdbPanelOpen;
+
+    /// <summary>Het paneel staat open (de knop IMDb/Links & iTunes is ingeklapt).</summary>
+    public bool IsImdbPanelOpen
+    {
+        get => _isImdbPanelOpen;
+        private set => SetProperty(ref _isImdbPanelOpen, value);
+    }
+
+    /// <summary>Het paneel is beschikbaar: Films/Series (IMDb) of Muziek (Links &amp; iTunes).</summary>
+    public bool HasImdbPanel => (_spot?.SpotnetCategoryName) is "Films" or "Series" or "Muziek";
+
+    /// <summary>Koptekst van de paneelknop: IMDb bij Films/Series, Links &amp; iTunes bij Muziek.</summary>
+    public string ImdbPanelHeader => _spot?.SpotnetCategoryName == "Muziek" ? "Links & iTunes" : "IMDb";
+
+    private bool _isImdbLoading;
+
+    /// <summary>De paneelgegevens worden opgehaald.</summary>
+    public bool IsImdbLoading
+    {
+        get => _isImdbLoading;
+        private set => SetProperty(ref _isImdbLoading, value);
+    }
+
+    private string _imdbStatus = "";
+
+    /// <summary>"Film niet gevonden" of een netwerkfout, zoals het thema die toont.</summary>
+    public string ImdbStatus
+    {
+        get => _imdbStatus;
+        private set => SetProperty(ref _imdbStatus, value);
+    }
+
+    /// <summary>De rijen van het paneel: IMDb-velden of muzieklinks + albumvelden.</summary>
+    public ObservableCollection<Services.SpotInfoRow> ImdbRows { get; } = new();
+
+    public ICommand ToggleImdbPanelCommand { get; }
+
+    private async Task ToggleImdbPanelAsync()
+    {
+        if (!HasImdbPanel || _spot == null) return;
+
+        if (IsImdbPanelOpen)
+        {
+            IsImdbPanelOpen = false;
+            return;
+        }
+
+        IsImdbPanelOpen = true;
+        await LoadImdbPanelAsync();
+    }
+
+    /// <summary>Vult het paneel, in de volgorde van het Windows-thema.</summary>
+    private async Task LoadImdbPanelAsync()
+    {
+        var spot = _spot;
+        if (spot == null) return;
+
+        string spotnetCategory = spot.SpotnetCategoryName;
+        IsImdbLoading = true;
+        ImdbStatus = "";
+        ImdbRows.Clear();
+        try
+        {
+            if (spotnetCategory is "Films" or "Series")
+            {
+                var rows = await Services.ImdbService.MovieInfoFetcher(spotnetCategory, spot.Subject);
+                if (!ReferenceEquals(spot, _spot)) return;
+                if (rows == null)
+                {
+                    ImdbStatus = "Film niet gevonden";
+                    return;
+                }
+                foreach (var row in rows) ImdbRows.Add(row);
+            }
+            else // Muziek
+            {
+                // Eerst de vier winkel-links (altijd beschikbaar), daarna het album.
+                foreach (var link in Services.ImdbService.BuildMusicLinks(spot.Subject))
+                {
+                    ImdbRows.Add(link);
+                }
+
+                var album = await Services.ImdbService.FetchMusicInfoAsync(spot.Subject);
+                if (!ReferenceEquals(spot, _spot)) return;
+                if (album == null)
+                {
+                    ImdbStatus = "Album niet gevonden";
+                    return;
+                }
+
+                if (album.Artist.Length > 0) ImdbRows.Add(new Services.SpotInfoRow("Artiest", album.Artist));
+                if (album.Album.Length > 0) ImdbRows.Add(new Services.SpotInfoRow("Album", album.Album));
+                if (album.Genre.Length > 0) ImdbRows.Add(new Services.SpotInfoRow("Genre", album.Genre));
+                if (album.Release.Length > 0) ImdbRows.Add(new Services.SpotInfoRow("Release", album.Release));
+                if (album.TrackCount > 0) ImdbRows.Add(new Services.SpotInfoRow("Tracks", album.TrackCount.ToString()));
+                if (album.AlbumUrl != null) ImdbRows.Add(new Services.SpotInfoRow("iTunes", album.AlbumUrl) { IsLink = true });
+                foreach (var track in album.Tracks)
+                {
+                    ImdbRows.Add(track);
+                }
+            }
+        }
+        finally
+        {
+            IsImdbLoading = false;
+        }
+    }
+
+    private void ResetImdbPanel()
+    {
+        IsImdbPanelOpen = false;
+        ImdbStatus = "";
+        ImdbRows.Clear();
+        IsImdbLoading = false;
+    }
+
     public ICommand ReloadCommentsCommand { get; }
     public ICommand ToggleCommentPreviewCommand { get; }
     public ICommand ToggleSmileysCommand { get; }
@@ -280,12 +417,16 @@ public sealed class SpotDetailViewModel : ViewModelBase
     public ICommand ComplainCommand { get; }
 
     public SpotDetailViewModel(SpotDatabaseService dbService, NzbService? nzbService = null,
-                               CommentService? commentService = null, SpotBodyService? bodyService = null)
+                               CommentService? commentService = null, SpotBodyService? bodyService = null,
+                               Func<bool>? spotImdbShowProvider = null,
+                               Action<bool>? spotImdbShowSetter = null)
     {
         _dbService = dbService;
         _nzbService = nzbService;
         _commentService = commentService;
         _bodyService = bodyService;
+        _spotImdbShowProvider = spotImdbShowProvider ?? (() => false);
+        _spotImdbShowSetter = spotImdbShowSetter ?? (_ => { });
 
         CloseCommand = new RelayCommand(() => RequestClose?.Invoke());
         ComplainCommand = new RelayCommand(() =>
@@ -363,6 +504,18 @@ public sealed class SpotDetailViewModel : ViewModelBase
 
         ToggleCommentPreviewCommand = new RelayCommand(() => ShowPreview = !ShowPreview);
         ToggleSmileysCommand = new RelayCommand(() => ShowSmileys = !ShowSmileys);
+
+        // Windows' IMDb-knop en het kruisje op het paneel: openen onthoudt de
+        // SpotImdbShow-voorkeur als aan, sluiten als uit.
+        ToggleImdbPanelCommand = new RelayCommand(async () =>
+        {
+            bool wasOpen = IsImdbPanelOpen;
+            await ToggleImdbPanelAsync();
+            if (IsImdbPanelOpen != wasOpen)
+            {
+                _spotImdbShowSetter(IsImdbPanelOpen);
+            }
+        });
 
         WrapCommentCommand = new RelayCommand(param =>
         {
