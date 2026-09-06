@@ -70,8 +70,15 @@ public partial class MainWindow : Window
     {
         if (e.Key == Key.Return || e.Key == Key.Enter)
         {
-            _ = _viewModel.RefreshSpotsAsync();
+            _ = _viewModel.SubmitSearchAsync();
         }
+    }
+
+    // Zoeksuggesties (fase 6): bij elke wijziging de lijst vullen, zoals Windows'
+    // SearchBox TextChanged → UpdateSuggestions.
+    private void OnSearchTextChanged(object? sender, TextChangedEventArgs e)
+    {
+        _ = _viewModel.UpdateSuggestionsAsync();
     }
 
     private void OnFocusSearchClick(object? sender, RoutedEventArgs e)

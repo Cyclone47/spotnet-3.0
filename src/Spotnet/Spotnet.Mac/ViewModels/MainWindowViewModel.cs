@@ -34,6 +34,10 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private readonly IUiDispatcher _dispatcher;
     private readonly TrustService _trustService;
     private readonly Spotnet.Notifications.NotificationManager _notifications;
+    private readonly Services.SearchHistoryService _searchHistory;
+    private readonly Services.TabPersistenceService _tabPersistence;
+    private readonly System.Net.Http.HttpClient _suggestClient = new();
+    private readonly Services.SpotThumbService? _thumbService;
     private System.Threading.Timer? _notificationEvalTimer;
 
     public UserPreferencesService PreferencesService => _prefsService;
@@ -321,6 +325,255 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         }
     }
 
+    // ── Weergave (fase 6): lijst- of thumbnailweergave, lettergrootte ────────
+
+    /// <summary>De spotslijst als tabel (Windows' SpotsListTypeEnum.Default).</summary>
+    public bool IsListView => _prefsService.Current.SpotsListType != 3;
+
+    /// <summary>De spotslijst als miniatuurrooster (Windows' SpotsListTypeEnum.Thumbs).</summary>
+    public bool IsThumbView => !IsListView;
+
+    /// <summary>Schakelt tussen de lijst- en de thumbnailweergave, zoals Windows' SpotsListType.</summary>
+    public int SpotsListType
+    {
+        get => _prefsService.Current.SpotsListType;
+        set
+        {
+            if (_prefsService.Current.SpotsListType != value)
+            {
+                var prefs = _prefsService.Current;
+                prefs.SpotsListType = value;
+                _prefsService.Save(prefs);
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsListView));
+                OnPropertyChanged(nameof(IsThumbView));
+            }
+        }
+    }
+
+    /// <summary>Lettergrootte van de spotslijst, zoals Windows' FontSize (spotlijst).</summary>
+    public int SpotsFontSize
+    {
+        get => _prefsService.Current.SpotsFontSize;
+        set
+        {
+            int clamped = Math.Clamp(value, 8, 24);
+            if (_prefsService.Current.SpotsFontSize != clamped)
+            {
+                var prefs = _prefsService.Current;
+                prefs.SpotsFontSize = clamped;
+                _prefsService.Save(prefs);
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    /// <summary>Windows' SaveTabs: geopende spot-tabbladen heropenen bij het opstarten.</summary>
+    public bool SaveTabs
+    {
+        get => _prefsService.Current.SaveTabs;
+        set
+        {
+            if (_prefsService.Current.SaveTabs != value)
+            {
+                var prefs = _prefsService.Current;
+                prefs.SaveTabs = value;
+                _prefsService.Save(prefs);
+                OnPropertyChanged();
+                if (!value)
+                {
+                    _tabPersistence.ClearTabs();
+                }
+            }
+        }
+    }
+
+    // ── Zoeksuggesties (fase 6): geschiedenis + Google, zoals het ZOEKEN-paneel ─
+
+    private readonly ObservableCollection<string> _suggestions = new();
+
+    /// <summary>De suggesties onder de zoekbox: Google-suggesties + geschiedenis, zoals Windows.</summary>
+    public ObservableCollection<string> Suggestions => _suggestions;
+
+    private bool _isSuggestionsOpen;
+
+    /// <summary>Of het suggestie-venster open staat; de view sluit het bij een klik buiten.</summary>
+    public bool IsSuggestionsOpen
+    {
+        get => _isSuggestionsOpen;
+        set => SetProperty(ref _isSuggestionsOpen, value);
+    }
+
+    private string _lastSuggestText = "";
+
+    /// <summary>
+    /// Verzamelt suggesties voor de huidige zoektekst: Google's volledige-zinnenlijst
+    /// (wanneer GoogleSuggest aan staat) plus eigen zoektermen die beginnen met de
+    /// tekst — dezelfde mix als Windows' UpdateSuggestions.
+    /// </summary>
+    public async System.Threading.Tasks.Task UpdateSuggestionsAsync()
+    {
+        string text = SearchText.Trim();
+        if (text.Length == 0)
+        {
+            _suggestions.Clear();
+            IsSuggestionsOpen = false;
+            return;
+        }
+
+        if (text.Equals(_lastSuggestText, StringComparison.OrdinalIgnoreCase) && _suggestions.Count > 0)
+        {
+            return;
+        }
+        _lastSuggestText = text;
+
+        var suggestions = new List<string>();
+        if (_prefsService.Current.GoogleSuggest)
+        {
+            try
+            {
+                string url = "http://www.google.nl/complete/search?hl=nl&output=toolbar&q="
+                    + System.Uri.EscapeDataString(text);
+                using var response = await _suggestClient.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    string xml = await response.Content.ReadAsStringAsync();
+                    suggestions.AddRange(Services.GoogleSuggestParser.Parse(xml));
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(ex, "Google suggest failed for '{0}'", text);
+            }
+        }
+
+        // Eigen zoekgeschiedenis eronder, zoals Windows: termen die met de tekst beginnen.
+        foreach (string historyItem in _searchHistory.HistoryItems)
+        {
+            if (historyItem.StartsWith(text, StringComparison.OrdinalIgnoreCase) && !suggestions.Contains(historyItem))
+            {
+                suggestions.Add(historyItem);
+            }
+            if (suggestions.Count >= 12) break;
+        }
+
+        _suggestions.Clear();
+        foreach (string suggestion in suggestions)
+        {
+            _suggestions.Add(suggestion);
+        }
+        IsSuggestionsOpen = _suggestions.Count > 0;
+    }
+
+    /// <summary>Voert de zoekactie uit: opslaan in de geschiedenis (Windows' DoSearch) en verversen.</summary>
+    public async System.Threading.Tasks.Task SubmitSearchAsync()
+    {
+        string text = SearchText.Trim();
+        IsSuggestionsOpen = false;
+        if (text.Length > 0 && _prefsService.Current.GoogleSuggest)
+        {
+            _searchHistory.SaveHistory(text);
+        }
+        await RefreshSpotsAsync();
+    }
+
+    /// <summary>Zet de zoektekst op de gekozen suggestie en zoekt, zoals Windows' SearchBox-selectie.</summary>
+    public async System.Threading.Tasks.Task ApplySuggestionAsync(string? suggestion)
+    {
+        if (string.IsNullOrWhiteSpace(suggestion)) return;
+        SearchText = suggestion;
+        IsSuggestionsOpen = false;
+        await SubmitSearchAsync();
+    }
+
+    // ── Thumbnailweergave (fase 6) ────────────────────────────────────────────
+
+    private readonly ObservableCollection<SpotItem> _thumbs = new();
+
+    /// <summary>De zichtbare miniaturen: de eerste pagina's van de huidige query.</summary>
+    public ObservableCollection<SpotItem> Thumbs => _thumbs;
+
+    private int _thumbTotalCount;
+
+    /// <summary>Er kunnen nog meer miniaturen geladen worden voor deze query.</summary>
+    public bool CanLoadMoreThumbs => _thumbs.Count < _thumbTotalCount;
+
+    public ICommand LoadMoreThumbsCommand { get; }
+
+    private const int ThumbPageSize = 60;
+
+    /// <summary>Laadt de volgende portie miniaturen uit de huidige query.</summary>
+    public async System.Threading.Tasks.Task LoadMoreThumbsAsync()
+    {
+        try
+        {
+            var filter = _selectedFilter;
+            string? keyword = string.IsNullOrWhiteSpace(SearchText) ? filter?.KeywordFilter : SearchText;
+            var prefs = _prefsService.Current;
+
+            int count = await _dbService.CountByFilterAsync(
+                filter?.Query, keyword,
+                hideBlacklisted: prefs.HideBlacklistedSpots,
+                showTrustedOnly: prefs.ShowTrustedOnlyMode,
+                showErotica: prefs.ShowEroticaInSearchResults,
+                spamReportsThreshold: prefs.NumOfSpamReportsToSpotHide,
+                searchField: _searchField,
+                extensiveSearch: _extensiveSearch,
+                favoritesOnly: _favoritesOnly);
+            _thumbTotalCount = count;
+
+            var rows = await _dbService.QueryByFilterAsync(
+                filterQuery: filter?.Query,
+                searchText: keyword,
+                skip: _thumbs.Count,
+                take: ThumbPageSize,
+                sortDirection: SortDirection,
+                sortColumn: SortColumn,
+                hideBlacklisted: prefs.HideBlacklistedSpots,
+                showTrustedOnly: prefs.ShowTrustedOnlyMode,
+                showErotica: prefs.ShowEroticaInSearchResults,
+                spamReportsThreshold: prefs.NumOfSpamReportsToSpotHide,
+                searchField: _searchField,
+                extensiveSearch: _extensiveSearch,
+                favoritesOnly: _favoritesOnly);
+
+            _thumbs.Clear();
+            foreach (var row in rows)
+            {
+                _thumbs.Add(row);
+            }
+            OnPropertyChanged(nameof(CanLoadMoreThumbs));
+            _ = LoadThumbImagesAsync();
+        }
+        catch (Exception ex)
+        {
+            Log.Warn(ex, "Failed to load thumbnails: {0}", ex.Message);
+        }
+    }
+
+    /// <summary>Laadt de miniatuur-afbeeldingen voor de zichtbare rijen (server-cache voorkomt herhaling).</summary>
+    private async System.Threading.Tasks.Task LoadThumbImagesAsync()
+    {
+        var thumbs = _thumbService;
+        if (thumbs == null) return;
+        foreach (var spot in _thumbs)
+        {
+            if (spot.ThumbImage != null) continue;
+            try
+            {
+                var image = await thumbs.GetThumbAsync(spot);
+                if (image != null && _thumbs.Contains(spot))
+                {
+                    spot.ThumbImage = image;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(ex, "Thumb failed for {0}", spot.MsgId);
+            }
+        }
+    }
+
     public bool IsSearchFieldTitle => _searchField == "subject";
     public bool IsSearchFieldSender => _searchField == "sender";
     public bool IsSearchFieldTag => _searchField == "tag";
@@ -362,6 +615,10 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public ICommand SearchCommand { get; }
     public ICommand SetSearchFieldCommand { get; }
     public ICommand ClearSearchCommand { get; }
+    public ICommand ApplySuggestionCommand { get; }
+    public ICommand SetSpotsListTypeCommand { get; }
+    public ICommand SetFontSizeCommand { get; }
+    public ICommand ToggleSaveTabsCommand { get; }
     public ICommand RefreshCommand { get; }
     public ICommand CloseDetailCommand { get; }
     public ICommand OpenSettingsCommand { get; }
@@ -524,6 +781,16 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         _commentService = new CommentService(_appPaths, _secretStore, _dbService, _userKeyService);
         _complaintService = new ComplaintService(_appPaths, _secretStore, _dbService, _prefsService, _trustService, _userKeyService);
         _bodyService = new SpotBodyService(_appPaths, _secretStore);
+        _searchHistory = new Services.SearchHistoryService(_appPaths);
+        _tabPersistence = new Services.TabPersistenceService(_appPaths);
+        try
+        {
+            _thumbService = new Services.SpotThumbService(_appPaths, _secretStore, _prefsService);
+        }
+        catch (Exception ex)
+        {
+            Log.Warn(ex, "Thumbnail service unavailable: {0}", ex.Message);
+        }
 
         _syncService.ProgressChanged += (current, total, msg) =>
         {
@@ -591,7 +858,8 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         });
 
         // Commands
-        SearchCommand = new RelayCommand(async () => await RefreshSpotsAsync());
+        SearchCommand = new RelayCommand(async () => await SubmitSearchAsync());
+        ApplySuggestionCommand = new RelayCommand(param => _ = ApplySuggestionAsync(param as string));
         SetSearchFieldCommand = new RelayCommand(param =>
         {
             if (param is string field)
@@ -670,8 +938,24 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 int index = Tabs.IndexOf(tab);
                 Tabs.Remove(tab);
                 SelectedTab = Tabs.Count == 0 ? null : Tabs[Math.Max(0, Math.Min(index - 1, Tabs.Count - 1))];
+                SaveOpenTabs();
             }
         });
+
+        SetSpotsListTypeCommand = new RelayCommand(param =>
+        {
+            if (param is int type) SpotsListType = type;
+        });
+
+        LoadMoreThumbsCommand = new RelayCommand(async () => await LoadMoreThumbsAsync());
+
+        SetFontSizeCommand = new RelayCommand(param =>
+        {
+            if (param is string direction && direction == "+") SpotsFontSize++;
+            else if (param is string dir2 && dir2 == "-") SpotsFontSize--;
+        });
+
+        ToggleSaveTabsCommand = new RelayCommand(() => SaveTabs = !SaveTabs);
 
         SetSpotOpenModeCommand = new RelayCommand(param =>
         {
@@ -895,6 +1179,53 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
         Tabs.Add(tab);
         SelectedTab = tab;
+        SaveOpenTabs();
+    }
+
+    /// <summary>
+    /// Schrijft de open spot-tabbladen weg, zoals Windows' SaveTabs: alleen wanneer
+    /// SaveTabs aan staat, één "msgid\ttitle"-regel per tabblad in tabs.dat.
+    /// </summary>
+    private void SaveOpenTabs()
+    {
+        if (!SaveTabs) return;
+        var tabs = new List<Services.SavedTab>();
+        foreach (var tab in Tabs.OfType<SpotTabViewModel>())
+        {
+            if (!string.IsNullOrWhiteSpace(tab.Spot.MsgId))
+            {
+                tabs.Add(new Services.SavedTab(tab.Spot.MsgId, tab.Spot.Subject));
+            }
+        }
+        _tabPersistence.SaveTabs(tabs);
+    }
+
+    /// <summary>
+    /// Heropent de opgeslagen spot-tabbladen bij het opstarten, zoals Windows'
+    /// ReopenTabs: alleen wanneer SaveTabs aan staat; tabbladen waarvan de spot uit
+    /// de database is verjaard worden overgeslagen.
+    /// </summary>
+    private async Task ReopenSavedTabsAsync()
+    {
+        if (!SaveTabs) return;
+        foreach (var saved in _tabPersistence.LoadTabs())
+        {
+            try
+            {
+                var spot = await _dbService.GetSpotByMsgIdAsync(saved.MessageId);
+                if (spot == null) continue;
+
+                var detail = new SpotDetailViewModel(_dbService, _nzbService, _commentService, _bodyService);
+                var tab = new SpotTabViewModel(spot, detail);
+                detail.RequestClose += () => CloseTabCommand.Execute(tab);
+                detail.NzbFetched += OnNzbFetched;
+                Tabs.Add(tab);
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(ex, "Could not reopen saved tab {0}", saved.MessageId);
+            }
+        }
     }
 
     /// <summary>Records an NZB fetch in the Downloads tab and brings that tab forward.</summary>
@@ -1074,6 +1405,10 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             // .nzb-bestanden en spotnet://-links van bij het opstarten (Open With,
             // URL-scheme), zoals Windows die uit de pipe-parameters haalt.
             await HandleStartupTargetsAsync(Program.StartupTargets);
+
+            // Tabbladen onthouden (fase 6): de opgeslagen spot-tabbladen heropenen,
+            // zoals Windows' ReopenTabs in PrepareWindow.
+            await ReopenSavedTabsAsync();
         }
         catch (Exception ex)
         {
@@ -1228,6 +1563,12 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             previous?.Dispose();
 
             SelectedSpot = null;
+
+            // Thumbnailweergave volgt dezelfde query: herlaad de zichtbare pagina.
+            if (IsThumbView)
+            {
+                _ = LoadMoreThumbsAsync();
+            }
 
             UpdateSpotsListStatusMessage();
         }
@@ -1437,9 +1778,13 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     public void Dispose()
     {
+        // Tabbladen onthouden: bij het afsluiten de open spot-tabs wegschrijven,
+        // zoals Windows dat doet bij het sluiten van het venster.
+        SaveOpenTabs();
         StopAutoSyncTimer();
         _notificationEvalTimer?.Dispose();
         _notificationEvalTimer = null;
         _trustService.Dispose();
+        _suggestClient.Dispose();
     }
 }

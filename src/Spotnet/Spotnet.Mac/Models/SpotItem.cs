@@ -7,6 +7,27 @@ public sealed class SpotItem : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    // Miniaturen (fase 6): de bitmap en de laadstatus worden per spot bijgehouden door
+    // de thumbnailweergave; de spot zelf kent de netwerklaag niet.
+    private Avalonia.Media.Imaging.Bitmap? _thumbImage;
+    public Avalonia.Media.Imaging.Bitmap? ThumbImage
+    {
+        get => _thumbImage;
+        set
+        {
+            if (!ReferenceEquals(_thumbImage, value))
+            {
+                _thumbImage?.Dispose();
+                _thumbImage = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ThumbImage)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasThumb)));
+            }
+        }
+    }
+
+    /// <summary>Er is een miniatuur geladen om te tonen.</summary>
+    public bool HasThumb => _thumbImage != null;
+
     /// <summary>
     /// True while this row is a stand-in for a spot the virtual list has not fetched
     /// yet. The grid binds it to show an em dash instead of an empty row.

@@ -323,6 +323,35 @@ public sealed class UserPreferences
     public string NzbGetControlPassword { get; set; } = "-";
 
     /// <summary>
+    /// Windows' GoogleSuggest (default true): zoekopdrachten opslaan in history.dat
+    /// en live zoeksuggesties van Google tonen onder de zoekbox.
+    /// </summary>
+    public bool GoogleSuggest { get; set; } = true;
+
+    /// <summary>
+    /// Windows' SaveTabs (default true): geopende spot-tabbladen opslaan en bij het
+    /// opstarten heropenen (Windows' tabs.dat).
+    /// </summary>
+    public bool SaveTabs { get; set; } = true;
+
+    /// <summary>
+    /// De weergave van de spotslijst, zoals Windows' SpotsListType
+    /// (SpotsListTypeEnum: 0 = Lijst, 3 = Thumbnails).
+    /// </summary>
+    public int SpotsListType { get; set; }
+
+    /// <summary>
+    /// Lettergrootte van de spotslijst, zoals Windows' FontSize (spotlijst).
+    /// </summary>
+    public int SpotsFontSize { get; set; } = 12;
+
+    /// <summary>
+    /// De Usenet-groep waar de miniaturen vandaan komen.
+    /// Matches Windows Settings.Default.ThumbsGroup (default "free.at").
+    /// </summary>
+    public string ThumbsGroup { get; set; } = "free.at";
+
+    /// <summary>
     /// A host is a provider cache server when it ends in one of these suffixes.
     /// Windows: CachingSystem.MasterHostnameSnelNl / MasterHostname5Euro.
     /// </summary>
