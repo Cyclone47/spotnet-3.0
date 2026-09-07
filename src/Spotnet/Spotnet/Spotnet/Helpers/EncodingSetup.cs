@@ -26,5 +26,6 @@ internal static class EncodingSetup
 	internal static void RegisterCodePages()
 	{
 		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+		Spotnet.Remote.RemoteSharedBindings.Bind();
 	}
 }

@@ -11,6 +11,7 @@ using Spotnet.Mac.Services;
 using Spotnet.Mac.Models;
 using Spotnet.Model;
 using Spotnet.Platform;
+using Spotnet.Remote;
 
 namespace Spotnet.Mac.ViewModels;
 
@@ -87,6 +88,16 @@ public sealed class SettingsViewModel : ViewModelBase
 
     public event Action? RequestClose;
     public event Action? RequestPickFolder;
+
+    /// <summary>Na het opslaan: de nieuwe Remote-config, zodat de hoofdmiddleware de
+    /// host kan starten of stoppen (Mac-tegenhanger van RemoteServer.Instance.Restart).</summary>
+    public event Action<RemoteConfig>? RemoteConfigSaved;
+
+    /// <summary>"Koppel apparaat…": opent het QR/PIN-venster, zoals Windows'
+    /// SettingsForRemote dat via RemotePairingWindow doet.</summary>
+    public event Action? RequestShowPairing;
+
+    public ICommand ShowPairingCommand { get; }
 
     private readonly UserPreferencesService _prefsService;
     private AppThemeStyle _selectedTheme = AppThemeStyle.ModernLight;
@@ -534,6 +545,64 @@ public sealed class SettingsViewModel : ViewModelBase
         set => SetProperty(ref _spotImdbShow, value);
     }
 
+    // ── Spotnet Remote (fase 5) — zelfde velden als Windows' SettingsForRemote ──
+
+    private bool _remoteEnabled;
+    /// <summary>Schakelt de Remote-host aan; bij het opslaan start of stopt de server.</summary>
+    public bool RemoteEnabled
+    {
+        get => _remoteEnabled;
+        set => SetProperty(ref _remoteEnabled, value);
+    }
+
+    private int _remotePort = 8770;
+    /// <summary>De HTTP-poort van de Remote-host; het telefoonnummer van de app, zeg maar.</summary>
+    public int RemotePort
+    {
+        get => _remotePort;
+        set => SetProperty(ref _remotePort, value);
+    }
+
+    private bool _remoteAllowLan = true;
+    /// <summary>Bereikbaar op het LAN (UDP-ontdekking zit hier ook achter); uit = alleen localhost.</summary>
+    public bool RemoteAllowLan
+    {
+        get => _remoteAllowLan;
+        set => SetProperty(ref _remoteAllowLan, value);
+    }
+
+    private bool _remoteRequireAuth = true;
+    /// <summary>Wachtwoord/koppelings-token vereisen, zoals Windows' RequireAuth.</summary>
+    public bool RemoteRequireAuth
+    {
+        get => _remoteRequireAuth;
+        set => SetProperty(ref _remoteRequireAuth, value);
+    }
+
+    private bool _remoteKeepAwake;
+    /// <summary>Voorkomt slaapstand zolang Remote actief is (Windows: KeepAwake, Mac: caffeinate).</summary>
+    public bool RemoteKeepAwake
+    {
+        get => _remoteKeepAwake;
+        set => SetProperty(ref _remoteKeepAwake, value);
+    }
+
+    private string _remotePassword = "";
+    /// <summary>Nieuw Remote-wachtwoord; leeg betekent "niets wijzigen", zoals Windows' pending-password.</summary>
+    public string RemotePassword
+    {
+        get => _remotePassword;
+        set => SetProperty(ref _remotePassword, value);
+    }
+
+    private bool _remoteHasPassword;
+    /// <summary>Of er al een wachtwoord staat; bepaalt de hint in het venster.</summary>
+    public bool RemoteHasPassword
+    {
+        get => _remoteHasPassword;
+        set => SetProperty(ref _remoteHasPassword, value);
+    }
+
     /// <summary>
     /// Accept a TLS certificate that fails validation. Off by default, as on Windows.
     /// Without this escape hatch a provider with a self-signed certificate would be
@@ -605,6 +674,7 @@ public sealed class SettingsViewModel : ViewModelBase
         TestConnectionCommand = new RelayCommand(async () => await TestConnectionAsync());
         SaveCommand = new RelayCommand(SaveSettings);
         PickDownloadFolderCommand = new RelayCommand(() => RequestPickFolder?.Invoke());
+        ShowPairingCommand = new RelayCommand(() => RequestShowPairing?.Invoke());
 
         QuickRepairCommand = new RelayCommand(async () =>
         {
@@ -821,6 +891,16 @@ public sealed class SettingsViewModel : ViewModelBase
         _spotImdbShow = prefs.SpotImdbShow;
         _nickname = string.IsNullOrWhiteSpace(prefs.Nickname) ? "Spotter" : prefs.Nickname;
 
+        // Spotnet Remote — zelfde bestand en velden als Windows' SettingsForRemote.
+        var remoteConfig = RemoteConfig.Load();
+        _remoteEnabled = remoteConfig.Enabled;
+        _remotePort = remoteConfig.Port > 0 ? remoteConfig.Port : 8770;
+        _remoteAllowLan = remoteConfig.AllowLan;
+        _remoteRequireAuth = remoteConfig.RequireAuth;
+        _remoteKeepAwake = remoteConfig.KeepAwake;
+        _remoteHasPassword = !string.IsNullOrEmpty(remoteConfig.PasswordHash);
+        _remotePassword = "";
+
         OnPropertyChanged(nameof(SelectedDownloadMode));
         OnPropertyChanged(nameof(SelectedInitialFetchRange));
         OnPropertyChanged(nameof(SpeedLimitEnabled));
@@ -858,6 +938,12 @@ public sealed class SettingsViewModel : ViewModelBase
         OnPropertyChanged(nameof(ColoringFilters));
         OnPropertyChanged(nameof(SpotImdbShow));
         OnPropertyChanged(nameof(Nickname));
+        OnPropertyChanged(nameof(RemoteEnabled));
+        OnPropertyChanged(nameof(RemotePort));
+        OnPropertyChanged(nameof(RemoteAllowLan));
+        OnPropertyChanged(nameof(RemoteRequireAuth));
+        OnPropertyChanged(nameof(RemoteKeepAwake));
+        OnPropertyChanged(nameof(RemoteHasPassword));
 
         if (string.IsNullOrEmpty(Server))
         {
@@ -983,6 +1069,21 @@ public sealed class SettingsViewModel : ViewModelBase
             prefs.SpotImdbShow = SpotImdbShow;
             prefs.Nickname = string.IsNullOrWhiteSpace(Nickname) ? "Spotter" : Nickname.Trim();
             _prefsService.Save(prefs);
+
+            // Spotnet Remote — config weg­schrijven en de host aan/uit zetten, zoals
+            // Windows' SettingsForRemote dat via RemoteServer.Instance doet.
+            var remoteConfig = RemoteConfig.Load();
+            remoteConfig.Enabled = RemoteEnabled;
+            remoteConfig.Port = Math.Clamp(RemotePort, 1, 65535);
+            remoteConfig.AllowLan = RemoteAllowLan;
+            remoteConfig.RequireAuth = RemoteRequireAuth;
+            remoteConfig.KeepAwake = RemoteKeepAwake;
+            if (!string.IsNullOrEmpty(RemotePassword))
+            {
+                remoteConfig.SetPassword(RemotePassword);
+            }
+            remoteConfig.Save();
+            RemoteConfigSaved?.Invoke(remoteConfig);
 
             if (newRetention >= 1 && (oldRetention < 1 || newRetention < oldRetention) && _dbService != null)
             {

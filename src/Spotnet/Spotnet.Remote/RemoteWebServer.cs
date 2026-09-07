@@ -1,9 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using Spotnet.Mvvm.Threading;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,39 +12,83 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog;
-using Spotnet.Helpers;
-using Spotnet.Model;
-using Spotnet.Properties;
-using Spotnet.Notifications;
 
 namespace Spotnet.Remote;
 
-public class RemoteServer
+/// <summary>
+/// Hostgegevens die de Kestrel-routes nodig hebben: de /status-endpoint en de
+/// discovery-payload vullen zich hieruit. Windows leest dit uit AppHelper en
+/// Settings.Default, macOS uit zijn eigen voorkeuren- en databaseservice.
+/// </summary>
+public interface IRemoteHostInfo
 {
-    private static readonly NLog.Logger Log = NLog.LogManager.GetCurrentClassLogger();
-    private static readonly Lazy<RemoteServer> InstanceHolder = new Lazy<RemoteServer>(() => new RemoteServer());
-    public static RemoteServer Instance => InstanceHolder.Value;
+    string GetVersion();
+    string GetProviderName();
+    long GetTotalSpotsInDb();
+    bool IsSyncing { get; }
+    string GetNickname();
+}
 
-    // De gedeelde RemoteConfig leest remote_config.json uit AppHelper.SettingsFolder
-    // op het moment van elke Load/Save, zodat de bestaande tests hun eigen map
-    // kunnen forceren door het veld te vervangen — precies zoals het oorspronkelijke
-    // lokale RemoteConfig deed.
-    internal static readonly System.Threading.Lazy<bool> SharedBindingsInitialized =
-        new System.Threading.Lazy<bool>(() =>
-        {
-            RemoteConfig.ConfigPathProvider = () =>
-                System.IO.Path.Combine(Spotnet.Helpers.AppHelper.SettingsFolder ?? "", "remote_config.json");
-            RemoteDiscoveryService.VersionProvider = () =>
-                Spotnet.Helpers.AppHelper.AppVersion?.ToString() ?? "3.0";
-            return true;
-        });
+/// <summary>
+/// De spots-catalog achter de /spots- en /favorites-endpoints: query, detail,
+/// omschrijving/afbeelding en reacties. De implementatie leest de eigen
+/// spots-database van het platform; het DTO-contract is gedeeld.
+/// </summary>
+public interface IRemoteSpotCatalog
+{
+    IReadOnlyList<FilterDto> GetFilters();
+    IReadOnlyList<SpotDto> GetSpots(string query, int? category, string filterId, int page, int pageSize, string sort);
+    SpotDetailDto GetSpotDetail(long id);
+    byte[] GetSpotImage(long id, string messageId);
+    IReadOnlyList<SpotCommentDto> GetSpotComments(long id, string messageId);
+    (bool success, string error, SpotCommentDto comment) PostComment(long id, string messageId, string nickname, string body);
+    void ToggleFavorite(string messageId, bool favorite);
+    IReadOnlyList<SpotDto> GetFavorites(int page, int pageSize);
+}
 
-    /// <summary>Bindt de gedeelde Remote-services aan de Windows-instellingenmap en -versie.</summary>
-    internal static void EnsureSharedBindings() => _ = SharedBindingsInitialized.Value;
+/// <summary>
+/// De meldingen achter de /notifications-endpoints, zoals Windows ze uit de
+/// NotificationEngine leest. Een null-provider is toegestaan; de endpoints
+/// antwoorden dan 503.
+/// </summary>
+public interface IRemoteNotifications
+{
+    NotificationsResponseDto GetNotifications();
+    int MarkAsRead(string id);
+    int MarkAllAsRead();
+    int DeleteNotification(string id);
+    int ClearAll();
+}
 
+/// <summary>
+/// De downloadwachtrij achter /queue en de downloadknop. Een null-provider is
+/// toegestaan; de bijbehorende endpoints antwoorden dan 503.
+/// </summary>
+public interface IRemoteDownloadQueue
+{
+    QueueStatusDto GetQueue();
+    /// <summary>Zet een spot in de wachtrij. Geeft succes en een evt. foutmelding terug.</summary>
+    (bool success, string error) EnqueueSpot(long id, string messageId);
+    bool PauseItem(string id);
+    bool ResumeItem(string id);
+    bool CancelItem(string id);
+    bool SetSpeedLimit(int kbps);
+}
+
+/// <summary>
+/// De ASP.NET Core-host van Spotnet Remote, gedeeld door beide clients. De
+/// Kestrel-opzet, het CORS-beleid, de auth-middleware en alle /api/v1-routes
+/// staan hier; het platform levert alleen de providers eromheen. Het
+/// endpoint-aanbod is identiek aan Windows' RemoteServer, zodat de Android-app
+/// geen onderscheid ziet.
+/// </summary>
+public class RemoteWebServer
+{
+    private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+
+    private readonly RemoteAuthManager _auth = RemoteAuthManager.Instance;
     private WebApplication _app;
     private CancellationTokenSource _cts;
     private readonly object _lock = new object();
@@ -52,10 +96,29 @@ public class RemoteServer
     private string _lastActiveClientName = "";
     private readonly object _activityLock = new object();
 
+    private RemoteConfig _config;
+
     public event Action StatusChanged;
 
     public bool IsRunning { get; private set; }
     public int ActivePort { get; private set; } = 8770;
+
+    /// <summary>Het map waarin de web-shell (index.html, app.js) staat.</summary>
+    public string WebRootOverride { get; set; } = "";
+
+    public IRemoteHostInfo HostInfo { get; set; }
+    public IRemoteSpotCatalog Catalog { get; set; }
+    public IRemoteDownloadQueue Queue { get; set; }
+    public IRemoteNotifications Notifications { get; set; }
+
+    /// <summary>Start "nieuwe spots ophalen" op de host; null als dat niet kan.</summary>
+    public Func<SyncStatusDto> SyncTrigger { get; set; }
+
+    /// <summary>
+    /// Slaapvoorkoming in het platform: Windows roept SetThreadExecutionState aan,
+    /// macOS start/stoppt caffeinate. Zelfde vorm als SleepPreventer.UpdateState.
+    /// </summary>
+    public Action<bool> SleepPreventer { get; set; } = _ => { };
 
     public bool IsClientActive
     {
@@ -98,21 +161,24 @@ public class RemoteServer
         StatusChanged?.Invoke();
     }
 
+    /// <summary>De inlog-/koppelgegevens, voor het instellingenvenster en de koppeling.</summary>
+    public RemoteAuthManager Auth => _auth;
+
     public void Start()
     {
-        EnsureSharedBindings();
         lock (_lock)
         {
             if (IsRunning) return;
 
-            var config = RemoteConfig.Load();
-            if (!config.Enabled)
+            _config = _auth.Config ?? RemoteConfig.Load();
+            _auth.Config = _config;
+            if (!_config.Enabled)
             {
                 Log.Info("Spotnet Remote is disabled in settings.");
                 return;
             }
 
-            ActivePort = config.Port > 0 ? config.Port : 8770;
+            ActivePort = _config.Port > 0 ? _config.Port : 8770;
             _cts = new CancellationTokenSource();
 
             try
@@ -122,13 +188,11 @@ public class RemoteServer
                     Args = Array.Empty<string>()
                 });
 
-                // Configure logging to be minimal
                 builder.Logging.ClearProviders();
 
-                // Kestrel configuration
                 builder.WebHost.UseKestrel(options =>
                 {
-                    if (config.AllowLan)
+                    if (_config.AllowLan)
                     {
                         options.Listen(IPAddress.Any, ActivePort);
                     }
@@ -149,15 +213,11 @@ public class RemoteServer
 
                 app.UseCors();
 
-                // Determine Web folder location
                 string webRoot = ResolveWebRoot();
                 if (Directory.Exists(webRoot))
                 {
                     var fileProvider = new PhysicalFileProvider(webRoot);
-                    app.UseDefaultFiles(new DefaultFilesOptions
-                    {
-                        FileProvider = fileProvider
-                    });
+                    app.UseDefaultFiles(new DefaultFilesOptions { FileProvider = fileProvider });
                     app.UseStaticFiles(new StaticFileOptions
                     {
                         FileProvider = fileProvider,
@@ -165,10 +225,8 @@ public class RemoteServer
                     });
                 }
 
-                // Setup API Routes
-                MapApiRoutes(app, config);
+                MapApiRoutes(app);
 
-                // Fallback to index.html for SPA routing
                 app.MapFallback(async (HttpContext context) =>
                 {
                     string indexPath = Path.Combine(webRoot, "index.html");
@@ -186,23 +244,24 @@ public class RemoteServer
 
                 app.StartAsync(_cts.Token).GetAwaiter().GetResult();
                 IsRunning = true;
-                if (config.KeepAwake)
+                if (_config.KeepAwake)
                 {
-                    SleepPreventer.UpdateState(true);
+                    SleepPreventer(true);
                 }
-                if (config.AllowLan)
+                if (_config.AllowLan)
                 {
-                    RemoteDiscoveryService.Instance.Start(ActivePort, config.RequireAuth);
+                    RemoteDiscoveryService.Instance.Start(ActivePort, _config.RequireAuth);
                 }
                 StatusChanged?.Invoke();
-                Log.Info("Spotnet Remote Host started on port {0} (LAN={1}, KeepAwake={2})", ActivePort, config.AllowLan, config.KeepAwake);
+                Log.Info("Spotnet Remote Host started on port {0} (LAN={1}, KeepAwake={2})",
+                    ActivePort, _config.AllowLan, _config.KeepAwake);
             }
             catch (Exception ex)
             {
                 IsRunning = false;
                 _app = null;
                 _cts = null;
-                SleepPreventer.UpdateState(false);
+                SleepPreventer(false);
                 StatusChanged?.Invoke();
                 Log.Error("Remote Host error: {0}", ex.Message);
             }
@@ -230,7 +289,7 @@ public class RemoteServer
             finally
             {
                 RemoteDiscoveryService.Instance.Stop();
-                SleepPreventer.UpdateState(false);
+                SleepPreventer(false);
                 IsRunning = false;
                 _app = null;
                 _cts = null;
@@ -247,15 +306,18 @@ public class RemoteServer
         Start();
     }
 
-    private void MapApiRoutes(WebApplication app, RemoteConfig config)
+    // ── Routes ────────────────────────────────────────────────────────────────
+    // Eén-op-één de endpoints van Windows' RemoteServer; waar een provider ontbreekt
+    // antwoordt het endpoint 503 in plaats van te crashen.
+
+    private void MapApiRoutes(WebApplication app)
     {
         var api = app.MapGroup("/api/v1");
 
-        // Auth endpoint (no auth required)
         api.MapPost("/auth/login", async (HttpContext ctx, LoginRequestDto req) =>
         {
             string clientIp = ctx.Connection.RemoteIpAddress?.ToString() ?? "";
-            var res = await RemoteAuthManager.Instance.TryLoginAsync(req, clientIp);
+            var res = await _auth.TryLoginAsync(req, clientIp);
             if (res.Success)
             {
                 RegisterClientActivity(res.Username ?? clientIp);
@@ -272,43 +334,41 @@ public class RemoteServer
         {
             string clientIp = ctx.Connection.RemoteIpAddress?.ToString() ?? "";
             RegisterClientActivity(req?.DeviceName ?? clientIp);
-            var res = RemoteAuthManager.Instance.TryPair(req, clientIp);
+            var res = _auth.TryPair(req, clientIp);
             return Results.Json(res);
         });
 
-        // Server status endpoint
         api.MapGet("/status", (HttpContext ctx) =>
         {
             string clientIp = ctx.Connection.RemoteIpAddress?.ToString() ?? "";
             RegisterClientActivity(clientIp);
-            var queue = RemoteQueueService.Instance.GetQueue();
+            var queue = Queue?.GetQueue();
             return Results.Json(new ServerStatusDto
             {
-                Version = AppHelper.AppVersion?.ToString() ?? "3.0",
+                Version = HostInfo?.GetVersion() ?? "3.0",
                 IsReady = true,
-                CurrentProvider = AppHelper.ServersDb?.ODown?.Server ?? "Usenet",
-                TotalSpotsInDb = (long)Settings.Default.DatabaseFilter,
-                QueueCount = queue.ActiveCount,
-                DownloadSpeed = queue.OverallSpeedBytesPerSec,
-                DownloadSpeedFormatted = queue.OverallSpeedFormatted,
-                PairedDevicesCount = config.PairedDevices.Count,
+                CurrentProvider = HostInfo?.GetProviderName() ?? "Usenet",
+                TotalSpotsInDb = HostInfo?.GetTotalSpotsInDb() ?? 0,
+                QueueCount = queue?.ActiveCount ?? 0,
+                DownloadSpeed = 0,
+                DownloadSpeedFormatted = queue?.OverallSpeedFormatted ?? "",
+                PairedDevicesCount = _config.PairedDevices.Count,
                 Port = ActivePort,
-                LanEnabled = config.AllowLan,
-                IsSyncing = DbUpdater.IsDbUpdateInProgress,
-                DefaultNickname = Settings.Default.Nickname ?? "",
-                RequireAuth = config.RequireAuth,
-                HasPasswordAuth = !string.IsNullOrEmpty(config.PasswordHash)
+                LanEnabled = _config.AllowLan,
+                IsSyncing = HostInfo?.IsSyncing ?? false,
+                DefaultNickname = HostInfo?.GetNickname() ?? "",
+                RequireAuth = _config.RequireAuth,
+                HasPasswordAuth = !string.IsNullOrEmpty(_config.PasswordHash)
             });
         });
 
-        // Protected API endpoints
         var protectedGroup = api.MapGroup("");
         protectedGroup.AddEndpointFilter(async (invocationContext, next) =>
         {
             var ctx = invocationContext.HttpContext;
             string clientIp = ctx.Connection.RemoteIpAddress?.ToString() ?? "";
 
-            if (config.RequireAuth)
+            if (_config.RequireAuth)
             {
                 string rawToken = "";
                 if (ctx.Request.Headers.TryGetValue("Authorization", out var authHeader))
@@ -324,11 +384,11 @@ public class RemoteServer
                     rawToken = qToken.ToString();
                 }
 
-                if (!RemoteAuthManager.Instance.ValidateToken(rawToken, clientIp, out var matchedDevice))
+                if (!_auth.ValidateToken(rawToken, clientIp, out var matchedDevice))
                 {
-                    // Allow spot image requests if coming from an already paired device
+                    // Afbeeldingen mogen ook vanaf een reeds gekoppeld IP zonder token.
                     if (ctx.Request.Path.Value?.EndsWith("/image", StringComparison.OrdinalIgnoreCase) == true
-                        && config.PairedDevices.Any(d => d.IpAddress == clientIp))
+                        && _config.PairedDevices.Any(d => d.IpAddress == clientIp))
                     {
                         RegisterClientActivity(clientIp);
                     }
@@ -349,59 +409,41 @@ public class RemoteServer
             return await next(invocationContext);
         });
 
-        // Filters (synced with desktop)
+        // Filters
         protectedGroup.MapGet("/filters", () =>
-        {
-            var filters = RemoteCatalogService.Instance.GetFilters();
-            return Results.Json(filters);
-        });
+            Results.Json(Catalog?.GetFilters() ?? new List<FilterDto>()));
 
-        // Spots Catalog
+        // Spots-catalogus
         protectedGroup.MapGet("/spots", (string query, int? category, string filterId, int? page, int? pageSize, string sort) =>
         {
-            var spots = RemoteCatalogService.Instance.GetSpots(
-                query,
-                category,
-                filterId,
-                page ?? 1,
-                pageSize ?? 25,
-                sort ?? "date_desc"
-            );
-            return Results.Json(spots);
+            if (Catalog == null) return ServiceUnavailable();
+            return Results.Json(Catalog.GetSpots(query, category, filterId, page ?? 1, pageSize ?? 25, sort ?? "date_desc"));
         });
 
         protectedGroup.MapGet("/spots/{id:long}", (long id) =>
         {
-            var detail = RemoteCatalogService.Instance.GetSpotDetail(id);
-            if (detail == null) return Results.NotFound();
-            return Results.Json(detail);
+            if (Catalog == null) return ServiceUnavailable();
+            var detail = Catalog.GetSpotDetail(id);
+            return detail == null ? Results.NotFound() : Results.Json(detail);
         });
 
         protectedGroup.MapGet("/spots/{id:long}/image", (long id, string messageId) =>
         {
-            var bytes = RemoteCatalogService.Instance.GetSpotImage(id, messageId);
-            if (bytes == null || bytes.Length == 0)
-            {
-                return Results.NotFound();
-            }
-            return Results.File(bytes, "image/jpeg");
+            var bytes = Catalog?.GetSpotImage(id, messageId);
+            return bytes == null || bytes.Length == 0 ? Results.NotFound() : Results.File(bytes, "image/jpeg");
         });
 
-        // Comments
         protectedGroup.MapGet("/spots/{id:long}/comments", (long id, string messageId) =>
-        {
-            var comments = RemoteCatalogService.Instance.GetSpotComments(id, messageId);
-            return Results.Json(comments);
-        });
+            Results.Json(Catalog?.GetSpotComments(id, messageId) ?? new List<SpotCommentDto>()));
 
         protectedGroup.MapPost("/spots/{id:long}/comments", (long id, PostCommentRequestDto req) =>
         {
+            if (Catalog == null) return ServiceUnavailable();
             if (req == null || string.IsNullOrWhiteSpace(req.Body))
             {
                 return Results.BadRequest(new { error = "Reactie mag niet leeg zijn." });
             }
-
-            var result = RemoteCatalogService.Instance.PostSpotComment(id, null, req.Nickname, req.Body);
+            var result = Catalog.PostComment(id, null, req.Nickname, req.Body);
             if (!result.success)
             {
                 return Results.BadRequest(new { error = result.error });
@@ -409,11 +451,10 @@ public class RemoteServer
             return Results.Json(result.comment);
         });
 
-        // Trigger New Spots Sync
+        // Sync
         protectedGroup.MapPost("/spots/sync", () =>
         {
-            bool isSyncing = DbUpdater.IsDbUpdateInProgress;
-            if (isSyncing)
+            if (HostInfo != null && HostInfo.IsSyncing)
             {
                 return Results.Json(new SyncStatusDto
                 {
@@ -422,180 +463,112 @@ public class RemoteServer
                     Message = "Spots worden momenteel al bijgewerkt..."
                 });
             }
-
-            DispatcherHelper.UIDispatcher.InvokeAsync(() =>
+            if (SyncTrigger == null)
             {
-                try
+                return Results.Json(new SyncStatusDto
                 {
-                    Sys.MainWindow?.ScheduleDbUpdate();
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("Failed to trigger ScheduleDbUpdate from remote: {0}", ex.Message);
-                }
-            });
-
-            return Results.Json(new SyncStatusDto
-            {
-                Success = true,
-                IsSyncing = true,
-                Message = "Nieuwe spots ophalen gestart op de PC!"
-            });
+                    Success = false,
+                    IsSyncing = false,
+                    Message = "Synchroniseren is op deze host niet beschikbaar."
+                });
+            }
+            return Results.Json(SyncTrigger());
         });
 
-        // Enqueue Download
-        protectedGroup.MapPost("/spots/{id:long}/download", async (long id, DownloadRequestDto req) =>
+        // Downloaden
+        protectedGroup.MapPost("/spots/{id:long}/download", async (HttpContext ctx, long id) =>
         {
-            bool success = await RemoteQueueService.Instance.EnqueueSpotAsync(id, req?.MessageId);
-            return Results.Json(new { success });
+            if (Queue == null) return ServiceUnavailable();
+            DownloadRequestDto req = null;
+            try
+            {
+                req = await ctx.Request.ReadFromJsonAsync<DownloadRequestDto>();
+            }
+            catch
+            {
+                // Een lege body is toegestaan; de spot-id volstaat.
+            }
+            var (success, error) = Queue.EnqueueSpot(id, req?.MessageId);
+            return success ? Results.Json(new { success }) : Results.Json(new { success, error }, statusCode: 400);
         });
 
-        // Favorites
+        // Favorieten
         protectedGroup.MapGet("/favorites", (int? page, int? pageSize) =>
-        {
-            var favs = RemoteCatalogService.Instance.GetFavorites(page ?? 1, pageSize ?? 50);
-            return Results.Json(favs);
-        });
+            Results.Json(Catalog?.GetFavorites(page ?? 1, pageSize ?? 50) ?? new List<SpotDto>()));
 
         protectedGroup.MapPost("/favorites/{messageId}", (string messageId) =>
         {
-            RemoteCatalogService.Instance.ToggleFavorite(messageId, true);
+            Catalog?.ToggleFavorite(messageId, true);
             return Results.Json(new { success = true });
         });
 
         protectedGroup.MapDelete("/favorites/{messageId}", (string messageId) =>
         {
-            RemoteCatalogService.Instance.ToggleFavorite(messageId, false);
+            Catalog?.ToggleFavorite(messageId, false);
             return Results.Json(new { success = true });
         });
 
-        // Download Queue
+        // Wachtrij
         protectedGroup.MapGet("/queue", () =>
-        {
-            var queue = RemoteQueueService.Instance.GetQueue();
-            return Results.Json(queue);
-        });
+            Results.Json(Queue?.GetQueue() ?? new QueueStatusDto()));
 
         protectedGroup.MapPost("/queue/{id}/pause", (string id) =>
-        {
-            bool success = RemoteQueueService.Instance.PauseItem(id);
-            return Results.Json(new { success });
-        });
+            Results.Json(new { success = Queue?.PauseItem(id) ?? false }));
 
         protectedGroup.MapPost("/queue/{id}/resume", (string id) =>
-        {
-            bool success = RemoteQueueService.Instance.ResumeItem(id);
-            return Results.Json(new { success });
-        });
+            Results.Json(new { success = Queue?.ResumeItem(id) ?? false }));
 
         protectedGroup.MapDelete("/queue/{id}", (string id) =>
-        {
-            bool success = RemoteQueueService.Instance.CancelItem(id);
-            return Results.Json(new { success });
-        });
+            Results.Json(new { success = Queue?.CancelItem(id) ?? false }));
 
         protectedGroup.MapPost("/queue/speedlimit", (SpeedLimitDto req) =>
-        {
-            bool success = RemoteQueueService.Instance.SetSpeedLimit(req?.Kbps ?? 0);
-            return Results.Json(new { success });
-        });
+            Results.Json(new { success = Queue?.SetSpeedLimit(req?.Kbps ?? 0) ?? false }));
 
-        // Device Management
-        protectedGroup.MapGet("/auth/devices", () =>
-        {
-            return Results.Json(config.PairedDevices);
-        });
+        // Apparaten
+        protectedGroup.MapGet("/auth/devices", () => Results.Json(_config.PairedDevices));
 
         protectedGroup.MapDelete("/auth/devices/{deviceId}", (string deviceId) =>
-        {
-            bool success = RemoteAuthManager.Instance.RevokeDevice(deviceId);
-            return Results.Json(new { success });
-        });
+            Results.Json(new { success = _auth.RevokeDevice(deviceId) }));
 
-        // Notifications
+        // Meldingen
         protectedGroup.MapGet("/notifications", () =>
-        {
-            var cfg = NotificationHost.Instance.Engine.Config;
-            var notifs = cfg.Notifications.Select(n => new NotificationItemDto
-            {
-                Id = n.Id,
-                RuleId = n.RuleId,
-                RuleName = n.RuleName,
-                RuleType = n.RuleType.ToString(),
-                Title = n.Title,
-                Body = n.Body,
-                SpotCount = n.SpotCount,
-                TimeAgo = n.TimeAgo,
-                CreatedAtUtc = n.CreatedAtUtc,
-                IsRead = n.IsRead,
-                Spots = n.Spots.Select(s => new NotificationSpotDto
-                {
-                    Id = s.Id,
-                    MessageId = s.MessageId,
-                    Title = s.Title,
-                    Category = s.Category,
-                    CategoryName = s.CategoryName,
-                    FormattedSize = s.FormattedSize,
-                    FormattedDate = s.FormattedDate
-                }).ToList()
-            }).ToList();
-
-            return Results.Json(new NotificationsResponseDto
-            {
-                UnreadCount = NotificationHost.Instance.Engine.UnreadCount,
-                Notifications = notifs
-            });
-        });
+            Notifications == null ? ServiceUnavailable() : Results.Json(Notifications.GetNotifications()));
 
         protectedGroup.MapPost("/notifications/{id}/read", (string id) =>
-        {
-            NotificationHost.Instance.Engine.MarkAsRead(id);
-            return Results.Json(new { success = true, unreadCount = NotificationHost.Instance.Engine.UnreadCount });
-        });
+            Results.Json(new { success = true, unreadCount = Notifications?.MarkAsRead(id) ?? 0 }));
 
         protectedGroup.MapPost("/notifications/read-all", () =>
-        {
-            NotificationHost.Instance.Engine.MarkAllAsRead();
-            return Results.Json(new { success = true, unreadCount = 0 });
-        });
+            Results.Json(new { success = true, unreadCount = Notifications?.MarkAllAsRead() ?? 0 }));
 
         protectedGroup.MapDelete("/notifications/{id}", (string id) =>
-        {
-            NotificationHost.Instance.Engine.DeleteNotification(id);
-            return Results.Json(new { success = true, unreadCount = NotificationHost.Instance.Engine.UnreadCount });
-        });
+            Results.Json(new { success = true, unreadCount = Notifications?.DeleteNotification(id) ?? 0 }));
 
         protectedGroup.MapDelete("/notifications", () =>
-        {
-            NotificationHost.Instance.Engine.ClearAllNotifications();
-            return Results.Json(new { success = true, unreadCount = 0 });
-        });
+            Results.Json(new { success = true, unreadCount = Notifications?.ClearAll() ?? 0 }));
     }
+
+    private static IResult ServiceUnavailable() =>
+        Results.Json(new { error = "Deze host biedt deze dienst niet aan." }, statusCode: 503);
 
     private string ResolveWebRoot()
     {
-        string[] candidates = new[]
+        string[] candidates =
         {
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Spotnet", "Remote", "Web"),
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Web"),
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Spotnet", "Remote", "Web")
+            WebRootOverride,
+            Path.Combine(AppContext.BaseDirectory, "Remote", "Web"),
+            Path.Combine(AppContext.BaseDirectory, "Spotnet", "Remote", "Web"),
+            Path.Combine(AppContext.BaseDirectory, "Web")
         };
 
         foreach (var c in candidates)
         {
-            if (Directory.Exists(c) && File.Exists(Path.Combine(c, "index.html")))
+            if (!string.IsNullOrEmpty(c) && Directory.Exists(c) && File.Exists(Path.Combine(c, "index.html")))
             {
                 return Path.GetFullPath(c);
             }
         }
 
-        // Fallback: create Web directory if missing
-        string defaultPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Web");
-        if (!Directory.Exists(defaultPath))
-        {
-            Directory.CreateDirectory(defaultPath);
-        }
-        return defaultPath;
+        return "";
     }
 
     public static string GetLocalIpAddress()
@@ -622,6 +595,3 @@ public class RemoteServer
         return $"http://{host}:{ActivePort}";
     }
 }
-
-// DownloadRequestDto en SpeedLimitDto verhuisden naar het gedeelde
-// Spotnet.Remote-project (RemoteDtos.cs).

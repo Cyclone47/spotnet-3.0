@@ -12,6 +12,7 @@ using Spotnet.Mac.Models;
 using Spotnet.Mac.Network;
 using Spotnet.Mac.Platform;
 using Spotnet.Mac.Services;
+using Spotnet.Mac.Remote;
 using Spotnet.Platform;
 
 namespace Spotnet.Mac.ViewModels;
@@ -1483,6 +1484,10 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(60));
             UnreadNotificationCount = _notifications.UnreadCount;
 
+            // Spotnet Remote (fase 5): bij opstarten de host starten als de
+            // config dat zegt — Windows doet dit in App via RemoteServer.Instance.Start().
+            EnsureRemoteHostState(Spotnet.Remote.RemoteConfig.Load().Enabled);
+
             // .nzb-bestanden en spotnet://-links van bij het opstarten (Open With,
             // URL-scheme), zoals Windows die uit de pipe-parameters haalt.
             await HandleStartupTargetsAsync(Program.StartupTargets);
@@ -1784,6 +1789,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(ShowTrustedOnlyTooltip));
         OnPropertyChanged(nameof(HideBlacklistedSpots));
         OnPropertyChanged(nameof(ShowEroticaInSearchResults));
+        EnsureRemoteHostState(Spotnet.Remote.RemoteConfig.Load().Enabled);
         await _dbService.UpdateDatabaseStatsAsync(_prefsService);
         await RefreshSpotsAsync();
         await UpdateFilterCountsAsync();
@@ -1867,5 +1873,121 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         _notificationEvalTimer = null;
         _trustService.Dispose();
         _suggestClient.Dispose();
+        RemoteHost?.Dispose();
+    }
+
+    // ── Spotnet Remote (fase 5) ───────────────────────────────────────────────
+    // De host zelf leeft in MacRemoteHost; hier staan de ingangen die hij van de
+    // app nodig heeft. Windows lost hetzelfde op via RemoteServer.Instance, dat
+    // rechtstreeks in de WPF-singletons duikt.
+
+    /// <summary>De Remote-server; null zolang Remote niet is gestart.</summary>
+    public MacRemoteHost? RemoteHost { get; private set; }
+
+    /// <summary>Toegang voor de Remote-hostproviders (fase 5), zoals Windows'
+    /// RemoteServer ook rechtstreeks in de singletons duikt.</summary>
+    public SpotDatabaseService DatabaseService => _dbService;
+    public SpotBodyService BodyService => _bodyService;
+
+    /// <summary>Zet de Remote-host aan, uit of herstart (Instellingen → Spotnet Remote).
+    /// Een herstart past gewijzigde poort/auth-instellingen toe, zoals Windows'
+    /// SettingsForRemote dat via RemoteServer.Instance.Restart() doet.</summary>
+    public void EnsureRemoteHostState(bool enabled)
+    {
+        if (enabled)
+        {
+            if (RemoteHost == null)
+            {
+                RemoteHost = new MacRemoteHost(this, _prefsService);
+                RemoteHost.Start();
+            }
+            else
+            {
+                RemoteHost.Restart();
+            }
+        }
+        else if (RemoteHost != null)
+        {
+            RemoteHost.Stop();
+            RemoteHost = null;
+        }
+    }
+
+    /// <summary>Vernieuwen + tellers bijwerken, zoals de Vernieuwen-knop; gebruikt door
+    /// de Remote-sync-trigger zodat de telefoon exact dezelfde flow start.</summary>
+    public async System.Threading.Tasks.Task RunRemoteSyncAsync(System.Threading.CancellationToken cancellationToken)
+    {
+        await _dispatcher.InvokeAsync(async () =>
+        {
+            IsSyncing = true;
+            try
+            {
+                await _dbService.MarkSpotsSeenAsync();
+                await _syncService.SyncSpotsAsync(cancellationToken);
+                await RefreshSpotsAsync();
+                await UpdateFilterCountsAsync();
+                _notifications.OnSyncFinished();
+            }
+            finally
+            {
+                IsSyncing = false;
+            }
+        });
+    }
+
+    /// <summary>Spot opzoeken op rowid of msgid; gebruikt door de Remote-hostproviders.</summary>
+    public async System.Threading.Tasks.Task<SpotItem?> FindRemoteSpotAsync(long id, string? messageId)
+    {
+        if (!string.IsNullOrEmpty(messageId))
+        {
+            return await _dbService.GetSpotByMsgIdAsync(messageId);
+        }
+        if (id <= 0) return null;
+        // Rowid-zoekopdracht: de dal kent Id via spots.rowid; zonder msgid zoeken we
+        // via een klein venster. De telefoon gebruikt normaliter het msgid-pad.
+        var recent = await _dbService.QueryByFilterAsync(
+            filterQuery: null, searchText: null, skip: (int)Math.Max(0, id - 1), take: 1);
+        var hit = recent.FirstOrDefault(s => s.Id == id);
+        if (hit != null) return hit;
+        return await _dbService.GetSpotByMsgIdAsync(await LookupMsgIdByRowIdAsync(id) ?? "");
+    }
+
+    private async System.Threading.Tasks.Task<string?> LookupMsgIdByRowIdAsync(long rowId)
+    {
+        var rows = await _dbService.QueryByFilterAsync(
+            filterQuery: null, searchText: null, skip: 0, take: (int)Math.Min(rowId, int.MaxValue));
+        return rows.FirstOrDefault(s => s.Id == rowId)?.MsgId;
+    }
+
+    /// <summary>Downloaden vanaf de telefoon: zelfde pad als de Downloadknop op de spotpagina.</summary>
+    public async System.Threading.Tasks.Task<(bool success, string? path, string message, Network.NzbDownloadJob? job)> DownloadRemoteSpotAsync(SpotItem spot)
+    {
+        var result = await _nzbService.DownloadAsync(spot);
+        if (result.success)
+        {
+            DownloadsTab.Add(spot, result.success, result.filePath, result.message, result.job);
+            OnPropertyChanged(nameof(DownloadsTab));
+        }
+        return result;
+    }
+
+    /// <summary>Reactie plaatsen vanaf de telefoon: zelfde service als het detailvenster.</summary>
+    public async System.Threading.Tasks.Task<(bool success, Models.CommentItem? comment, string message)> PostRemoteCommentAsync(
+        SpotItem spot, string nickname, string body)
+    {
+        return await _commentService.PostCommentAsync(spot, string.IsNullOrWhiteSpace(nickname) ? _prefsService.Current.Nickname : nickname, body);
+    }
+
+    /// <summary>Een (al beëindigde) download uit de lijst halen, zoals de verwijderknop zonder bestanden te wissen.</summary>
+    public bool RemoveRemoteDownload(Models.DownloadItem item)
+    {
+        bool removed = DownloadsTab.Downloads.Remove(item);
+        if (removed)
+        {
+            item.JobCts?.Cancel();
+            item.PauseGate?.Set();
+            DownloadsTab.SaveHistory();
+        }
+        return removed;
     }
 }

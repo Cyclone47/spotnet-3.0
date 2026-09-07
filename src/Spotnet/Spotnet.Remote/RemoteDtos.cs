@@ -174,3 +174,12 @@ public class NotificationsResponseDto
     public List<NotificationItemDto> Notifications { get; set; } = new List<NotificationItemDto>();
 }
 
+public class DownloadRequestDto
+{
+    public string MessageId { get; set; } = "";
+}
+
+public class SpeedLimitDto
+{
+    public int Kbps { get; set; }
+}

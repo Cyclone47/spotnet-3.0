@@ -94,6 +94,14 @@ public partial class MainWindow : Window
     private async void ShowSettingsWindow()
     {
         var settingsVm = new SettingsViewModel(_secretStore, _appPaths, _viewModel.PreferencesService, _dbService);
+        settingsVm.RequestShowPairing += () =>
+        {
+            if (_viewModel.RemoteHost is { } host)
+            {
+                var pairing = new Views.RemotePairingWindow(host);
+                pairing.Show(this);
+            }
+        };
         var window = new SettingsWindow(settingsVm);
         await window.ShowDialog(this);
         _viewModel.OnSettingsSaved();

@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Spotnet Remote, gedeeld tussen de Windows- en macOS-client: de DTO's, de
+    remote_config.json-opslag, het koppelings-/token-model (RemoteAuthManager),
+    de wachtwoord-hashing en IP-afgrenzing (PasswordSecurity) en de
+    ontdekkingsservice (UDP 8771).
+
+    De ASP.NET Core-host zelf blijft per platform: Windows leest de downloadwachtrij
+    uit de WPF-downloader, macOS praat tegen zijn eigen SQLite-database en
+    NzbDownloadJob. Beide clients bouwen hun Kestrel-app op de gedeelde
+    RemoteWebServer-basis, zodat het /api/v1-contract identiek blijft en de
+    Android-app geen onderscheid ziet.
+
+    Net als Spotnet.Core: niets in hier mag verwijzen naar Spotnet.dll (de
+    Windows-client). Targeting PortableTargetFramework zorgt dat de compiler dat
+    afdwingt.
+  -->
+  <PropertyGroup>
+    <TargetFramework>$(PortableTargetFramework)</TargetFramework>
+    <LangVersion>11.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <AssemblyName>Spotnet.Remote</AssemblyName>
+    <RootNamespace>Spotnet.Remote</RootNamespace>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NLog" Version="5.5.1" />
+    <PackageReference Include="QRCoder" Version="1.8.0" />
+  </ItemGroup>
+
+  <!-- De web-shell (index.html + app.js) komt uit de Windows-client en wordt bij
+       beide clients in Web/ naast de binary gezet, zodat ResolveWebRoot hem vindt. -->
+  <ItemGroup>
+    <None Include="..\Spotnet\Spotnet\Remote\Web\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Web\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </None>
+  </ItemGroup>
+
+</Project>

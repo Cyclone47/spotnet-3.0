@@ -70,6 +70,7 @@
          header parser needs them; see EncodingSetup. -->
     <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
     <ProjectReference Include="..\Spotnet.Enc\Spotnet.Enc.csproj" />
+    <ProjectReference Include="..\Spotnet.Remote\Spotnet.Remote.csproj" />
   </ItemGroup>
 
   <!-- Squirrel 0.9.2 and the assemblies it loads at runtime. No NuGet release

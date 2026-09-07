@@ -6,15 +6,28 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using NLog;
-using Spotnet.Helpers;
 
 namespace Spotnet.Remote;
 
+/// <summary>
+/// UDP-ontdekking op poort 8771, zoals de Windows-client: de Android-app stuurt
+/// "SPOTNET_DISCOVER"-pings (of luistert naar de periodieke "SPOTNET_BEACON:")
+/// en krijgt een JSON-pakket met service, naam, versie, poort en machine terug.
+/// Het draadformaat is byte-voor-byte gelijk aan dat van Windows, zodat dezelfde
+/// app beide hosts vindt.
+/// </summary>
 public class RemoteDiscoveryService
 {
     private static readonly Logger Log = LogManager.GetCurrentClassLogger();
     private static readonly Lazy<RemoteDiscoveryService> InstanceHolder = new Lazy<RemoteDiscoveryService>(() => new RemoteDiscoveryService());
     public static RemoteDiscoveryService Instance => InstanceHolder.Value;
+
+    /// <summary>
+    /// De hostnaam in het ontdekkingspakket. Windows vult hier AppHelper.AppVersion
+    /// in bij het opstarten; macOS zijn eigen versie. Default "3.0" zoals het
+    /// oorspronkelijke pakket.
+    /// </summary>
+    public static Func<string> VersionProvider { get; set; } = () => "3.0";
 
     public const int DiscoveryPort = 8771;
     public const string PingPrefix = "SPOTNET_DISCOVER";
@@ -163,7 +176,7 @@ public class RemoteDiscoveryService
         {
             service = "spotnet-remote",
             name = "Spotnet Desktop",
-            version = AppHelper.AppVersion?.ToString() ?? "3.0",
+            version = VersionProvider?.Invoke() ?? "3.0",
             port = remotePort,
             machine = Environment.MachineName,
             requireAuth = requireAuth

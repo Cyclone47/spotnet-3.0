@@ -405,6 +405,10 @@ public sealed class UserPreferencesService
 
     public UserPreferences Current => _current;
 
+    /// <summary>De map met preferences.json; de Remote-host bewaart hier ook
+    /// remote_config.json, zoals Windows het in AppHelper.SettingsFolder doet.</summary>
+    public string SettingsFolder => Path.GetDirectoryName(_settingsFilePath) ?? AppContext.BaseDirectory;
+
     public UserPreferencesService(IAppPaths appPaths)
     {
         ArgumentNullException.ThrowIfNull(appPaths);

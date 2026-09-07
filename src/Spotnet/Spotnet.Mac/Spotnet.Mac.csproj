@@ -39,5 +39,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Spotnet.Core\Spotnet.Core.csproj" />
     <ProjectReference Include="..\Spotnet.Enc\Spotnet.Enc.csproj" />
+    <ProjectReference Include="..\Spotnet.Remote\Spotnet.Remote.csproj" />
   </ItemGroup>
 </Project>

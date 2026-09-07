@@ -1,0 +1,60 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Spotnet.Mac.Views.RemotePairingWindow"
+        Title="Spotnet Remote — koppelen"
+        Width="420" Height="640"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+    <ScrollViewer Padding="20,16">
+        <StackPanel Spacing="10">
+
+            <TextBlock Text="Spotnet Remote" FontSize="18" FontWeight="Bold"/>
+            <TextBlock Text="Scan de QR-code met de Spotnet-app of typ de PIN over om dit apparaat te koppelen."
+                       TextWrapping="Wrap" Foreground="{DynamicResource AppMutedTextBrush}"/>
+
+            <!-- De koppelings-QR: zelfde inhoud als Windows' RemotePairingWindow
+                 (url + ?pairToken=…), gegenereerd met dezelfde QRCoder-instellingen. -->
+            <Border HorizontalAlignment="Center" Margin="0,8"
+                    Background="White" CornerRadius="8" Padding="12">
+                <Image Width="220" Height="220" Source="{Binding QrImage}"/>
+            </Border>
+
+            <TextBlock Text="of koppel met PIN:" FontWeight="Medium" Margin="0,8,0,0"/>
+            <TextBlock Text="{Binding Pin}" FontSize="34" FontWeight="Bold"
+                       HorizontalAlignment="Center" FontFamily="Consolas, Menlo, monospace"/>
+
+            <TextBlock Text="{Binding ExpiresText}" FontSize="12"
+                       Foreground="{DynamicResource AppMutedTextBrush}"
+                       HorizontalAlignment="Center"/>
+
+            <Separator Margin="0,10"/>
+
+            <TextBlock Text="Gekoppelde apparaten" FontWeight="SemiBold" FontSize="14"/>
+            <ItemsControl ItemsSource="{Binding Devices}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,4">
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Name}" FontWeight="Medium"/>
+                                <TextBlock Text="{Binding Detail}" FontSize="11"
+                                           Foreground="{DynamicResource AppMutedTextBrush}"/>
+                            </StackPanel>
+                            <Button Grid.Column="2"
+                                    Classes="LinkButton"
+                                    Content="Ontkoppelen"
+                                    Command="{Binding $parent[Window].DataContext.RevokeDeviceCommand}"
+                                    CommandParameter="{Binding Id}"/>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Text="{Binding EmptyDevicesText}"
+                       IsVisible="{Binding !HasDevices}"
+                       Foreground="{DynamicResource AppMutedTextBrush}"/>
+
+            <Button Content="Sluiten" Click="OnCloseClick" HorizontalAlignment="Right" Margin="0,12,0,0"
+                    Classes="accent"/>
+        </StackPanel>
+    </ScrollViewer>
+</Window>

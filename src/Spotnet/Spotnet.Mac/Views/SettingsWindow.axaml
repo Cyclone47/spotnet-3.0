@@ -279,6 +279,34 @@
                     <TextBox Grid.Column="2" Text="{Binding Nickname}" MaxLength="30" Watermark="Spotter"/>
                 </Grid>
 
+                <Separator Margin="0,4"/>
+                <TextBlock Text="Spotnet Remote" FontSize="14" FontWeight="SemiBold"/>
+
+                <CheckBox IsChecked="{Binding RemoteEnabled}"
+                          Content="Spotnet Remote inschakelen (bediening via telefoon/tablet)"/>
+
+                <Grid ColumnDefinitions="Auto,8,200,*" Margin="0,4,0,0" IsEnabled="{Binding RemoteEnabled}">
+                    <TextBlock Grid.Column="0" Text="Poort:" VerticalAlignment="Center"/>
+                    <TextBox Grid.Column="2" Text="{Binding RemotePort}" Watermark="8770"/>
+                </Grid>
+
+                <StackPanel IsEnabled="{Binding RemoteEnabled}" Margin="0,4,0,0">
+                    <CheckBox IsChecked="{Binding RemoteAllowLan}"
+                              Content="Bereikbaar op het lokale netwerk (LAN)"/>
+                    <CheckBox IsChecked="{Binding RemoteRequireAuth}"
+                              Content="Wachtwoord of koppeling verplicht"/>
+                    <CheckBox IsChecked="{Binding RemoteKeepAwake}"
+                              Content="Voorkomen dat de Mac in slaap valt (caffeinate)"/>
+                    <Grid ColumnDefinitions="Auto,8,200,*" Margin="0,4,0,0">
+                        <TextBlock Grid.Column="0" Text="Nieuw wachtwoord:" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="2" Text="{Binding RemotePassword}" PasswordChar="\u2022"
+                                 Watermark="leeg laten = ongewijzigd"/>
+                    </Grid>
+                    <Button Content="Apparaat koppelen… (QR / PIN)"
+                            Command="{Binding ShowPairingCommand}"
+                            HorizontalAlignment="Left" Margin="0,6,0,0"/>
+                </StackPanel>
+
                 <!-- Status message -->
                 <TextBlock Text="{Binding StatusMessage}"
                            TextWrapping="Wrap"
