@@ -1,9 +1,6 @@
 name: Publish macOS release asset
 
 on:
-  push:
-    branches:
-      - macos-client
   workflow_dispatch:
     inputs:
       version:
