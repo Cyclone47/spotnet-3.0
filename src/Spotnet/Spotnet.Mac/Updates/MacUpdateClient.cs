@@ -108,23 +108,25 @@ public sealed class MacUpdateClient : IDisposable
         }
 
         using Stream source = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        await using var destination = new FileStream(
+        await using (var destination = new FileStream(
             partial, resumeFrom > 0 ? FileMode.Append : FileMode.Create, FileAccess.Write, FileShare.None,
-            BufferSize, useAsync: true);
-        var buffer = new byte[BufferSize];
-        long received = resumeFrom;
-        var stopwatch = Stopwatch.StartNew();
-        progress?.Report(new MacUpdateProgress(received, manifest.Size));
-        int read;
-        while ((read = await source.ReadAsync(buffer.AsMemory(), cancellationToken).ConfigureAwait(false)) > 0)
+            BufferSize, useAsync: true))
         {
-            await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
-            received += read;
-            double seconds = stopwatch.Elapsed.TotalSeconds;
-            double speed = seconds > 0 ? (received - resumeFrom) / seconds : 0;
-            progress?.Report(new MacUpdateProgress(received, manifest.Size, speed));
+            var buffer = new byte[BufferSize];
+            long received = resumeFrom;
+            var stopwatch = Stopwatch.StartNew();
+            progress?.Report(new MacUpdateProgress(received, manifest.Size));
+            int read;
+            while ((read = await source.ReadAsync(buffer.AsMemory(), cancellationToken).ConfigureAwait(false)) > 0)
+            {
+                await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
+                received += read;
+                double seconds = stopwatch.Elapsed.TotalSeconds;
+                double speed = seconds > 0 ? (received - resumeFrom) / seconds : 0;
+                progress?.Report(new MacUpdateProgress(received, manifest.Size, speed));
+            }
+            await destination.FlushAsync(cancellationToken).ConfigureAwait(false);
         }
-        await destination.FlushAsync(cancellationToken).ConfigureAwait(false);
 
         long lengthOnDisk = new FileInfo(partial).Length;
         if (lengthOnDisk != manifest.Size)

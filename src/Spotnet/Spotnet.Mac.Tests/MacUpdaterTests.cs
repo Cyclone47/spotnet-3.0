@@ -193,6 +193,42 @@ public sealed class MacUpdaterTests
         }
     }
 
+    [Fact]
+    public async Task DownloadAsync_CompletesAndMovesFile_WhenSizeAndHashMatch()
+    {
+        byte[] payload = [1, 2, 3, 4, 5];
+        using var sha = System.Security.Cryptography.SHA256.Create();
+        string expectedSha = Convert.ToHexString(sha.ComputeHash(payload)).ToLowerInvariant();
+        string root = Path.Combine(Path.GetTempPath(), "spotnet-updater-download-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var handler = new ByteArrayResponseHandler(payload);
+            using var client = new MacUpdateClient(new Uri("https://updates.example.test/latest-mac.json"), handler);
+            string json = $$"""
+            {
+              "schema": 1,
+              "clientUpdate": 1,
+              "version": "3.0.0.3",
+              "minimumVersion": "3.0.0.0",
+              "forced": 0,
+              "macUrl": "http://127.0.0.1/app.zip",
+              "macSize": {{payload.Length}},
+              "macSha256": "{{expectedSha}}"
+            }
+            """;
+            Assert.True(MacUpdateManifest.TryParse(json, out var manifest, out var error), error);
+
+            string target = await client.DownloadAsync(manifest!, root);
+            Assert.True(File.Exists(target));
+            Assert.False(File.Exists(target + ".part"));
+            Assert.Equal(payload.Length, new FileInfo(target).Length);
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
+        }
+    }
+
     private sealed class ByteArrayResponseHandler : HttpMessageHandler
     {
         private readonly byte[] _bytes;
