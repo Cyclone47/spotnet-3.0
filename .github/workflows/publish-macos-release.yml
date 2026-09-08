@@ -1,6 +1,11 @@
 name: Publish macOS release asset
 
 on:
+  push:
+    branches:
+      - macos-client
+    paths-ignore:
+      - 'updates/latest-mac.json'
   workflow_dispatch:
     inputs:
       version:
