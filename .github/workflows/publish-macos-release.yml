@@ -9,7 +9,7 @@ on:
       version:
         description: macOS release version
         required: true
-        default: 3.0.0.2
+        default: 3.0.0.3
 
 permissions:
   contents: write
@@ -18,7 +18,7 @@ jobs:
   publish-macos:
     runs-on: macos-14
     env:
-      VERSION: 3.0.0.2
+      VERSION: 3.0.0.3
     steps:
       - name: Checkout macOS client
         uses: actions/checkout@v4
@@ -34,6 +34,17 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent artifacts/Spotnet.app "artifacts/Spotnet-macOS-x64-v${VERSION}.zip"
           shasum -a 256 "artifacts/Spotnet-macOS-x64-v${VERSION}.zip"
           stat -f '%z bytes' "artifacts/Spotnet-macOS-x64-v${VERSION}.zip"
+
+      - name: Ensure Mac release exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          if ! gh release view "macos-v${VERSION}" --repo "$REPO" >/dev/null 2>&1; then
+            gh release create "macos-v${VERSION}" --repo "$REPO" --target macos-client \
+              --title "Spotnet macOS ${VERSION} (dummy update)" \
+              --notes "Dummy macOS update voor het testen van de ingebouwde updater."
+          fi
 
       - name: Upload asset to existing Mac release
         env:

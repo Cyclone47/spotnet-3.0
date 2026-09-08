@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "clientUpdate": 1,
-  "version": "3.0.0.2",
+  "clientUpdate": 0,
+  "version": "3.0.0.3",
   "minimumVersion": "3.0.0.0",
   "forced": 0,
-  "macUrl": "https://github.com/Cyclone47/spotnet-3.0/releases/download/macos-v3.0.0.2/Spotnet-macOS-x64-v3.0.0.2.zip",
-  "macSize": 61688310,
-  "macSha256": "22c74d1c7ff09a1c64d8e90da1b90ef9980990c867540bf5f6f9a1af7f798db8",
-  "releaseNotesUrl": "https://github.com/Cyclone47/spotnet-3.0/releases/tag/macos-v3.0.0.2"
+  "macUrl": "https://github.com/Cyclone47/spotnet-3.0/releases/download/macos-v3.0.0.3/Spotnet-macOS-x64-v3.0.0.3.zip",
+  "macSize": 0,
+  "macSha256": "",
+  "releaseNotesUrl": "https://github.com/Cyclone47/spotnet-3.0/releases/tag/macos-v3.0.0.3"
 }
