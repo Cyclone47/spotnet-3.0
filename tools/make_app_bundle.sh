@@ -7,6 +7,7 @@ APP_DIR="$REPO_ROOT/artifacts/Spotnet.app"
 CONTENTS="$APP_DIR/Contents"
 MACOS_DIR="$CONTENTS/MacOS"
 RESOURCES_DIR="$CONTENTS/Resources"
+BUNDLE_VERSION="${BUNDLE_VERSION:-3.0.0.4}"
 
 echo "=== Building Spotnet 3.0 macOS App Bundle ==="
 
@@ -66,11 +67,14 @@ echo "Publishing self-contained binary for $TARGET_RID..."
     -c Release \
     -r "$TARGET_RID" \
     --self-contained true \
+    -p:Version="$BUNDLE_VERSION" \
+    -p:AssemblyVersion="$BUNDLE_VERSION" \
+    -p:FileVersion="$BUNDLE_VERSION" \
     -p:PublishTrimmed=false \
     -o "$MACOS_DIR"
 
 # 4. Create Info.plist
-cat << 'PLIST' > "$CONTENTS/Info.plist"
+cat << PLIST > "$CONTENTS/Info.plist"
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -90,9 +94,9 @@ cat << 'PLIST' > "$CONTENTS/Info.plist"
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>3.0.0.3</string>
+    <string>$BUNDLE_VERSION</string>
     <key>CFBundleVersion</key>
-    <string>3.0.0.3</string>
+    <string>$BUNDLE_VERSION</string>
     <key>LSMinimumSystemVersion</key>
     <string>12.0</string>
     <key>NSHighResolutionCapable</key>

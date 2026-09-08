@@ -11,7 +11,7 @@ on:
       version:
         description: macOS release version
         required: true
-        default: 3.0.0.3
+        default: 3.0.0.4
 
 permissions:
   contents: write
@@ -20,7 +20,7 @@ jobs:
   publish-macos:
     runs-on: macos-14
     env:
-      VERSION: 3.0.0.3
+      VERSION: 3.0.0.4
     steps:
       - name: Checkout macOS client
         uses: actions/checkout@v4
