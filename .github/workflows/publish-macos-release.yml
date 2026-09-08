@@ -52,3 +52,27 @@ jobs:
             "artifacts/Spotnet-macOS-x64-v${VERSION}.zip" \
             --repo "$REPO" \
             --clobber
+
+      - name: Update latest-mac.json and commit
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          ZIP="artifacts/Spotnet-macOS-x64-v${VERSION}.zip"
+          SIZE=$(stat -f '%z' "$ZIP")
+          SHA=$(shasum -a 256 "$ZIP" | awk '{print $1}')
+          echo "Asset size: $SIZE, sha256: $SHA"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          python3 -c "
+import json
+with open('updates/latest-mac.json', 'r') as f:
+    d = json.load(f)
+d['macSize'] = int('$SIZE')
+d['macSha256'] = '$SHA'
+with open('updates/latest-mac.json', 'w') as f:
+    json.dump(d, f, indent=2)
+    f.write('\n')
+"
+          git add updates/latest-mac.json
+          git commit -m "Auto-update latest-mac.json voor v${VERSION} [skip ci]" || echo "No changes"
+          git push origin macos-client
