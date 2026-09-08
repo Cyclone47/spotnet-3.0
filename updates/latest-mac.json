@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "clientUpdate": 0,
+  "version": "3.0.0-alpha",
+  "minimumVersion": "3.0.0-alpha",
+  "forced": 0,
+  "macUrl": "",
+  "macSize": 0,
+  "macSha256": "",
+  "releaseNotesUrl": "https://github.com/Cyclone47/spotnet-3.0/releases"
+}

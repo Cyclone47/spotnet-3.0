@@ -369,6 +369,9 @@ public sealed class UserPreferences
     /// </summary>
     public bool SpotImdbShow { get; set; }
 
+    /// <summary>Volume van het mediavoorbeeld (0-200), zoals Windows' PlayerVolume.</summary>
+    public int PlayerVolume { get; set; } = 100;
+
     /// <summary>
     /// A host is a provider cache server when it ends in one of these suffixes.
     /// Windows: CachingSystem.MasterHostnameSnelNl / MasterHostname5Euro.

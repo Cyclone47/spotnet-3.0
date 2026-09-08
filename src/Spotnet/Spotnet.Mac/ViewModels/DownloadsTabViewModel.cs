@@ -67,6 +67,9 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
 
     public event Action<string>? RequestOpenSpotInfo;
     public event Action<DownloadItem>? RequestSetPassword;
+
+    /// <summary>Het mediavoorbeeld bij deze downloads (fase 6 slotstuk, port van Windows' DownloadsPlayer).</summary>
+    public PlayerViewModel Player { get; }
     public Func<DownloadItem, Task<(bool confirmed, bool deleteFiles)>>? RequestConfirmRemove;
     public Func<int, long, Task<(bool confirmed, bool deleteFiles)>>? RequestConfirmClear;
 
@@ -102,6 +105,7 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
         _preferences = preferences;
         _notificationService = notificationService ?? new MacNotificationService(preferences);
         _downloadNotificationRecorder = downloadNotificationRecorder;
+        Player = new PlayerViewModel(preferences: preferences);
 
         foreach (var item in _history.Load())
         {
@@ -180,6 +184,7 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
                 item.JobCts?.Cancel();
                 item.PauseGate?.Set();
 
+                Player.OnItemRemoved(item);
                 if (deleteFiles)
                 {
                     DeleteStoredFiles(item);
@@ -208,6 +213,7 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
             {
                 item.JobCts?.Cancel();
                 item.PauseGate?.Set();
+                Player.OnItemRemoved(item);
                 if (deleteFiles)
                 {
                     DeleteStoredFiles(item);
@@ -622,6 +628,7 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
         item.JobCts?.Cancel();
         item.PauseGate?.Set();
 
+        Player.OnItemRemoved(item);
         if (result.deleteFiles)
         {
             DeleteStoredFiles(item);

@@ -1,0 +1,116 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Spotnet.Mac.Views.PlayerView"
+             x:Name="Root"
+             Focusable="True"
+             KeyDown="OnPlayerKeyDown">
+
+  <Border BorderBrush="{DynamicResource AppBorderBrush}"
+          BorderThickness="1"
+          CornerRadius="4"
+          Background="{DynamicResource AppRowBackground}"
+          Padding="8"
+          Margin="8,0,8,8">
+    <Grid RowDefinitions="Auto,Auto,Auto">
+
+      <!-- Video + playlist, naast elkaar zoals Windows' PlayerControl -->
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto" MinHeight="240">
+        <Grid Grid.Column="0">
+          <ContentControl x:Name="VideoPresenter" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+          <Panel IsVisible="{Binding HasMedia}">
+            <!-- Centrale afspeelknop, zoals Windows' IsPlayButtonInTheCenterOfVideoVisible -->
+            <Button Classes="centerplay"
+                    IsVisible="{Binding IsCenterPlayVisible}"
+                    Command="{Binding PlayPauseCommand}"
+                    Content="▶"
+                    FontSize="34"
+                    Width="64" Height="64"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+            <TextBlock Text="{Binding LastError}"
+                       IsVisible="{Binding LastError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                       Foreground="{DynamicResource AppMutedTextBrush}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       TextWrapping="Wrap" TextAlignment="Center" Margin="20,0"/>
+          </Panel>
+          <TextBlock IsVisible="{Binding !HasMedia}"
+                     Text="Kies een download en start het voorbeeld via ▶ Voorbeeld."
+                     Foreground="{DynamicResource AppMutedTextBrush}"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                     TextWrapping="Wrap" TextAlignment="Center"/>
+        </Grid>
+
+        <ListBox x:Name="PlaylistList"
+                 Grid.Column="1"
+                 Width="240"
+                 Margin="8,0,0,0"
+                 IsVisible="{Binding IsPlaylistVisible}"
+                 ItemsSource="{Binding PlaylistItems}"
+                 Background="Transparent"
+                 BorderThickness="0">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Text="{Binding Title}" TextTrimming="CharacterEllipsis"
+                           Classes.playing="{Binding IsPlaying}"/>
+                <TextBlock Grid.Column="1" Text="{Binding DurationString}" Margin="8,0,0,0"
+                           Foreground="{DynamicResource AppMutedTextBrush}"
+                           Classes.playing="{Binding IsPlaying}"/>
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+          <ListBox.Styles>
+            <Style Selector="ListBoxItem">
+              <Setter Property="Padding" Value="6,2"/>
+            </Style>
+            <Style Selector="TextBlock.playing">
+              <Setter Property="FontWeight" Value="Bold"/>
+            </Style>
+          </ListBox.Styles>
+        </ListBox>
+      </Grid>
+
+      <!-- Downloadvoortgang, zoals PlayerViewModel.DownloadProgress -->
+      <ProgressBar Grid.Row="1"
+                   Height="4" Margin="0,6,0,0"
+                   Minimum="0" Maximum="1"
+                   Value="{Binding DownloadProgress, Mode=OneWay}"
+                   IsVisible="{Binding IsDownloadInProgress}"/>
+
+      <!-- Bedieningspaneel: play/pauze, stop, positie, volume, playlist -->
+      <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Margin="0,8,0,0" VerticalAlignment="Center">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
+          <Button Command="{Binding PlayPauseCommand}" Content="{Binding PlayPauseIcon}"
+                  Width="34" Height="26" Padding="0"
+                  ToolTip.Tip="Afspelen/Pauzeren (spatie)"/>
+          <Button Command="{Binding StopCommand}" Content="⏹"
+                  Width="34" Height="26" Padding="0"
+                  ToolTip.Tip="Stoppen (S)"/>
+          <Button Command="{Binding NextCommand}" Content="⏭"
+                  Width="34" Height="26" Padding="0"
+                  ToolTip.Tip="Volgende nummer"/>
+          <Button Command="{Binding ToggleMuteCommand}" Content="{Binding VolumeIcon}"
+                  Width="34" Height="26" Padding="0"
+                  ToolTip.Tip="Dempen"/>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="10,0">
+          <TextBlock Text="{Binding TimeText}" VerticalAlignment="Center"
+                     Foreground="{DynamicResource AppTextBrush}" MinWidth="46" TextAlignment="Right"/>
+          <Slider x:Name="PositionSlider" Minimum="0" Maximum="1"
+                  VerticalAlignment="Center" HorizontalAlignment="Stretch"
+                  ToolTip.Tip="Positie (pijl links/rechts = 5 s)"/>
+          <TextBlock Text="{Binding TotalText}" VerticalAlignment="Center"
+                     Foreground="{DynamicResource AppMutedTextBrush}" MinWidth="46"/>
+        </StackPanel>
+
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6">
+          <Slider x:Name="VolumeSlider" Minimum="0" Maximum="200" Value="{Binding Volume}"
+                  Width="110" VerticalAlignment="Center" ToolTip.Tip="Volume (pijl omhoog/omlaag)"/>          <Button Command="{Binding TogglePlaylistCommand}" Content="☰"
+                  Width="34" Height="26" Padding="0"
+                  ToolTip.Tip="Playlist tonen/verbergen (P)"/>
+        </StackPanel>
+      </Grid>
+    </Grid>
+  </Border>
+</UserControl>

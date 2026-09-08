@@ -688,6 +688,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public ICommand OpenSpotlinkCommand { get; }
     public ICommand DeleteSelectedCommand { get; }
     public ICommand OpenReleaseNotesCommand { get; }
+    public ICommand CheckForUpdatesCommand { get; }
     public ICommand OpenNotificationCenterCommand { get; }
     public ICommand QuickRepairDbCommand { get; }
     public ICommand ToggleSocksProxyCommand { get; }
@@ -797,6 +798,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public event Action? RequestOpenSettings;
     public event Action? RequestOpenOnboarding;
     public event Action? RequestOpenReleaseNotes;
+    public event Action? RequestCheckForUpdates;
     public event Action? RequestAddCustomFilter;
     public event Action<SpotItem>? RequestOpenComplaintDialog;
     public event Action? RequestPickDownloadFolder;
@@ -908,6 +910,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         SpotDetail.RequestComplain += spot => RequestOpenComplaintDialog?.Invoke(spot);
 
         OpenReleaseNotesCommand = new RelayCommand(() => RequestOpenReleaseNotes?.Invoke());
+        CheckForUpdatesCommand = new RelayCommand(() => RequestCheckForUpdates?.Invoke());
         OpenNotificationCenterCommand = new RelayCommand(() => RequestOpenNotificationCenter?.Invoke());
         QuickRepairDbCommand = new RelayCommand(async () =>
         {
@@ -1873,6 +1876,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         _notificationEvalTimer = null;
         _trustService.Dispose();
         _suggestClient.Dispose();
+        DownloadsTab.Player.FullStop(keepPanel: false);
         RemoteHost?.Dispose();
     }
 

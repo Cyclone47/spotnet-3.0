@@ -218,6 +218,7 @@
       <MenuItem Header="_Help">
         <MenuItem Header="Meldingen centrum..." Command="{Binding OpenNotificationCenterCommand}"/>
         <MenuItem Header="Wat is er _nieuw (Release Notes)..." Command="{Binding OpenReleaseNotesCommand}"/>
+        <MenuItem Header="Controleren op updates..." Command="{Binding CheckForUpdatesCommand}"/>
         <MenuItem Header="_Database controleren &amp; herstellen..." Command="{Binding QuickRepairDbCommand}"/>
         <Separator/>
         <MenuItem Header="_Over Spotnet 3.0" Click="OnAboutClick"/>
@@ -707,10 +708,16 @@
 
           <!-- The download list -->
           <DataTemplate DataType="vm:DownloadsTabViewModel">
-            <Grid RowDefinitions="Auto,*">
+            <Grid RowDefinitions="Auto,Auto,*">
+              <views:PlayerView Grid.Row="0" DataContext="{Binding Player}"/>
               <!-- Toolbar, mirroring the actions Windows offers on a download row -->
-              <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8"
+              <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8"
                           Margin="10,8" VerticalAlignment="Center">
+                <Button Content="▶ Voorbeeld"
+                        Command="{Binding Player.OpenForItemCommand}"
+                        CommandParameter="{Binding Selected}"
+                        IsEnabled="{Binding Selected, Converter={x:Static ObjectConverters.IsNotNull}}"
+                        ToolTip.Tip="Speel audio/video uit deze download af"/>
                 <Button Content="Openen"
                         Command="{Binding OpenCommand}"
                         CommandParameter="{Binding Selected}"
@@ -738,12 +745,12 @@
                         ToolTip.Tip="Voer het uitpakwachtwoord in en pak opnieuw uit"/>
               </StackPanel>
 
-              <TextBlock Grid.Row="1" Text="Nog geen downloads. Open een spot en klik op Download."
+              <TextBlock Grid.Row="2" Text="Nog geen downloads. Open een spot en klik op Download."
                          IsVisible="{Binding IsEmpty}"
                          HorizontalAlignment="Center" VerticalAlignment="Center"
                          Opacity="0.6" Foreground="{DynamicResource AppTextBrush}"/>
 
-              <DataGrid Grid.Row="1"
+              <DataGrid Grid.Row="2"
                         ItemsSource="{Binding Downloads}"
                         SelectedItem="{Binding Selected}"
                         AutoGenerateColumns="False"

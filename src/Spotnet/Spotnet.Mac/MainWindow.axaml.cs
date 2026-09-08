@@ -11,6 +11,7 @@ using Spotnet.Mac.DAL;
 using Spotnet.Mac.Platform;
 using Spotnet.Mac.Services;
 using Spotnet.Mac.ViewModels;
+using Spotnet.Mac.Updates;
 using Spotnet.Mac.Views;
 using Spotnet.Platform;
 
@@ -23,6 +24,8 @@ public partial class MainWindow : Window
     private readonly IAppPaths _appPaths;
     private readonly ISecretStore _secretStore;
     private readonly SpotDatabaseService _dbService;
+    private readonly MacUpdater _updater;
+    private bool _updateChecked;
 
     public MainWindow()
     {
@@ -34,11 +37,13 @@ public partial class MainWindow : Window
         string dbPath = _appPaths.GetDatabasePath("spots");
         var sqliteDb = new MacSqliteDb(dbPath);
         _dbService = new SpotDatabaseService(sqliteDb);
+        _updater = new MacUpdater(_appPaths.DataFolder, applicationPath: AppContext.BaseDirectory);
 
         _viewModel = new MainWindowViewModel(_appPaths, _secretStore, _dbService);
         _viewModel.RequestOpenSettings += ShowSettingsWindow;
         _viewModel.RequestOpenOnboarding += ShowOnboardingWindow;
         _viewModel.RequestOpenReleaseNotes += ShowReleaseNotesWindow;
+        _viewModel.RequestCheckForUpdates += () => _ = CheckForUpdatesAsync();
         _viewModel.RequestAddCustomFilter += ShowAddCustomFilterDialog;
         _viewModel.RequestOpenSpotWindow += detail => new SpotDetailWindow(detail).Show(this);
         _viewModel.RequestPickDownloadFolder += ShowPickDownloadFolderDialog;
@@ -58,12 +63,36 @@ public partial class MainWindow : Window
 
         DataContext = _viewModel;
         Loaded += OnWindowLoaded;
-        Closed += (s, e) => _viewModel.Dispose();
+        Closed += (s, e) =>
+        {
+            _updater.Dispose();
+            _viewModel.Dispose();
+        };
     }
 
     private async void OnWindowLoaded(object? sender, RoutedEventArgs e)
     {
+        if (_updateChecked) return;
+        _updateChecked = true;
         await _viewModel.InitializeAsync();
+        await CheckForUpdatesAsync();
+    }
+
+    private async Task CheckForUpdatesAsync()
+    {
+        try
+        {
+            string? skipped = _updater.ReadSkippedVersion();
+            var result = await _updater.CheckAsync(MacUpdateVersion.Current, skipped);
+            if (!result.Decision.ShouldPrompt || result.Manifest == null) return;
+
+            var window = new MacUpdateWindow(_updater, result.Manifest, result.Decision);
+            await window.ShowDialog(this);
+        }
+        catch (Exception ex)
+        {
+            _viewModel.StatusText = "Updatecontrole mislukt: " + ex.Message;
+        }
     }
 
     private void OnSearchKeyDown(object? sender, KeyEventArgs e)

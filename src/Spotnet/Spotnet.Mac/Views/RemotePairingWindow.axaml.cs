@@ -44,14 +44,14 @@ public sealed class RemotePairingViewModel : ViewModelBase
     public RemotePairingViewModel(MacRemoteHost host)
     {
         _host = host;
-        RevokeDeviceCommand = new RelayCommand(id =>
+        RevokeDeviceCommand = new Spotnet.Mac.ViewModels.RelayCommand((Action<object?>)(id =>
         {
             if (id is string deviceId)
             {
                 _host.RevokeDevice(deviceId);
                 RefreshDevices();
             }
-        });
+        }));
         var (url, pin, _) = host.CreatePairing();
         Pin = pin;
         ExpiresText = "Geldig voor 5 minuten";
