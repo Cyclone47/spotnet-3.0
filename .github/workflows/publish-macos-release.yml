@@ -1,0 +1,41 @@
+name: Publish macOS release asset
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: macOS release version
+        required: true
+        default: 3.0.0.2
+
+permissions:
+  contents: write
+
+jobs:
+  publish-macos:
+    runs-on: macos-13
+    env:
+      VERSION: ${{ inputs.version }}
+    steps:
+      - name: Checkout macOS client
+        uses: actions/checkout@v4
+
+      - name: Build Intel app bundle
+        run: ./tools/make_app_bundle.sh x64
+
+      - name: Package and verify release asset
+        run: |
+          mkdir -p artifacts
+          ditto -c -k --sequesterRsrc --keepParent artifacts/Spotnet.app "artifacts/Spotnet-macOS-x64-v${VERSION}.zip"
+          shasum -a 256 "artifacts/Spotnet-macOS-x64-v${VERSION}.zip"
+          stat -f '%z bytes' "artifacts/Spotnet-macOS-x64-v${VERSION}.zip"
+
+      - name: Upload asset to existing Mac release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh release upload "macos-v${VERSION}" \
+            "artifacts/Spotnet-macOS-x64-v${VERSION}.zip" \
+            --repo "$REPO" \
+            --clobber
