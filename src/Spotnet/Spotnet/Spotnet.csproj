@@ -51,6 +51,7 @@
     <!-- A framework assembly on .NET Framework, a package from .NET Core onward.
          Taking it from the package now means the reference survives a retarget. -->
     <PackageReference Include="System.Management" Version="8.0.0" />
+    <PackageReference Include="GTranslate" Version="2.4.0" />
     <!-- Framework assemblies on .NET Framework, packages from .NET Core onward. -->
     <!-- The legacy Windows code pages, which .NET no longer carries in the box. The
          header parser needs them; see EncodingSetup. -->

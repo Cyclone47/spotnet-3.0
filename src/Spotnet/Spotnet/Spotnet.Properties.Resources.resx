@@ -50,7 +50,18 @@
   </data>
   <data name="whatsnew" xml:space="preserve">
     <value>&lt;section class="notes-section gh-release"&gt;
-&lt;h3&gt;Spotnet 3.0.13.0 &lt;span class="gh-tag"&gt;New&lt;/span&gt;&lt;span class="gh-date"&gt;Current version&lt;/span&gt;&lt;/h3&gt;
+&lt;h3&gt;Spotnet 3.0.14.0 &lt;span class="gh-tag"&gt;New&lt;/span&gt;&lt;span class="gh-date"&gt;Current version&lt;/span&gt;&lt;/h3&gt;
+&lt;div class="gh-body"&gt;&lt;ul class="section-items tagged"&gt;
+&lt;li&gt;&lt;strong&gt;Automatic RSA key container recovery:&lt;/strong&gt; Prevents startup crashes (CryptographicException) by detecting corrupted Windows key containers, safely cleaning them up, and automatically generating a fresh working key.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;View mode buttons restored:&lt;/strong&gt; Quick view mode buttons (List, Details, Images) are back in the top toolbar next to the main menu with crisp vector icons and active highlight. Can be toggled via View &amp;gt; Visible controls or Settings &amp;gt; Spots.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Improved bar and layout spacing:&lt;/strong&gt; Left panel width and menu spacing have been optimized so that the Help menu is never clipped and colored genre indicators remain clearly visible in the filter tree.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Spot translation service:&lt;/strong&gt; Translate spot descriptions directly within the spot overview to your preferred language using the built-in translation service.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Spotnet Remote comments:&lt;/strong&gt; Spotnet Remote web interface now supports viewing comments on spots, complete with improved pagination and navigation controls.&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section class="notes-section gh-release"&gt;
+&lt;h3&gt;Spotnet 3.0.13.0 &lt;span class="gh-date"&gt;8 September 2026&lt;/span&gt;&lt;/h3&gt;
 &lt;div class="gh-body"&gt;&lt;ul class="section-items tagged"&gt;
 &lt;li&gt;&lt;strong&gt;Live language switching:&lt;/strong&gt; Switching between Dutch and English now takes effect immediately across the user interface without restarting Spotnet.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;Classic moderation lists:&lt;/strong&gt; Full support for classic Spotnet blacklists and whitelists in the moderation and community settings.&lt;/li&gt;
@@ -8139,7 +8150,18 @@ if (browserok) {
   </data>
   <data name="whatsnew_nl" xml:space="preserve">
     <value>&lt;section class="notes-section gh-release"&gt;
-&lt;h3&gt;Spotnet 3.0.13.0 &lt;span class="gh-tag"&gt;Nieuw&lt;/span&gt;&lt;span class="gh-date"&gt;Huidige versie&lt;/span&gt;&lt;/h3&gt;
+&lt;h3&gt;Spotnet 3.0.14.0 &lt;span class="gh-tag"&gt;Nieuw&lt;/span&gt;&lt;span class="gh-date"&gt;Huidige versie&lt;/span&gt;&lt;/h3&gt;
+&lt;div class="gh-body"&gt;&lt;ul class="section-items tagged"&gt;
+&lt;li&gt;&lt;strong&gt;Automatisch herstel van RSA-sleutelcontainers:&lt;/strong&gt; Voorkomt opstartfouten (CryptographicException) door beschadigde Windows-sleutelcontainers automatisch te detecteren, veilig op te schonen en direct een schone werkende sleutel aan te maken.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Weergaveknoppen op de voorgrond:&lt;/strong&gt; Snelle knoppen voor weergavemodi (Lijst, Details, Afbeeldingen) zijn weer direct bereikbaar in de bovenbalk naast het menu, voorzien van scherpe pictogrammen en actieve markering. In- of uitschakelbaar via Beeld &amp;gt; Zichtbare controles of Instellingen &amp;gt; Spots.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Verbeterde venster- en menu-indeling:&lt;/strong&gt; De linkerzijbalk en menubalk zijn geoptimaliseerd, waardoor het Help-menu altijd zichtbaar blijft en de gekleurde genre-indicatoren in het filteroverzicht ruim en overzichtelijk worden weergegeven.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Ingebouwde spot-vertaling:&lt;/strong&gt; Mogelijkheid om spotbeschrijvingen direct in het spotoverzicht te vertalen naar de gewenste taal via een ingebouwde vertaaldienst.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Spotnet Remote reacties:&lt;/strong&gt; In de Spotnet Remote webinterface kunnen nu ook reacties op spots direct worden bekeken, inclusief verbeterde paginering en navigatieknoppen.&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section class="notes-section gh-release"&gt;
+&lt;h3&gt;Spotnet 3.0.13.0 &lt;span class="gh-date"&gt;8 september 2026&lt;/span&gt;&lt;/h3&gt;
 &lt;div class="gh-body"&gt;&lt;ul class="section-items tagged"&gt;
 &lt;li&gt;&lt;strong&gt;Live taalwissel zonder herstart:&lt;/strong&gt; Schakelen tussen Nederlands en Engels werkt direct in de hele gebruikersinterface zonder dat u de app opnieuw hoeft te starten.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;Klassieke moderatielijsten:&lt;/strong&gt; Volledige ondersteuning voor klassieke Spotnet blacklists en whitelists in de moderatie- en community-instellingen.&lt;/li&gt;

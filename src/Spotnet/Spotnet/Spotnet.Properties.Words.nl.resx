@@ -888,4 +888,14 @@ Schrijf de reden waarom u deze wilt verwijderen:</value></data>
   <data name="CleanupAddSuggestions" xml:space="preserve"><value>Suggesties toevoegen</value></data>
   <data name="CleanupSuggestions" xml:space="preserve"><value>Suggesties: nfo, sfv, srr, url, lnk, txt, doc, docx, htm en html. Afbeeldingen kun je zelf toevoegen; ook covers worden dan verwijderd.</value></data>
   <data name="CleanupExternalNzbGet" xml:space="preserve"><value>Bij externe NZBGet stel je het opruimen in NZBGet in.</value></data>
+  <data name="TranslatePost" xml:space="preserve"><value>Vertaal spot</value></data>
+  <data name="TranslateComments" xml:space="preserve"><value>Vertaal reacties</value></data>
+  <data name="ShowOriginal" xml:space="preserve"><value>Toon origineel</value></data>
+  <data name="Translating" xml:space="preserve"><value>Bezig met vertalen...</value></data>
+  <data name="TranslationFailed" xml:space="preserve"><value>Vertaling mislukt</value></data>
+  <data name="TranslationAutomatedLabel" xml:space="preserve"><value>Automatisch vertaald</value></data>
+  <data name="TranslationDisclaimer" xml:space="preserve"><value>Deze vertaling is automatisch gegenereerd en kan onnauwkeurigheden bevatten.</value></data>
+  <data name="TranslateAll" xml:space="preserve"><value>Vertaal alles</value></data>
+  <data name="MenuVisibleControlsViewModeButtons" xml:space="preserve"><value>Weergaveknoppen</value></data>
+  <data name="MenuShowViewModeButtons" xml:space="preserve"><value>Knoppen voor lijstweergave in hoofdvenster tonen</value></data>
 </root>

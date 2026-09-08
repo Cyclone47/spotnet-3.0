@@ -25,6 +25,7 @@
     </PackageReference>
     <!-- Must match the version the app uses, so the DAL tests exercise the real engine. -->
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
+    <PackageReference Include="GTranslate" Version="2.4.0" />
   </ItemGroup>
 
   <ItemGroup>

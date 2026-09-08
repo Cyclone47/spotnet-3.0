@@ -75,4 +75,9 @@ public partial class ElementsVisibilityMenu : MenuItem
     {
         VisibilityVm.UpdateVisibility(HideableElement.MainToolbar, VisibilityMainToolbar.IsChecked);
     }
+
+    private void VisibilityViewModeButtons_Click(object sender, RoutedEventArgs e)
+    {
+        VisibilityVm.UpdateVisibility(HideableElement.ViewModeButtons, VisibilityViewModeButtons.IsChecked);
+    }
 }

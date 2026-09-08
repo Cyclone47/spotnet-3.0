@@ -19,6 +19,6 @@ using System.Windows.Resources;
 [assembly: Guid("A421CD2D-1558-4771-BB5B-EB35B66F668A")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyAssociatedContentFile("resources/releasenotes/whatsnew.html")]
-[assembly: AssemblyVersion("3.0.13.0")]
-[assembly: AssemblyFileVersion("3.0.13.0")]
+[assembly: AssemblyVersion("3.0.14.0")]
+[assembly: AssemblyFileVersion("3.0.14.0")]
 [assembly: AssemblyInformationalVersion("3.0")]

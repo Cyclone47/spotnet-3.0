@@ -8,5 +8,6 @@ public enum HideableElement
 	AddFilter,
 	MainMenu,
 	LeftPanel,
-	MainToolbar
+	MainToolbar,
+	ViewModeButtons
 }

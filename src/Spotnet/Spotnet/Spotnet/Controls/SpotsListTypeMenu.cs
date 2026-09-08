@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Markup;
 using NLog;
 using Spotnet.Helpers;
+using Spotnet.Model;
 using Spotnet.ViewModel;
 
 namespace Spotnet.Controls;
@@ -41,16 +42,37 @@ public partial class SpotsListTypeMenu : MenuItem
 
     private void SpotsListNoDetails_Click(object sender, RoutedEventArgs e)
     {
-        ((SpotsListViewModel)base.DataContext).UpdateSpotsListType(SpotsListTypeEnum.NoDetails);
+        if (Sys.MainWindow != null)
+        {
+            Sys.MainWindow.ShowSpotsListAs(SpotsListTypeEnum.NoDetails);
+        }
+        else
+        {
+            ((SpotsListViewModel)base.DataContext).UpdateSpotsListType(SpotsListTypeEnum.NoDetails);
+        }
     }
 
     private void SpotsListWithDetails_Click(object sender, RoutedEventArgs e)
     {
-        ((SpotsListViewModel)base.DataContext).UpdateSpotsListType(SpotsListTypeEnum.WithDetails);
+        if (Sys.MainWindow != null)
+        {
+            Sys.MainWindow.ShowSpotsListAs(SpotsListTypeEnum.WithDetails);
+        }
+        else
+        {
+            ((SpotsListViewModel)base.DataContext).UpdateSpotsListType(SpotsListTypeEnum.WithDetails);
+        }
     }
 
     private void SpotsListPicsOnly_Click(object sender, RoutedEventArgs e)
     {
-        ((SpotsListViewModel)base.DataContext).UpdateSpotsListType(SpotsListTypeEnum.Thumbs);
+        if (Sys.MainWindow != null)
+        {
+            Sys.MainWindow.ShowSpotsListAs(SpotsListTypeEnum.Thumbs);
+        }
+        else
+        {
+            ((SpotsListViewModel)base.DataContext).UpdateSpotsListType(SpotsListTypeEnum.Thumbs);
+        }
     }
 }

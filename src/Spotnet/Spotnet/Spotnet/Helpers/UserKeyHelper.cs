@@ -21,33 +21,148 @@ internal static class UserKeyHelper
 		{
 			return _rsaKeyProvider;
 		}
-		RSACryptoServiceProvider storeKey = GetStoreKey();
-		RSACryptoServiceProvider rSACryptoServiceProvider = GetDbKey();
-		if (rSACryptoServiceProvider == null)
+
+		RSACryptoServiceProvider storeKey = null;
+		try
 		{
+			storeKey = GetStoreKey();
+		}
+		catch (Exception ex)
+		{
+			Log.Warn("GetStoreKey failed: {0}", ex.Message);
+		}
+
+		RSACryptoServiceProvider dbKey = null;
+		try
+		{
+			dbKey = GetDbKey();
+		}
+		catch (Exception ex)
+		{
+			Log.Warn("GetDbKey failed: {0}", ex.Message);
+		}
+
+		RSACryptoServiceProvider resolvedKey = null;
+
+		if (dbKey != null)
+		{
+			resolvedKey = dbKey;
 			try
 			{
-				SetDbKey(storeKey);
+				if (storeKey == null || !resolvedKey.ToXmlString(includePrivateParameters: false).Equals(storeKey.ToXmlString(includePrivateParameters: false)))
+				{
+					SetStoreKey(resolvedKey);
+				}
 			}
 			catch (Exception ex)
 			{
 				Log.Debug(ex.Message);
 			}
-			rSACryptoServiceProvider = storeKey;
 		}
-		else if (storeKey == null || !rSACryptoServiceProvider.ToXmlString(includePrivateParameters: false).Equals(storeKey.ToXmlString(includePrivateParameters: false)))
+		else if (storeKey != null)
 		{
+			resolvedKey = storeKey;
 			try
 			{
-				SetStoreKey(rSACryptoServiceProvider);
+				SetDbKey(resolvedKey);
 			}
 			catch (Exception ex)
 			{
 				Log.Debug(ex.Message);
 			}
 		}
-		_rsaKeyProvider = rSACryptoServiceProvider;
+		else
+		{
+			Log.Info("Generating a new Spotnet user key...");
+			try
+			{
+				resolvedKey = CreateFreshKey();
+				try { SetDbKey(resolvedKey); } catch (Exception ex) { Log.Debug(ex.Message); }
+				try { SetStoreKey(resolvedKey); } catch (Exception ex) { Log.Debug(ex.Message); }
+			}
+			catch (Exception ex)
+			{
+				Log.Warn("Failed to persist fresh key; using ephemeral key: {0}", ex.Message);
+				resolvedKey = new RSACryptoServiceProvider(384);
+			}
+		}
+
+		_rsaKeyProvider = resolvedKey;
 		return _rsaKeyProvider;
+	}
+
+	private static RSACryptoServiceProvider CreateFreshKey()
+	{
+		try
+		{
+			return new RSACryptoServiceProvider(384, new CspParameters
+			{
+				KeyContainerName = "Spotnet User Key",
+				Flags = (CspProviderFlags.UseArchivableKey | CspProviderFlags.NoPrompt)
+			});
+		}
+		catch (Exception)
+		{
+			TryDeleteContainer("Spotnet User Key");
+			return new RSACryptoServiceProvider(384, new CspParameters
+			{
+				KeyContainerName = "Spotnet User Key",
+				Flags = (CspProviderFlags.UseArchivableKey | CspProviderFlags.NoPrompt)
+			});
+		}
+	}
+
+	private static void TryDeleteContainer(string containerName)
+	{
+		try
+		{
+			CspParameters parameters = new CspParameters
+			{
+				KeyContainerName = containerName,
+				Flags = CspProviderFlags.UseExistingKey
+			};
+			using RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(parameters);
+			rsa.PersistKeyInCsp = false;
+			rsa.Clear();
+			Log.Info("Removed existing key container via CSP: {0}", containerName);
+			return;
+		}
+		catch
+		{
+		}
+
+		try
+		{
+			string rsaFolder = System.IO.Path.Combine(
+				Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+				@"Microsoft\Crypto\RSA");
+			if (System.IO.Directory.Exists(rsaFolder))
+			{
+				foreach (string sidDir in System.IO.Directory.GetDirectories(rsaFolder))
+				{
+					foreach (string file in System.IO.Directory.GetFiles(sidDir))
+					{
+						try
+						{
+							byte[] bytes = System.IO.File.ReadAllBytes(file);
+							string text = System.Text.Encoding.ASCII.GetString(bytes);
+							if (text.Contains(containerName))
+							{
+								System.IO.File.Delete(file);
+								Log.Info("Deleted corrupted RSA key container file: {0}", file);
+							}
+						}
+						catch
+						{
+						}
+					}
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			Log.Debug("TryDeleteContainer folder search exception: {0}", ex.Message);
+		}
 	}
 
 	private static RSACryptoServiceProvider GetStoreKey()
@@ -66,12 +181,29 @@ internal static class UserKeyHelper
 			}
 			catch (Exception ex)
 			{
-				Log.Exception(ex);
+				Log.Debug("Failed to open Spotnet key container '{0}': {1}", "Spotnet User Key" + text, ex.Message);
+				if (num == 1 && text == "")
+				{
+					// If the main user key container is corrupt (e.g. NTE_BAD_KEY_STATE 0x8009000B),
+					// clean it up and retry once before falling back.
+					TryDeleteContainer("Spotnet User Key");
+					try
+					{
+						return new RSACryptoServiceProvider(384, new CspParameters
+						{
+							KeyContainerName = "Spotnet User Key",
+							Flags = (CspProviderFlags.UseArchivableKey | CspProviderFlags.NoPrompt)
+						});
+					}
+					catch
+					{
+					}
+				}
+
 				if (num > 10)
 				{
 					break;
 				}
-				Log.Error("Failed to get default Spotnet key. So try to create and use another one...");
 				text = ((!(text == "")) ? (" New " + ++num) : " New");
 				continue;
 			}
@@ -81,11 +213,28 @@ internal static class UserKeyHelper
 
 	private static void SetStoreKey(RSACryptoServiceProvider key)
 	{
-		new RSACryptoServiceProvider(384, new CspParameters
+		if (key == null)
 		{
-			KeyContainerName = "Spotnet User Key",
-			Flags = CspProviderFlags.NoPrompt
-		}).ImportCspBlob(key.ExportCspBlob(includePrivateParameters: true));
+			return;
+		}
+
+		try
+		{
+			new RSACryptoServiceProvider(384, new CspParameters
+			{
+				KeyContainerName = "Spotnet User Key",
+				Flags = CspProviderFlags.NoPrompt
+			}).ImportCspBlob(key.ExportCspBlob(includePrivateParameters: true));
+		}
+		catch (Exception)
+		{
+			TryDeleteContainer("Spotnet User Key");
+			new RSACryptoServiceProvider(384, new CspParameters
+			{
+				KeyContainerName = "Spotnet User Key",
+				Flags = CspProviderFlags.NoPrompt
+			}).ImportCspBlob(key.ExportCspBlob(includePrivateParameters: true));
+		}
 	}
 
 	private static RSACryptoServiceProvider GetDbKey()
@@ -112,6 +261,11 @@ internal static class UserKeyHelper
 
 	private static void SetDbKey(RSACryptoServiceProvider key)
 	{
+		if (key == null)
+		{
+			return;
+		}
+
 		using ISqlDb sqlDb = SqlDbFactory.CreateSqlDbSpots();
 		using ISqlDbTransaction sqlDbTransaction = sqlDb.BeginWriteTransaction();
 		if (sqlDb.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS userkey(key TEXT)", sqlDbTransaction) != 0)
@@ -145,20 +299,39 @@ internal static class UserKeyHelper
 		{
 			return null;
 		}
-		string text = StringCipher.Decrypt(encrypted);
-		if (text.IsNullOrEmpty())
+
+		try
 		{
+			string text = StringCipher.Decrypt(encrypted);
+			if (text.IsNullOrEmpty() || text.Length < 2)
+			{
+				return null;
+			}
+			RSACryptoServiceProvider rSACryptoServiceProvider = new RSACryptoServiceProvider(384);
+			rSACryptoServiceProvider.ImportCspBlob(Convert.FromBase64String(text.Substring(1)));
+			return rSACryptoServiceProvider;
+		}
+		catch (Exception ex)
+		{
+			Log.Warn("Failed to decrypt stored user key: {0}", ex.Message);
 			return null;
 		}
-		RSACryptoServiceProvider rSACryptoServiceProvider = new RSACryptoServiceProvider(384);
-		rSACryptoServiceProvider.ImportCspBlob(Convert.FromBase64String(text.Substring(1)));
-		return rSACryptoServiceProvider;
 	}
 
 	private static void ClearKey(RSACryptoServiceProvider key)
 	{
-		key.PersistKeyInCsp = false;
-		key.Clear();
+		if (key == null)
+		{
+			return;
+		}
+		try
+		{
+			key.PersistKeyInCsp = false;
+			key.Clear();
+		}
+		catch
+		{
+		}
 	}
 
 	internal static string GetModulus()

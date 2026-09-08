@@ -865,6 +865,21 @@ internal sealed class Settings : ApplicationSettingsBase
 
 	[UserScopedSetting]
 	[DebuggerNonUserCode]
+	[DefaultSettingValue("True")]
+	public bool VisibleViewModeButtons
+	{
+		get
+		{
+			return (bool)this["VisibleViewModeButtons"];
+		}
+		set
+		{
+			this["VisibleViewModeButtons"] = value;
+		}
+	}
+
+	[UserScopedSetting]
+	[DebuggerNonUserCode]
 	[DefaultSettingValue("False")]
 	public bool HideBlacklistedSpots
 	{

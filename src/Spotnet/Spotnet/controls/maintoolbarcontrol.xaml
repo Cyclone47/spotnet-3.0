@@ -43,14 +43,6 @@
           <MenuItem.Icon>
             <TextBlock Text="" Style="{StaticResource FontAwesomeMenuPics}" />
           </MenuItem.Icon>
-          <!-- How the spots list is drawn. These were three small buttons wedged beside
-               the menu in the left panel, where they had only whatever width the menu did
-               not take and were clipped to slivers. The checkmarks follow the view model,
-               so they need no code to stay in step. -->
-          <MenuItem Name="SpotsListNoDetailsMenuItem" Header="{loc:Loc MenuSpotsListNoDetails}" IsCheckable="True" IsChecked="{Binding ElementName=SpotsListVmProxy, Path=DataContext.SpotsListNoDetails, Mode=OneWay}" Click="SpotsListNoDetails_Click" />
-          <MenuItem Name="SpotsListWithDetailsMenuItem" Header="{loc:Loc MenuSpotsListDetails}" IsCheckable="True" IsChecked="{Binding ElementName=SpotsListVmProxy, Path=DataContext.SpotsListWithDetails, Mode=OneWay}" Click="SpotsListWithDetails_Click" />
-          <MenuItem Name="SpotsListThumbsMenuItem" Header="{loc:Loc MenuSpotsListPics}" IsCheckable="True" IsChecked="{Binding ElementName=SpotsListVmProxy, Path=DataContext.SpotsListPicsOnly, Mode=OneWay}" Click="SpotsListThumbs_Click" />
-          <Separator />
           <MenuItem Name="sCol" Header="{loc:Loc MenuColumns}" IsEnabled="{Binding ElementName=SpotsListVmProxy, Path=DataContext.SpotsListPicsOnly, Converter={StaticResource InverseBooleanConverter}, Mode=OneWay}" DataContext="{Binding SpotsList, Source={StaticResource Locator}}" SubmenuOpened="sCol_SubmenuOpened">
             <MenuItem.Icon>
               <TextBlock Text="" Style="{StaticResource FontAwesomeMenuPics}" />

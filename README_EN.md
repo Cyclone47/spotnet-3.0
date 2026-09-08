@@ -1,17 +1,17 @@
-# Spotnet 3.0
+﻿# Spotnet 3.0
 
 *[Nederlandse versie](README.md)*
 
 A modernized Windows Usenet client, built around the familiar Spotnet experience: browse
 spots, search a local index, read and post comments, manage NZB downloads and preview
-media â€” in one desktop application.
+media Ã¢â‚¬â€ in one desktop application.
 
-Spotnet is a *client*, not a Usenet service â€” you supply access to a news server.
+Spotnet is a *client*, not a Usenet service Ã¢â‚¬â€ you supply access to a news server.
 
 | | |
 | --- | --- |
-| **Version** | 3.0.13.0 |
-| **Platform** | Windows 10/11 x64 Â· C# / WPF Â· .NET 10 (shipped inside Setup) |
+| **Version** | 3.0.14.0 |
+| **Platform** | Windows 10/11 x64 Ã‚Â· C# / WPF Ã‚Â· .NET 10 (shipped inside Setup) |
 | **Tests** | 470 passing on the x64 Release host |
 | **Based on** | Spotnet 2.0 (build 2.0.0.284), with Spotnet 1.8.1 as reference |
 
@@ -19,8 +19,8 @@ Spotnet is a *client*, not a Usenet service â€” you supply access to a news
 
 ## Download
 
-**[Download Spotnet 3.0.13.0 Setup](https://github.com/Cyclone47/spotnet-3.0/releases/download/v3.0.13.0/Spotnet-3.0-x64-Setup.exe)**
-Â· [Release notes and SHA-256](https://github.com/Cyclone47/spotnet-3.0/releases/tag/v3.0.13.0)
+**[Download Spotnet 3.0.14.0 Setup](https://github.com/Cyclone47/spotnet-3.0/releases/download/v3.0.14.0/Spotnet-3.0-x64-Setup.exe)**
+Ã‚Â· [Release notes and SHA-256](https://github.com/Cyclone47/spotnet-3.0/releases/tag/v3.0.14.0)
 
 Setup handles both fresh installs and upgrades from a compatible Spotnet 2.x profile. It
 closes Spotnet safely, copies your selected profile into a separate 3.0 data folder, and
@@ -50,10 +50,10 @@ tab behavior.
 Search runs on **SQLite FTS5**, with the index built once on first start. Spot pages and
 comments render in **Edge WebView2** throughout.
 
-Three styles are available â€” **Classic**, **Modern Light** and **Modern Dark** â€” chosen
-during Setup or from *Edit â–¸ Style*.
+Three styles are available Ã¢â‚¬â€ **Classic**, **Modern Light** and **Modern Dark** Ã¢â‚¬â€ chosen
+during Setup or from *Edit Ã¢â€“Â¸ Style*.
 
-### Spotnet Remote â€” run Spotnet from your phone
+### Spotnet Remote Ã¢â‚¬â€ run Spotnet from your phone
 
 Spotnet hosts its own web server, so you can drive the application from any phone, tablet
 or computer on your network. The page is a PWA with a service worker, so it can be added
@@ -61,7 +61,7 @@ to a home screen and used like an app.
 
 - **Pair with a QR code.** Scan the code on your screen; the device receives a pairing
   token, so you never type a password on your phone.
-- **Password-only login** â€” since 3.0.8.0 there is no username â€” hashed with PBKDF2-SHA256,
+- **Password-only login** Ã¢â‚¬â€ since 3.0.8.0 there is no username Ã¢â‚¬â€ hashed with PBKDF2-SHA256,
   with protection against repeated failed attempts and a list of paired devices.
 - **Full control:** search, categories and filters, viewing spots and posters, reading and
   posting comments, managing the download queue, adjusting the speed limit, and triggering
@@ -73,14 +73,14 @@ to a home screen and used like an app.
   Remote is running.
 
 Remote listens on port **8770** by default, with network discovery on UDP port **8771**.
-It is off by default and enabled under *Settings â–¸ Remote*. The optional **Cloudflare
+It is off by default and enabled under *Settings Ã¢â€“Â¸ Remote*. The optional **Cloudflare
 Quick Tunnel** creates an HTTPS link for access away from home without port forwarding.
 You can also select this connection in the QR pairing window. The link can change when
 the tunnel restarts; Spotnet and the PC must remain running.
 
 ### Community and WebP
 
-Use *Settings â–¸ Community* to manage community servers, newsgroups, moderation lists and
+Use *Settings Ã¢â€“Â¸ Community* to manage community servers, newsgroups, moderation lists and
 the Newznab indexer. Import or export profiles and optionally verify signed moderation
 lists. See [Community configuration (Dutch)](docs/COMMUNITY-CONFIG.md).
 
@@ -100,7 +100,7 @@ newer) that talks to the same Remote server:
 - viewing and managing the download queue.
 
 The APK (`SpotnetCompanion.apk`) is attached to
-[release v3.0.7.0](https://github.com/Cyclone47/spotnet-3.0/releases/tag/v3.0.13.0); the
+[release v3.0.7.0](https://github.com/Cyclone47/spotnet-3.0/releases/tag/v3.0.14.0); the
 source lives in [`android/`](android/).
 
 ### Notifications and alerts
@@ -111,10 +111,10 @@ centre.
 
 There are three kinds of rules:
 
-- **Filter alert** â€” reports new spots matching one of your saved filters.
-- **Keyword alert** â€” reports spots containing given keywords, optionally limited to a
+- **Filter alert** Ã¢â‚¬â€ reports new spots matching one of your saved filters.
+- **Keyword alert** Ã¢â‚¬â€ reports spots containing given keywords, optionally limited to a
   single category.
-- **Download notification** â€” reports a finished download.
+- **Download notification** Ã¢â‚¬â€ reports a finished download.
 
 Each rule sets its own check frequency: immediately on every sync, every 15 or 30 minutes,
 hourly, every 8 or 24 hours, or a custom interval of at least 5 minutes. Rules can be
@@ -133,7 +133,7 @@ databases are opened; if the update server is unreachable, Spotnet waits at most
 seconds. Downloads are verified on size and SHA-256 before anything is executed, and an
 interrupted download is resumed.
 
-*Help â–¸ Check for updates* still works on demand, and `AutoUpdateEnabled` in your profile
+*Help Ã¢â€“Â¸ Check for updates* still works on demand, and `AutoUpdateEnabled` in your profile
 turns the periodic check off. See [docs/UPDATES.md](docs/UPDATES.md) for how a release is
 published.
 
@@ -142,7 +142,7 @@ published.
 ## Where this project comes from
 
 The goal is keeping Spotnet usable and maintainable: the application source was recovered,
-obsolete components replaced and reliability improved â€” without discarding the existing
+obsolete components replaced and reliability improved Ã¢â‚¬â€ without discarding the existing
 workflow or breaking compatibility with the Spotnet network. This is an incremental
 modernization, not a from-scratch rewrite.
 
@@ -150,9 +150,9 @@ modernization, not a from-scratch rewrite.
 of an official upstream release. References to 1.8.1 or 2.0 describe the original
 versions this was recovered from; the original release package sits in
 [`reference/`](reference/). The working notes under `docs/internal/` still call the source
-tree `reconstructed/Spotnet2/` â€” that is the former name of `src/Spotnet/`.
+tree `reconstructed/Spotnet2/` Ã¢â‚¬â€ that is the former name of `src/Spotnet/`.
 
-Background: [source provenance](docs/reference/SOURCE_PROVENANCE.md) Â·
+Background: [source provenance](docs/reference/SOURCE_PROVENANCE.md) Ã‚Â·
 [original binary inventory](docs/reference/INVENTORY.md).
 
 ### The main replacements
@@ -165,18 +165,18 @@ Background: [source provenance](docs/reference/SOURCE_PROVENANCE.md) Â·
 | SQLite | Loose legacy provider and interop DLLs | **System.Data.SQLite.Core 1.0.119** via NuGet |
 | yEnc decoder | Mixed-mode x86 `Spotnet.Enc.dll` | Managed C# `Spotnet.Enc` (x64) |
 | ZIP archives | Ionic.Zip / DotNetZip | `System.IO.Compression` behind the path-validated `SafeZip` |
-| Other libraries | Loose legacy DLLs | SharpZipLib 1.4.2 Â· Newtonsoft.Json 13.0.3 Â· NLog 5.5.1 Â· HtmlAgilityPack 1.12.4 |
+| Other libraries | Loose legacy DLLs | SharpZipLib 1.4.2 Ã‚Â· Newtonsoft.Json 13.0.3 Ã‚Â· NLog 5.5.1 Ã‚Â· HtmlAgilityPack 1.12.4 |
 
 `phpar2.exe`, `UnRAR.exe` and `7za.exe` are still 32-bit helper executables. They run as
 separate child processes and do not force Spotnet itself to run 32-bit. This is a Windows
-x64 build, not a native ARM64 or cross-platform port â€” WPF ties it to Windows.
+x64 build, not a native ARM64 or cross-platform port Ã¢â‚¬â€ WPF ties it to Windows.
 
 ### Reliability and security
 
 The writable database uses **write-ahead logging (WAL)** with `synchronous=NORMAL` instead
 of the old `synchronous=OFF`, with a busy timeout and respect for read-only intent.
 **Rebuild Database** copies readable records into a fresh database and keeps the original
-as a backup â€” a recovery attempt, not a guarantee. WAL is no substitute for your own
+as a backup Ã¢â‚¬â€ a recovery attempt, not a guarantee. WAL is no substitute for your own
 backups.
 
 Beyond that: NNTP requires encryption on TLS connections and validates server
@@ -184,7 +184,7 @@ certificates; SQL values and identifiers are parameterized and checked; ZIP extr
 rejects paths escaping the target folder; external XML resolution is disabled. These are
 targeted improvements, not proof of a passed security audit.
 
-Details: [database and recovery](docs/DATABASE.md) Â·
+Details: [database and recovery](docs/DATABASE.md) Ã‚Â·
 [NNTP, spot XML and signatures](docs/PROTOCOL.md).
 
 ---
@@ -220,7 +220,7 @@ More detail: [build and setup guide](docs/BUILDING.md).
 
 ### Releasing a new version
 
-The version number lives in one place â€” `AssemblyInfo.cs` â€” and everything the user sees
+The version number lives in one place Ã¢â‚¬â€ `AssemblyInfo.cs` Ã¢â‚¬â€ and everything the user sees
 has to follow it. Which places those are, and the order to update them in, is documented
 in [docs/VERSIONING.md](docs/VERSIONING.md). To verify:
 
@@ -271,7 +271,7 @@ For development, edit `src/Spotnet/` and launch its build output.
 Reference material on the versions this was recovered from lives in
 [`docs/reference/`](docs/reference/), and chronological working notes in
 [`docs/internal/`](docs/internal/). Those notes contain intermediate states that are
-sometimes superseded â€” this README is the current overview.
+sometimes superseded Ã¢â‚¬â€ this README is the current overview.
 
 ---
 

@@ -10,4 +10,5 @@
   <MenuItem Name="VisibilityMainMenu" Header="{loc:Loc MenuVisibleControlsMainMenu}" IsCheckable="True" IsChecked="{Binding IsVisibleMainMenu, Mode=OneWay}" Click="VisibilityMainMenu_Click" />
   <MenuItem Name="VisibilityLeftPanel" Header="{loc:Loc MenuVisibleControlsLeftPanel}" IsCheckable="True" IsChecked="{Binding IsVisibleLeftPanel, Mode=OneWay}" Click="VisibilityLeftPanel_Click" />
   <MenuItem Name="VisibilityMainToolbar" Header="{loc:Loc MenuVisibleControlsMainToolbar}" IsCheckable="True" IsChecked="{Binding IsVisibleMainToolbar, Mode=OneWay}" Click="VisibilityMainToolbar_Click" />
+  <MenuItem Name="VisibilityViewModeButtons" Header="{loc:Loc MenuVisibleControlsViewModeButtons}" IsCheckable="True" IsChecked="{Binding IsVisibleViewModeButtons, Mode=OneWay}" Click="VisibilityViewModeButtons_Click" />
 </MenuItem>

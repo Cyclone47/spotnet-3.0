@@ -73,6 +73,8 @@ public class VisibilityViewModel : ViewModelBase
 
 	public bool IsVisibleMainToolbar => _visibilityFlags[HideableElement.MainToolbar];
 
+	public bool IsVisibleViewModeButtons => _visibilityFlags[HideableElement.ViewModeButtons];
+
 	public VisibilityViewModel()
 	{
 		SetVisibilityFlags();
@@ -89,6 +91,7 @@ public class VisibilityViewModel : ViewModelBase
 		_visibilityFlags[HideableElement.MainMenu] = Settings.Default.VisibleMainMenu;
 		_visibilityFlags[HideableElement.LeftPanel] = Settings.Default.VisibleLeftPanel;
 		_visibilityFlags[HideableElement.MainToolbar] = Settings.Default.VisibleMainToolbar;
+		_visibilityFlags[HideableElement.ViewModeButtons] = Settings.Default.VisibleViewModeButtons;
 	}
 
 	private void UpdateFontSize()
@@ -141,6 +144,10 @@ public class VisibilityViewModel : ViewModelBase
 		case HideableElement.MainToolbar:
 			Settings.Default.VisibleMainToolbar = visible;
 			RaisePropertyChanged("IsVisibleMainToolbar");
+			break;
+		case HideableElement.ViewModeButtons:
+			Settings.Default.VisibleViewModeButtons = visible;
+			RaisePropertyChanged("IsVisibleViewModeButtons");
 			break;
 		default:
 			throw new Exception("Such an element is not supported.");

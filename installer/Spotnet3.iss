@@ -332,7 +332,7 @@ Name: "desktopicon"; Description: "{cm:DesktopIcon}"; GroupDescription: "{cm:Sho
 
 [Run]
 #ifndef SmokeTestRoot
-Filename: "{app}\Spotnet.exe"; Description: "{cm:LaunchSpotnet}"; Flags: nowait postinstall skipifsilent unchecked; Check: ShortcutsSucceeded
+Filename: "{app}\Spotnet.exe"; Description: "{cm:LaunchSpotnet}"; Flags: nowait postinstall skipifsilent; Check: ShortcutsSucceeded
 ; The automatic update closed Spotnet to replace it; this opens it again.
 Filename: "{app}\Spotnet.exe"; Flags: nowait postinstall; Check: RelaunchRequested and ShortcutsSucceeded
 #endif
@@ -647,6 +647,11 @@ procedure CurPageChanged(CurPageID: Integer);
 begin
   if UpgradeInstall and (CurPageID = wpReady) then
     WizardForm.NextButton.Caption := CM('UpgradeButton');
+  if CurPageID = wpFinished then
+  begin
+    if (WizardForm.RunList <> nil) and (WizardForm.RunList.Items.Count > 0) then
+      WizardForm.RunList.Checked[0] := True;
+  end;
 end;
 
 function SelectedData: String;

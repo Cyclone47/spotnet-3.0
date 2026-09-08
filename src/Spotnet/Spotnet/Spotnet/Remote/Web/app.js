@@ -62,6 +62,203 @@
   const notifModalCount = document.getElementById('notifModalCount');
   const notifListContainer = document.getElementById('notifListContainer');
 
+  // Translation DOM Elements
+  const descTransBar = document.getElementById('descTransBar');
+  const btnTranslateDesc = document.getElementById('btnTranslateDesc');
+  const btnTranslateDescText = document.getElementById('btnTranslateDescText');
+  const descTransBadge = document.getElementById('descTransBadge');
+  const descTransBadgeLabel = document.getElementById('descTransBadgeLabel');
+  const descTransBadgeIcon = document.getElementById('descTransBadgeIcon');
+
+  const commentsTransBar = document.getElementById('commentsTransBar');
+  const btnTranslateComments = document.getElementById('btnTranslateComments');
+  const btnTranslateCommentsText = document.getElementById('btnTranslateCommentsText');
+  const commentsTransBadge = document.getElementById('commentsTransBadge');
+  const commentsTransBadgeLabel = document.getElementById('commentsTransBadgeLabel');
+  const commentsTransBadgeIcon = document.getElementById('commentsTransBadgeIcon');
+
+  // Translation State
+  let serverLanguage = 'nl';
+  let isEnglish = false;
+  let _descState = 'original'; // 'original' | 'translating' | 'translated'
+  let _originalDescHtml = '';
+  let _translatedDescHtml = null;
+
+  let _commentsState = 'original'; // 'original' | 'translating' | 'translated'
+  let _originalCommentsMap = {};
+  let _translatedCommentsMap = {};
+
+  const i18n = {
+    nl: {
+      transDesc: 'Vertaal omschrijving',
+      transComments: 'Vertaal reacties',
+      showOriginal: 'Toon origineel',
+      translating: 'Vertalen...',
+      transFailed: 'Vertaling mislukt',
+      autoTransLabel: 'Automatisch vertaald',
+      disclaimer: 'Deze vertaling is automatisch gegenereerd en kan onnauwkeurigheden bevatten.',
+      descHeading: 'Omschrijving',
+      commentsHeading: 'Reacties',
+      refreshComments: 'Vernieuwen',
+      connectedToPc: 'Verbonden met PC',
+      syncingOnPc: 'Spots bijwerken op PC...',
+      offline: 'Offline',
+      searchPlaceholder: 'Zoek films, series, muziek...',
+      allFilter: 'Alles',
+      favFilter: '★ Favorieten',
+      allIn: (name) => `Alles (${name})`,
+      newSpots: 'Nieuwe spots',
+      newSpotsTitle: 'Nieuwe spots ophalen van Usenet',
+      sortNewest: 'Nieuwste eerst',
+      sortSizeDesc: 'Grootste eerst',
+      sortSizeAsc: 'Kleinste eerst',
+      sortTitleAsc: 'Titel (A-Z)',
+      loadMore: 'Meer spots laden',
+      loadingSpots: 'Spots laden...',
+      noSpots: 'Geen spots gevonden.',
+      spotsLoaded: (count) => `${count} spots geladen`,
+      downloadToPc: 'Downloaden naar PC',
+      downloadBtn: 'Download',
+      postCommentHeading: 'Plaats een reactie',
+      nicknamePlaceholder: 'Je naam of bijnaam',
+      commentPlaceholder: 'Typ je reactie...',
+      postCommentBtn: 'Plaatsen',
+      loadingComments: 'Reacties laden...',
+      noComments: 'Nog geen reacties geplaatst op deze spot. Wees de eerste!',
+      commentsLoadError: 'Kon reacties niet laden.',
+      navDiscover: 'Ontdekken',
+      navDownloads: 'Downloads',
+      navFavorites: 'Favorieten',
+      navSettings: 'Instellingen'
+    },
+    en: {
+      transDesc: 'Translate description',
+      transComments: 'Translate comments',
+      showOriginal: 'Show original',
+      translating: 'Translating...',
+      transFailed: 'Translation failed',
+      autoTransLabel: 'Automatically translated',
+      disclaimer: 'This translation is automated and might not be accurate.',
+      descHeading: 'Description',
+      commentsHeading: 'Comments',
+      refreshComments: 'Refresh',
+      connectedToPc: 'Connected to PC',
+      syncingOnPc: 'Syncing spots on PC...',
+      offline: 'Offline',
+      searchPlaceholder: 'Search movies, series, music...',
+      allFilter: 'All',
+      favFilter: '★ Favorites',
+      allIn: (name) => `All (${name})`,
+      newSpots: 'New spots',
+      newSpotsTitle: 'Fetch new spots from Usenet',
+      sortNewest: 'Newest first',
+      sortSizeDesc: 'Largest first',
+      sortSizeAsc: 'Smallest first',
+      sortTitleAsc: 'Title (A-Z)',
+      loadMore: 'Load more spots',
+      loadingSpots: 'Loading spots...',
+      noSpots: 'No spots found.',
+      spotsLoaded: (count) => `${count} spots loaded`,
+      downloadToPc: 'Download to PC',
+      downloadBtn: 'Download',
+      postCommentHeading: 'Leave a comment',
+      nicknamePlaceholder: 'Your name or nickname',
+      commentPlaceholder: 'Type your comment...',
+      postCommentBtn: 'Post',
+      loadingComments: 'Loading comments...',
+      noComments: 'No comments on this spot yet. Be the first!',
+      commentsLoadError: 'Could not load comments.',
+      navDiscover: 'Discover',
+      navDownloads: 'Downloads',
+      navFavorites: 'Favorites',
+      navSettings: 'Settings'
+    }
+  };
+
+  function t(key, ...args) {
+    const langObj = isEnglish ? i18n.en : i18n.nl;
+    const val = langObj[key];
+    if (typeof val === 'function') return val(...args);
+    return val || '';
+  }
+
+  function applyLanguage(lang) {
+    const newIsEn = (lang === 'en');
+    if (serverLanguage === lang && isEnglish === newIsEn) return;
+    serverLanguage = lang;
+    isEnglish = newIsEn;
+
+    try {
+      document.documentElement.lang = isEnglish ? 'en' : 'nl';
+      if (searchInput) searchInput.placeholder = t('searchPlaceholder');
+
+      if (sortSelect && sortSelect.options && sortSelect.options.length >= 4) {
+        sortSelect.options[0].text = t('sortNewest');
+        sortSelect.options[1].text = t('sortSizeDesc');
+        sortSelect.options[2].text = t('sortSizeAsc');
+        sortSelect.options[3].text = t('sortTitleAsc');
+      }
+
+      if (btnSyncSpots) {
+        const span = btnSyncSpots.querySelector('span');
+        if (span) span.textContent = t('newSpots');
+        btnSyncSpots.title = t('newSpotsTitle');
+      }
+
+      if (loadMoreBtn) loadMoreBtn.textContent = t('loadMore');
+
+      const descHeading = document.getElementById('detailDescHeading');
+      if (descHeading) descHeading.textContent = t('descHeading');
+
+      const commentsHeading = document.getElementById('commentsHeadingText');
+      if (commentsHeading) commentsHeading.textContent = t('commentsHeading');
+
+      const commentsRefresh = document.getElementById('commentsRefreshText');
+      if (commentsRefresh) commentsRefresh.textContent = t('refreshComments');
+
+      const btnDownloadSpot = document.getElementById('btnDownloadSpot');
+      if (btnDownloadSpot) {
+        const span = btnDownloadSpot.querySelector('span');
+        if (span) span.textContent = t('downloadToPc');
+      }
+
+      const postCommentHeading = document.querySelector('.comment-form-container h4');
+      if (postCommentHeading) postCommentHeading.textContent = t('postCommentHeading');
+
+      if (commentNicknameInput) commentNicknameInput.placeholder = t('nicknamePlaceholder');
+      if (commentBodyInput) commentBodyInput.placeholder = t('commentPlaceholder');
+
+      if (btnSubmitComment) {
+        const span = btnSubmitComment.querySelector('span');
+        if (span) span.textContent = t('postCommentBtn');
+      }
+
+      const navButtons = document.querySelectorAll('.bottom-nav .nav-btn');
+      if (navButtons.length >= 4) {
+        const span0 = navButtons[0].querySelector('span'); if (span0) span0.textContent = t('navDiscover');
+        const span1 = navButtons[1].querySelector('span'); if (span1) span1.textContent = t('navDownloads');
+        const span2 = navButtons[2].querySelector('span'); if (span2) span2.textContent = t('navFavorites');
+        const span3 = navButtons[3].querySelector('span'); if (span3) span3.textContent = t('navSettings');
+      }
+
+      if (descTransBadgeLabel) descTransBadgeLabel.textContent = t('autoTransLabel');
+      if (descTransBadgeIcon) descTransBadgeIcon.title = t('disclaimer');
+      if (btnTranslateDescText) {
+        btnTranslateDescText.textContent = _descState === 'translated' ? t('showOriginal') : t('transDesc');
+      }
+
+      if (commentsTransBadgeLabel) commentsTransBadgeLabel.textContent = t('autoTransLabel');
+      if (commentsTransBadgeIcon) commentsTransBadgeIcon.title = t('disclaimer');
+      if (btnTranslateCommentsText) {
+        btnTranslateCommentsText.textContent = _commentsState === 'translated' ? t('showOriginal') : t('transComments');
+      }
+
+      renderFilterChips();
+    } catch (e) {
+      console.warn('Error applying language:', e);
+    }
+  }
+
   function getPageSize() {
     const saved = parseInt(localStorage.getItem('spotnet_page_size'), 10);
     return [25, 50, 100, 200].includes(saved) ? saved : 50;
@@ -249,7 +446,7 @@
     const allChip = document.createElement('button');
     allChip.className = 'chip' + (currentFilterId === 'all' ? ' active' : '');
     allChip.dataset.filterId = 'all';
-    allChip.textContent = 'Alles';
+    allChip.textContent = t('allFilter');
     allChip.addEventListener('click', () => selectFilter('all', null));
     filterChipsContainer.appendChild(allChip);
 
@@ -257,7 +454,7 @@
     const favChip = document.createElement('button');
     favChip.className = 'chip' + (currentFilterId === 'fav' ? ' active' : '');
     favChip.dataset.filterId = 'fav';
-    favChip.textContent = '★ Favorieten';
+    favChip.textContent = t('favFilter');
     favChip.addEventListener('click', () => selectFilter('fav', null));
     filterChipsContainer.appendChild(favChip);
 
@@ -309,7 +506,7 @@
     const allSubChip = document.createElement('button');
     allSubChip.className = 'chip' + (currentFilterId === parentFilter.id ? ' active' : '');
     allSubChip.dataset.filterId = parentFilter.id;
-    allSubChip.textContent = `Alles (${parentTitle})`;
+    allSubChip.textContent = t('allIn', parentTitle);
     allSubChip.addEventListener('click', () => {
       currentFilterId = parentFilter.id;
       updateSubChipActive(parentFilter.id);
@@ -354,7 +551,7 @@
     if (isLoadingSpots) return;
     isLoadingSpots = true;
     if (!append) {
-      spotsGrid.innerHTML = '<div style="padding:40px; text-align:center; color:#94a3b8; grid-column:1/-1;">Spots laden...</div>';
+      spotsGrid.innerHTML = `<div style="padding:40px; text-align:center; color:#94a3b8; grid-column:1/-1;">${t('loadingSpots')}</div>`;
       currentPage = 1;
     }
 
@@ -374,20 +571,20 @@
       if (!append) spotsGrid.innerHTML = '';
 
       if (spots.length === 0 && !append) {
-        spotsGrid.innerHTML = '<div style="padding:40px; text-align:center; color:#94a3b8; grid-column:1/-1;">Geen spots gevonden.</div>';
-        resultsCount.textContent = '0 resultaten';
+        spotsGrid.innerHTML = `<div style="padding:40px; text-align:center; color:#94a3b8; grid-column:1/-1;">${t('noSpots')}</div>`;
+        resultsCount.textContent = isEnglish ? '0 results' : '0 resultaten';
         loadMoreBtn.style.display = 'none';
       } else {
         spots.forEach(spot => {
           spotsGrid.appendChild(createSpotCard(spot));
         });
-        resultsCount.textContent = `${spotsGrid.children.length} spots geladen`;
+        resultsCount.textContent = t('spotsLoaded', spotsGrid.children.length);
         loadMoreBtn.style.display = spots.length >= pageSize ? 'block' : 'none';
       }
     } catch (err) {
       if (err.message !== 'Niet geautoriseerd') {
         console.error(err);
-        spotsGrid.innerHTML = '<div style="padding:40px; text-align:center; color:#ef4444; grid-column:1/-1;">Fout bij laden van spots.</div>';
+        spotsGrid.innerHTML = `<div style="padding:40px; text-align:center; color:#ef4444; grid-column:1/-1;">${isEnglish ? 'Error loading spots.' : 'Fout bij laden van spots.'}</div>`;
       }
     } finally {
       isLoadingSpots = false;
@@ -396,13 +593,13 @@
 
   // Load Favorites
   async function loadFavorites() {
-    favoritesGrid.innerHTML = '<div style="padding:40px; text-align:center; color:#94a3b8; grid-column:1/-1;">Favorieten laden...</div>';
+    favoritesGrid.innerHTML = `<div style="padding:40px; text-align:center; color:#94a3b8; grid-column:1/-1;">${isEnglish ? 'Loading favorites...' : 'Favorieten laden...'}</div>`;
     try {
       const res = await apiFetch('/api/v1/favorites?page=1&pageSize=50');
       const favs = await res.json();
       favoritesGrid.innerHTML = '';
       if (favs.length === 0) {
-        favoritesGrid.innerHTML = '<div style="padding:40px; text-align:center; color:#94a3b8; grid-column:1/-1;">Nog geen favorieten opgeslagen.</div>';
+        favoritesGrid.innerHTML = `<div style="padding:40px; text-align:center; color:#94a3b8; grid-column:1/-1;">${isEnglish ? 'No favorites saved yet.' : 'Nog geen favorieten opgeslagen.'}</div>`;
       } else {
         favs.forEach(spot => {
           favoritesGrid.appendChild(createSpotCard(spot));
@@ -447,7 +644,15 @@
     };
     posterImg.src = imgUrl;
 
-    document.getElementById('detailDescription').innerHTML = '<em>Omschrijving ophalen van Usenet...</em>';
+    // Reset translation state for description
+    _descState = 'original';
+    _translatedDescHtml = null;
+    _originalDescHtml = '';
+    if (descTransBar) descTransBar.style.display = 'none';
+    if (descTransBadge) descTransBadge.style.display = 'none';
+    if (btnTranslateDescText) btnTranslateDescText.textContent = t('transDesc');
+
+    document.getElementById('detailDescription').innerHTML = isEnglish ? '<em>Loading description from Usenet...</em>' : '<em>Omschrijving ophalen van Usenet...</em>';
     detailModal.classList.add('active');
     detailModal.style.display = 'flex';
     if (window.SpotnetNative && typeof window.SpotnetNative.setSwipeRefreshEnabled === 'function') {
@@ -461,11 +666,151 @@
       const res = await apiFetch(`/api/v1/spots/${spot.id}`);
       const detail = await res.json();
       activeDetailSpot = detail;
-      document.getElementById('detailDescription').innerHTML = detail.description || 'Geen omschrijving';
+      _originalDescHtml = detail.description || '';
+      document.getElementById('detailDescription').innerHTML = _originalDescHtml || (isEnglish ? 'No description' : 'Geen omschrijving');
+      if (_originalDescHtml && _originalDescHtml.trim()) {
+        if (descTransBar) descTransBar.style.display = 'flex';
+      }
       updateFavBtnState(detail.isFavorite);
     } catch (err) {
       console.error(err);
-      document.getElementById('detailDescription').innerHTML = 'Kon omschrijving niet laden.';
+      document.getElementById('detailDescription').innerHTML = isEnglish ? 'Could not load description.' : 'Kon omschrijving niet laden.';
+      if (descTransBar) descTransBar.style.display = 'none';
+    }
+  }
+
+  // Translation Actions
+  async function toggleDescTranslation() {
+    if (_descState === 'translating') return;
+
+    if (_descState === 'translated') {
+      document.getElementById('detailDescription').innerHTML = _originalDescHtml;
+      _descState = 'original';
+      if (btnTranslateDescText) btnTranslateDescText.textContent = t('transDesc');
+      if (descTransBadge) descTransBadge.style.display = 'none';
+      return;
+    }
+
+    if (_descState === 'original' && _translatedDescHtml) {
+      document.getElementById('detailDescription').innerHTML = _translatedDescHtml;
+      _descState = 'translated';
+      if (btnTranslateDescText) btnTranslateDescText.textContent = t('showOriginal');
+      if (descTransBadge) descTransBadge.style.display = 'inline-flex';
+      return;
+    }
+
+    if (!_originalDescHtml) return;
+
+    _descState = 'translating';
+    if (btnTranslateDesc) btnTranslateDesc.disabled = true;
+    if (btnTranslateDescText) btnTranslateDescText.textContent = t('translating');
+
+    try {
+      const res = await apiFetch('/api/v1/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          html: _originalDescHtml,
+          targetLanguage: serverLanguage
+        })
+      });
+      const data = await res.json();
+      if (data.success && data.translatedHtml) {
+        _translatedDescHtml = data.translatedHtml;
+        document.getElementById('detailDescription').innerHTML = _translatedDescHtml;
+        _descState = 'translated';
+        if (btnTranslateDescText) btnTranslateDescText.textContent = t('showOriginal');
+        if (descTransBadge) descTransBadge.style.display = 'inline-flex';
+      } else {
+        throw new Error(data.errorMessage || 'Translation failed');
+      }
+    } catch (err) {
+      console.error('Translation error:', err);
+      _descState = 'original';
+      if (btnTranslateDescText) btnTranslateDescText.textContent = t('transFailed');
+      setTimeout(() => {
+        if (_descState === 'original' && btnTranslateDescText) {
+          btnTranslateDescText.textContent = t('transDesc');
+        }
+      }, 2500);
+    } finally {
+      if (btnTranslateDesc) btnTranslateDesc.disabled = false;
+    }
+  }
+
+  async function toggleCommentsTranslation() {
+    if (_commentsState === 'translating') return;
+
+    if (_commentsState === 'translated') {
+      Object.keys(_originalCommentsMap).forEach(cid => {
+        const card = commentsList.querySelector(`.comment-card[data-comment-id="${cid}"]`);
+        if (card) {
+          const bodyEl = card.querySelector('.comment-body');
+          if (bodyEl) bodyEl.innerHTML = _originalCommentsMap[cid];
+        }
+      });
+      _commentsState = 'original';
+      if (btnTranslateCommentsText) btnTranslateCommentsText.textContent = t('transComments');
+      if (commentsTransBadge) commentsTransBadge.style.display = 'none';
+      return;
+    }
+
+    if (_commentsState === 'original' && Object.keys(_translatedCommentsMap).length > 0) {
+      Object.keys(_translatedCommentsMap).forEach(cid => {
+        const card = commentsList.querySelector(`.comment-card[data-comment-id="${cid}"]`);
+        if (card) {
+          const bodyEl = card.querySelector('.comment-body');
+          if (bodyEl) bodyEl.innerHTML = _translatedCommentsMap[cid];
+        }
+      });
+      _commentsState = 'translated';
+      if (btnTranslateCommentsText) btnTranslateCommentsText.textContent = t('showOriginal');
+      if (commentsTransBadge) commentsTransBadge.style.display = 'inline-flex';
+      return;
+    }
+
+    if (Object.keys(_originalCommentsMap).length === 0) return;
+
+    _commentsState = 'translating';
+    if (btnTranslateComments) btnTranslateComments.disabled = true;
+    if (btnTranslateCommentsText) btnTranslateCommentsText.textContent = t('translating');
+
+    try {
+      const res = await apiFetch('/api/v1/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: _originalCommentsMap,
+          targetLanguage: serverLanguage
+        })
+      });
+      const data = await res.json();
+      if (data.success && data.translatedItems) {
+        _translatedCommentsMap = data.translatedItems;
+        Object.keys(_translatedCommentsMap).forEach(cid => {
+          const card = commentsList.querySelector(`.comment-card[data-comment-id="${cid}"]`);
+          if (card) {
+            const bodyEl = card.querySelector('.comment-body');
+            if (bodyEl) bodyEl.innerHTML = _translatedCommentsMap[cid];
+          }
+        });
+        _commentsState = 'translated';
+        if (btnTranslateCommentsText) btnTranslateCommentsText.textContent = t('showOriginal');
+        if (commentsTransBadge) commentsTransBadge.style.display = 'inline-flex';
+      } else {
+        throw new Error(data.errorMessage || 'Comments translation failed');
+      }
+    } catch (err) {
+      console.error('Comments translation error:', err);
+      _commentsState = 'original';
+      if (btnTranslateCommentsText) btnTranslateCommentsText.textContent = t('transFailed');
+      setTimeout(() => {
+        if (_commentsState === 'original' && btnTranslateCommentsText) {
+          btnTranslateCommentsText.textContent = t('transComments');
+        }
+      }, 2500);
+    } finally {
+      if (btnTranslateComments) btnTranslateComments.disabled = false;
     }
   }
 
@@ -476,8 +821,15 @@
 
   // Load Comments
   async function loadComments(spotId, messageId) {
+    _commentsState = 'original';
+    _originalCommentsMap = {};
+    _translatedCommentsMap = {};
+    if (commentsTransBar) commentsTransBar.style.display = 'none';
+    if (commentsTransBadge) commentsTransBadge.style.display = 'none';
+    if (btnTranslateCommentsText) btnTranslateCommentsText.textContent = t('transComments');
+
     if (!commentsList) return;
-    commentsList.innerHTML = '<div class="comments-empty">Reacties laden...</div>';
+    commentsList.innerHTML = `<div class="comments-empty">${t('loadingComments')}</div>`;
     if (commentsCount) commentsCount.textContent = '...';
 
     try {
@@ -488,7 +840,7 @@
       if (commentsCount) commentsCount.textContent = comments ? comments.length : 0;
 
       if (!comments || comments.length === 0) {
-        commentsList.innerHTML = '<div class="comments-empty">Nog geen reacties geplaatst op deze spot. Wees de eerste!</div>';
+        commentsList.innerHTML = `<div class="comments-empty">${t('noComments')}</div>`;
         return;
       }
 
@@ -497,7 +849,7 @@
         const card = document.createElement('div');
         card.className = 'comment-card';
 
-        const nick = comment.sender || comment.nickname || 'Anoniem';
+        const nick = comment.sender || comment.nickname || (isEnglish ? 'Anonymous' : 'Anoniem');
         const dateStr = comment.dateFormatted || comment.formattedDate || '';
         const avatarUrl = comment.avatar || comment.avatarUrl || '';
         const initial = nick.charAt(0).toUpperCase();
@@ -512,6 +864,9 @@
         ` : '';
 
         const bodyContent = comment.bodyHtml || escapeHtml(comment.rawBody || comment.body || '');
+        const cid = String(comment.id || Math.random());
+        card.dataset.commentId = cid;
+        _originalCommentsMap[cid] = bodyContent;
 
         card.innerHTML = `
           <div class="comment-avatar">
@@ -532,10 +887,15 @@
         `;
         commentsList.appendChild(card);
       });
+
+      if (comments.length > 0 && commentsTransBar) {
+        commentsTransBar.style.display = 'flex';
+      }
     } catch (err) {
       console.error('Fout bij ophalen reacties:', err);
-      commentsList.innerHTML = '<div class="comments-empty">Kon reacties niet laden.</div>';
+      commentsList.innerHTML = `<div class="comments-empty">${t('commentsLoadError')}</div>`;
       if (commentsCount) commentsCount.textContent = '0';
+      if (commentsTransBar) commentsTransBar.style.display = 'none';
     }
   }
 
@@ -995,11 +1355,14 @@
     try {
       const res = await apiFetch('/api/v1/status');
       const st = await res.json();
+      if (st.userLanguage) {
+        applyLanguage(st.userLanguage.toLowerCase());
+      }
       document.getElementById('infoVersion').textContent = st.version;
-      document.getElementById('infoProvider').textContent = st.currentProvider || 'Actief';
-      document.getElementById('infoSpotsCount').textContent = st.totalSpotsInDb ? Number(st.totalSpotsInDb).toLocaleString('nl-NL') : '-';
+      document.getElementById('infoProvider').textContent = st.currentProvider || (isEnglish ? 'Active' : 'Actief');
+      document.getElementById('infoSpotsCount').textContent = st.totalSpotsInDb ? Number(st.totalSpotsInDb).toLocaleString(isEnglish ? 'en-US' : 'nl-NL') : '-';
       document.getElementById('infoPort').textContent = st.port;
-      document.getElementById('statusText').textContent = st.isSyncing ? 'Spots bijwerken op PC...' : 'Verbonden met PC';
+      document.getElementById('statusText').textContent = st.isSyncing ? t('syncingOnPc') : t('connectedToPc');
       document.querySelector('.status-dot').className = 'status-dot online';
 
       if (btnSyncSpots) {
@@ -1016,7 +1379,7 @@
         commentNicknameInput.value = st.defaultNickname;
       }
     } catch {
-      document.getElementById('statusText').textContent = 'Offline';
+      document.getElementById('statusText').textContent = t('offline');
       document.querySelector('.status-dot').className = 'status-dot';
     }
   }
@@ -1245,11 +1608,27 @@
     commentNicknameInput.value = savedNick;
   }
 
+  // Translation Button Event Listeners
+  if (btnTranslateDesc) {
+    btnTranslateDesc.addEventListener('click', toggleDescTranslation);
+  }
+  if (btnTranslateComments) {
+    btnTranslateComments.addEventListener('click', toggleCommentsTranslation);
+  }
+
   // Modal Close
   function closeDetailModal() {
     detailModal.classList.remove('active');
     detailModal.style.display = 'none';
     activeDetailSpot = null;
+    _descState = 'original';
+    _translatedDescHtml = null;
+    _originalDescHtml = '';
+    _commentsState = 'original';
+    _originalCommentsMap = {};
+    _translatedCommentsMap = {};
+    if (descTransBar) descTransBar.style.display = 'none';
+    if (commentsTransBar) commentsTransBar.style.display = 'none';
     if (window.SpotnetNative && typeof window.SpotnetNative.setSwipeRefreshEnabled === 'function') {
       window.SpotnetNative.setSwipeRefreshEnabled(true);
     }

@@ -883,4 +883,14 @@ Please write the reason why you want to remove it:</value></data>
   <data name="CleanupAddSuggestions" xml:space="preserve"><value>Add suggestions</value></data>
   <data name="CleanupSuggestions" xml:space="preserve"><value>Suggestions: nfo, sfv, srr, url, lnk, txt, doc, docx, htm and html. You can add image types yourself; covers are then removed too.</value></data>
   <data name="CleanupExternalNzbGet" xml:space="preserve"><value>With an external NZBGet you set the cleaning up inside NZBGet.</value></data>
+  <data name="TranslatePost" xml:space="preserve"><value>Translate post</value></data>
+  <data name="TranslateComments" xml:space="preserve"><value>Translate comments</value></data>
+  <data name="ShowOriginal" xml:space="preserve"><value>Show original</value></data>
+  <data name="Translating" xml:space="preserve"><value>Translating...</value></data>
+  <data name="TranslationFailed" xml:space="preserve"><value>Translation failed</value></data>
+  <data name="TranslationAutomatedLabel" xml:space="preserve"><value>Automatically translated</value></data>
+  <data name="TranslationDisclaimer" xml:space="preserve"><value>This translation is automated and might not be accurate.</value></data>
+  <data name="TranslateAll" xml:space="preserve"><value>Translate all</value></data>
+  <data name="MenuVisibleControlsViewModeButtons" xml:space="preserve"><value>View buttons</value></data>
+  <data name="MenuShowViewModeButtons" xml:space="preserve"><value>Show spot list view buttons in main window</value></data>
 </root>

@@ -21,6 +21,7 @@
     <CheckBox Name="HideBlacklistedSpots" Content="{loc:Loc MenuHideBlacklistedSpots}" Margin="0,7,0,0" />
     <CheckBox Name="ShowTrustedOnly" Content="{loc:Loc MenuShowTrustedOnly}" Margin="0,7,0,0" />
     <CheckBox Name="ShowErotica" Content="{loc:Loc MenuShowEroticaInSearchResults}" Margin="0,7,0,0" />
+    <CheckBox Name="VisibleViewModeButtonsCheck" Content="{loc:Loc MenuShowViewModeButtons}" Margin="0,7,0,0" />
     <Separator Margin="12" />
     <CheckBox Name="AutoShowNewSpotsInTheList" Content="{loc:Loc MenuAutoShowNewSpotsInTheList}" Margin="0,0,0,0" />
     <Separator Margin="12" />

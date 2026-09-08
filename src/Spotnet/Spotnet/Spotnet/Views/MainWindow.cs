@@ -1062,7 +1062,13 @@ public partial class MainWindow : MetroWindow
         }
 
         _trayNotify.Text = base.Title;
-        Dock.ColumnDefinitions[0].Width = new GridLength(Settings.Default.LeftPanelWidth);
+        int leftPanelWidth = Math.Max(300, Settings.Default.LeftPanelWidth);
+        Dock.ColumnDefinitions[0].Width = new GridLength(leftPanelWidth);
+        if (Settings.Default.LeftPanelWidth < 300)
+        {
+            Settings.Default.LeftPanelWidth = leftPanelWidth;
+            Settings.Default.Save();
+        }
         OnWindowPrepared?.Invoke();
     }
 
@@ -1931,7 +1937,14 @@ public partial class MainWindow : MetroWindow
                 if (!Sys.IsShutdownRequested)
                 {
                     InitializeDatabase();
-                    UserKeyHelper.GetModulus();
+                    try
+                    {
+                        UserKeyHelper.GetModulus();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Warn("UserKeyHelper.GetModulus initialization failed: {0}", ex.Message);
+                    }
                 }
             }
             catch (Exception ex2)
@@ -2615,6 +2628,50 @@ public partial class MainWindow : MetroWindow
         }
     }
 
+    private void MouseOnSpotsViewTypeIcon1(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        SpotsListVm.ChangeSelectedIcon(SpotsListTypeEnum.NoDetails);
+    }
+
+    private void MouseOnSpotsViewTypeIcon2(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        SpotsListVm.ChangeSelectedIcon(SpotsListTypeEnum.WithDetails);
+    }
+
+    private void MouseOnSpotsViewTypeIcon3(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        SpotsListVm.ChangeSelectedIcon(SpotsListTypeEnum.Thumbs);
+    }
+
+    private void MouseOffSpotsViewTypeIcon(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        SpotsListVm.ChangeSelectedIcon(SpotsListTypeEnum.Default);
+    }
+
+    private void MouseClickSpotsViewTypeIcon1(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton == MouseButton.Left)
+        {
+            ShowSpotsListAs(SpotsListTypeEnum.NoDetails);
+        }
+    }
+
+    private void MouseClickSpotsViewTypeIcon2(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton == MouseButton.Left)
+        {
+            ShowSpotsListAs(SpotsListTypeEnum.WithDetails);
+        }
+    }
+
+    private void MouseClickSpotsViewTypeIcon3(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton == MouseButton.Left)
+        {
+            ShowSpotsListAs(SpotsListTypeEnum.Thumbs);
+        }
+    }
+
     private void StatusBarSystemStateImage_OnIsMouseDirectlyOverChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         if (!(bool)e.NewValue)
@@ -2639,9 +2696,12 @@ public partial class MainWindow : MetroWindow
     private void LeftPanel_OnSizeChanged(object sender, SizeChangedEventArgs e)
     {
         double actualWidth = Dock.ColumnDefinitions[0].ActualWidth;
-        Dock.ColumnDefinitions[0].Width = new GridLength(actualWidth);
-        Settings.Default.LeftPanelWidth = (int)actualWidth;
-        Settings.Default.Save();
+        if (actualWidth >= 295)
+        {
+            Dock.ColumnDefinitions[0].Width = new GridLength(actualWidth);
+            Settings.Default.LeftPanelWidth = (int)actualWidth;
+            Settings.Default.Save();
+        }
     }
 
     public TabItem GetPromoTab(string url)

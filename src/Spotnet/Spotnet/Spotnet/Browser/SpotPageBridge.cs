@@ -47,7 +47,8 @@ internal static class SpotPageBridge
     // Buttons the host reacts to that are not plain links.
     var CLICK_IDS = [
         'AddComment', 'DownloadButton', 'SpotImage', 'ReportButton', 'FavButton',
-        'ClosePreview', 'CloseImdb', 'CloseSmiles'
+        'ClosePreview', 'CloseImdb', 'CloseSmiles',
+        'TranslatePostBtn', 'TranslateCommentsBtn', 'TranslateAllBtn'
     ];
 
     function post(message) {
@@ -181,6 +182,161 @@ internal static class SpotPageBridge
 
     function notifyInput() {
         post({ type: 'input', nickname: nickname(), body: value('CommentBody') });
+    }
+
+    // --- translation -------------------------------------------------------
+
+    var _transLabels = {};
+    var _postState = 'original'; // 'original' | 'translating' | 'translated'
+    var _originalPostHtml = null;
+    var _translatedPostHtml = null;
+
+    var _commentsState = 'original'; // 'original' | 'translating' | 'translated'
+    var _originalComments = {};
+    var _translatedComments = {};
+
+    function escapeAttr(str) {
+        return (str || '').replace(/&/g, '&amp;').replace(/""/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function togglePostTranslation() {
+        var desc = byId('Description');
+        if (!desc) {
+            return;
+        }
+
+        if (_postState === 'translating') {
+            return;
+        }
+
+        if (_postState === 'translated') {
+            desc.innerHTML = _originalPostHtml;
+            _postState = 'original';
+            var btnText = byId('TranslatePostBtnText');
+            if (btnText) {
+                btnText.textContent = _transLabels.translatePost || 'Translate post';
+            }
+            var badge = byId('TranslatePostBadge');
+            if (badge) {
+                badge.style.display = 'none';
+            }
+            return;
+        }
+
+        if (_postState === 'original' && _translatedPostHtml) {
+            desc.innerHTML = _translatedPostHtml;
+            _postState = 'translated';
+            var btnText = byId('TranslatePostBtnText');
+            if (btnText) {
+                btnText.textContent = _transLabels.showOriginal || 'Show original';
+            }
+            var badge = byId('TranslatePostBadge');
+            if (badge) {
+                badge.style.display = 'inline-flex';
+            }
+            return;
+        }
+
+        _originalPostHtml = desc.innerHTML;
+        _postState = 'translating';
+        var btn = byId('TranslatePostBtn');
+        if (btn) {
+            btn.disabled = true;
+        }
+        var btnText = byId('TranslatePostBtnText');
+        if (btnText) {
+            btnText.textContent = _transLabels.translating || 'Translating...';
+        }
+
+        post({ type: 'translate_post', html: _originalPostHtml });
+    }
+
+    function toggleCommentsTranslation() {
+        if (_commentsState === 'translating') {
+            return;
+        }
+
+        if (_commentsState === 'translated') {
+            for (var id in _originalComments) {
+                var el = byId(id);
+                if (el) {
+                    el.innerHTML = _originalComments[id];
+                }
+            }
+            _commentsState = 'original';
+            var btnText = byId('TranslateCommentsBtnText');
+            if (btnText) {
+                btnText.textContent = _transLabels.translateComments || 'Translate comments';
+            }
+            var badge = byId('TranslateCommentsBadge');
+            if (badge) {
+                badge.style.display = 'none';
+            }
+            return;
+        }
+
+        var commentsContainer = byId('Comments');
+        if (!commentsContainer) {
+            return;
+        }
+
+        var spans = commentsContainer.getElementsByTagName('span');
+        var toTranslate = {};
+        for (var i = 0; i < spans.length; i++) {
+            var sId = spans[i].id;
+            if (sId && sId.indexOf('d') === 0 && sId.length > 1) {
+                if (!_originalComments[sId]) {
+                    _originalComments[sId] = spans[i].innerHTML;
+                }
+                if (_translatedComments[sId]) {
+                    spans[i].innerHTML = _translatedComments[sId];
+                } else {
+                    toTranslate[sId] = spans[i].innerHTML;
+                }
+            }
+        }
+
+        var toTranslateKeys = Object.keys(toTranslate);
+        if (toTranslateKeys.length === 0) {
+            if (Object.keys(_originalComments).length > 0) {
+                _commentsState = 'translated';
+                var btnText = byId('TranslateCommentsBtnText');
+                if (btnText) {
+                    btnText.textContent = _transLabels.showOriginal || 'Show original';
+                }
+                var badge = byId('TranslateCommentsBadge');
+                if (badge) {
+                    badge.style.display = 'inline-flex';
+                }
+            }
+            return;
+        }
+
+        _commentsState = 'translating';
+        var btn = byId('TranslateCommentsBtn');
+        if (btn) {
+            btn.disabled = true;
+        }
+        var btnText = byId('TranslateCommentsBtnText');
+        if (btnText) {
+            btnText.textContent = _transLabels.translating || 'Translating...';
+        }
+
+        post({ type: 'translate_comments', comments: toTranslate });
+    }
+
+    function translateAll() {
+        if (_postState === 'translated' && _commentsState === 'translated') {
+            togglePostTranslation();
+            toggleCommentsTranslation();
+        } else {
+            if (_postState !== 'translated') {
+                togglePostTranslation();
+            }
+            if (_commentsState !== 'translated') {
+                toggleCommentsTranslation();
+            }
+        }
     }
 
     // --- host to page ------------------------------------------------------
@@ -404,6 +560,122 @@ internal static class SpotPageBridge
             } catch (e) {
                 // Nothing selected, nothing to do.
             }
+        },
+
+        initTranslationUi: function (labels) {
+            _transLabels = labels || {};
+            function mount() {
+                var desc = byId('Description');
+                if (desc && !byId('sn-post-trans-bar')) {
+                    var bar = document.createElement('div');
+                    bar.id = 'sn-post-trans-bar';
+                    bar.style.cssText = 'margin: 8px 0 10px 0; display: flex; align-items: center; flex-wrap: wrap; width: 100%; box-sizing: border-box; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, Helvetica, Arial, sans-serif; font-size: 12px;';
+                    bar.innerHTML =
+                        '<button type=""button"" id=""TranslatePostBtn"" style=""background:#2e71b8; color:#fff; border:1px solid #20558e; border-radius:4px; padding:3px 9px; font-size:12px; font-weight:500; cursor:pointer; display:inline-flex; align-items:center; gap:4px; font-family:inherit; margin-right:6px; margin-bottom:4px; flex-shrink:0;"">' +
+                            '<span>🌐</span> <span id=""TranslatePostBtnText"">' + escapeAttr(_transLabels.translatePost || 'Translate post') + '</span>' +
+                        '</button>' +
+                        '<button type=""button"" id=""TranslateAllBtn"" style=""background:transparent; color:#2e71b8; border:1px solid #2e71b8; border-radius:4px; padding:3px 8px; font-size:11px; cursor:pointer; display:inline-flex; align-items:center; gap:3px; font-family:inherit; margin-right:6px; margin-bottom:4px; flex-shrink:0;"">' +
+                            '<span>⚡</span> <span id=""TranslateAllBtnText"">' + escapeAttr(_transLabels.translateAll || 'Translate all') + '</span>' +
+                        '</button>' +
+                        '<span id=""TranslatePostBadge"" style=""display:none; align-items:center; gap:4px; font-size:11px; opacity:0.85; flex-shrink:1; min-width:0; overflow:hidden; white-space:nowrap; margin-bottom:4px;"">' +
+                            '<span style=""overflow:hidden; text-overflow:ellipsis;"">' + escapeAttr(_transLabels.automatedLabel || 'Automatically translated') + '</span>' +
+                            '<span title=""' + escapeAttr(_transLabels.disclaimer || '') + '"" style=""display:inline-block; flex-shrink:0; width:14px; height:14px; line-height:14px; text-align:center; border-radius:50%; background:#6c757d; color:#fff; font-weight:bold; font-size:10px; cursor:help;"">i</span>' +
+                        '</span>';
+                    desc.parentNode.insertBefore(bar, desc);
+                }
+
+                var commentsContainer = byId('Comments') || byId('CommentsProgress');
+                if (commentsContainer && !byId('sn-comments-trans-bar')) {
+                    var cBar = document.createElement('div');
+                    cBar.id = 'sn-comments-trans-bar';
+                    cBar.style.cssText = 'margin: 10px 0; display: flex; align-items: center; flex-wrap: wrap; width: 100%; box-sizing: border-box; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, Helvetica, Arial, sans-serif; font-size: 12px;';
+                    cBar.innerHTML =
+                        '<button type=""button"" id=""TranslateCommentsBtn"" style=""background:#2e71b8; color:#fff; border:1px solid #20558e; border-radius:4px; padding:3px 9px; font-size:12px; font-weight:500; cursor:pointer; display:inline-flex; align-items:center; gap:4px; font-family:inherit; margin-right:6px; margin-bottom:4px; flex-shrink:0;"">' +
+                            '<span>🌐</span> <span id=""TranslateCommentsBtnText"">' + escapeAttr(_transLabels.translateComments || 'Translate comments') + '</span>' +
+                        '</button>' +
+                        '<span id=""TranslateCommentsBadge"" style=""display:none; align-items:center; gap:4px; font-size:11px; opacity:0.85; flex-shrink:1; min-width:0; overflow:hidden; white-space:nowrap; margin-bottom:4px;"">' +
+                            '<span style=""overflow:hidden; text-overflow:ellipsis;"">' + escapeAttr(_transLabels.automatedLabel || 'Automatically translated') + '</span>' +
+                            '<span title=""' + escapeAttr(_transLabels.disclaimer || '') + '"" style=""display:inline-block; flex-shrink:0; width:14px; height:14px; line-height:14px; text-align:center; border-radius:50%; background:#6c757d; color:#fff; font-weight:bold; font-size:10px; cursor:help;"">i</span>' +
+                        '</span>';
+                    commentsContainer.parentNode.insertBefore(cBar, commentsContainer);
+                }
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', mount);
+            } else {
+                mount();
+            }
+            setTimeout(mount, 300);
+        },
+
+        applyPostTranslation: function (success, translatedHtml) {
+            var btn = byId('TranslatePostBtn');
+            if (btn) {
+                btn.disabled = false;
+            }
+            var btnText = byId('TranslatePostBtnText');
+            var badge = byId('TranslatePostBadge');
+            var desc = byId('Description');
+
+            if (success && translatedHtml) {
+                _translatedPostHtml = translatedHtml;
+                if (desc) {
+                    desc.innerHTML = translatedHtml;
+                }
+                _postState = 'translated';
+                if (btnText) {
+                    btnText.textContent = _transLabels.showOriginal || 'Show original';
+                }
+                if (badge) {
+                    badge.style.display = 'inline-flex';
+                }
+            } else {
+                _postState = 'original';
+                if (btnText) {
+                    btnText.textContent = _transLabels.failed || 'Translation failed';
+                }
+                setTimeout(function () {
+                    if (_postState === 'original' && btnText) {
+                        btnText.textContent = _transLabels.translatePost || 'Translate post';
+                    }
+                }, 3000);
+            }
+        },
+
+        applyCommentsTranslation: function (success, translatedMap) {
+            var btn = byId('TranslateCommentsBtn');
+            if (btn) {
+                btn.disabled = false;
+            }
+            var btnText = byId('TranslateCommentsBtnText');
+            var badge = byId('TranslateCommentsBadge');
+
+            if (success && translatedMap) {
+                for (var id in translatedMap) {
+                    _translatedComments[id] = translatedMap[id];
+                    var el = byId(id);
+                    if (el) {
+                        el.innerHTML = translatedMap[id];
+                    }
+                }
+                _commentsState = 'translated';
+                if (btnText) {
+                    btnText.textContent = _transLabels.showOriginal || 'Show original';
+                }
+                if (badge) {
+                    badge.style.display = 'inline-flex';
+                }
+            } else {
+                _commentsState = 'original';
+                if (btnText) {
+                    btnText.textContent = _transLabels.failed || 'Translation failed';
+                }
+                setTimeout(function () {
+                    if (_commentsState === 'original' && btnText) {
+                        btnText.textContent = _transLabels.translateComments || 'Translate comments';
+                    }
+                }, 3000);
+            }
         }
     };
 
@@ -439,7 +711,19 @@ internal static class SpotPageBridge
             if (id && CLICK_IDS.indexOf(id) >= 0) {
                 // A disabled button is inert here rather than at the host, so a
                 // double click cannot queue a second post while the first is in flight.
-                if ((el.className || '').indexOf('disabled') >= 0) {
+                if ((el.className || '').indexOf('disabled') >= 0 || el.disabled) {
+                    return;
+                }
+                if (id === 'TranslatePostBtn') {
+                    togglePostTranslation();
+                    return;
+                }
+                if (id === 'TranslateCommentsBtn') {
+                    toggleCommentsTranslation();
+                    return;
+                }
+                if (id === 'TranslateAllBtn') {
+                    translateAll();
                     return;
                 }
                 if (id === 'AddComment') {

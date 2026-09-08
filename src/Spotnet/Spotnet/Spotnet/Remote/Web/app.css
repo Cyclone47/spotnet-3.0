@@ -1791,3 +1791,82 @@ body {
 @keyframes ptrSpin {
   to { transform: rotate(360deg); }
 }
+
+/* Translation Bar & Badges in Spot Details */
+.trans-bar-web {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 6px 0 10px 0;
+}
+
+.comments-trans-bar {
+  margin-top: 4px;
+  margin-bottom: 12px;
+}
+
+.btn-translate-web {
+  background: #2563eb;
+  color: #ffffff;
+  border: 1px solid #1d4ed8;
+  border-radius: 6px;
+  padding: 5px 11px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: inherit;
+  transition: background 0.15s ease, opacity 0.15s ease;
+  flex-shrink: 0;
+}
+
+.btn-translate-web:hover {
+  background: #1d4ed8;
+}
+
+.btn-translate-web:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.trans-badge-web {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 4px 8px;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.trans-badge-web span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trans-info-icon {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  line-height: 15px;
+  text-align: center;
+  border-radius: 50%;
+  background: #64748b;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 10px;
+  cursor: help;
+  user-select: none;
+}

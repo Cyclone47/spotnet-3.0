@@ -74,6 +74,7 @@ public class ServerStatusDto
     public string DefaultNickname { get; set; } = "";
     public bool RequireAuth { get; set; }
     public bool HasPasswordAuth { get; set; }
+    public string UserLanguage { get; set; } = "nl";
 }
 
 public class LoginRequestDto
@@ -173,5 +174,20 @@ public class NotificationsResponseDto
 {
     public int UnreadCount { get; set; }
     public List<NotificationItemDto> Notifications { get; set; } = new List<NotificationItemDto>();
+}
+
+public class TranslateRequestDto
+{
+    public string Html { get; set; } = "";
+    public Dictionary<string, string> Items { get; set; }
+    public string TargetLanguage { get; set; } = "nl";
+}
+
+public class TranslateResponseDto
+{
+    public bool Success { get; set; }
+    public string TranslatedHtml { get; set; } = "";
+    public Dictionary<string, string> TranslatedItems { get; set; }
+    public string ErrorMessage { get; set; } = "";
 }
 

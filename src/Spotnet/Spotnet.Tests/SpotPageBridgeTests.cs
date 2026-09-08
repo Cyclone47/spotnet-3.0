@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -28,7 +28,8 @@ namespace Spotnet.Tests
             "setHtml", "getHtml", "setOuterHtml", "setText", "setStyle", "prependStyle",
             "setAttr", "setValue", "setClass", "setButtonEnabled", "focusElement",
             "appendComment", "insertIntoComment", "applyUbb", "callSmiley",
-            "toggleImageSize", "updateCommentAuthor", "scrollToComment", "clearSelection"
+            "toggleImageSize", "updateCommentAuthor", "scrollToComment", "clearSelection",
+            "initTranslationUi", "applyPostTranslation", "applyCommentsTranslation"
         };
 
         /// <summary>The link schemes the host dispatches on, which the script must forward.</summary>

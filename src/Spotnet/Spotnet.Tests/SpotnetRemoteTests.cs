@@ -405,4 +405,47 @@ public class SpotnetRemoteTests : IDisposable
         Assert.Contains("\"port\":8770", json);
         Assert.Contains("\"name\":\"Spotnet Desktop\"", json);
     }
+
+    [Fact]
+    public void ServerStatusDto_IncludesUserLanguage()
+    {
+        var status = new ServerStatusDto
+        {
+            Version = "3.0",
+            UserLanguage = "en"
+        };
+        Assert.Equal("en", status.UserLanguage);
+    }
+
+    [Fact]
+    public void TranslateDtos_SupportHtmlAndItemsBatch()
+    {
+        var req = new TranslateRequestDto
+        {
+            Html = "<p>Hallo wereld</p>",
+            TargetLanguage = "en",
+            Items = new System.Collections.Generic.Dictionary<string, string>
+            {
+                { "1", "Geweldige post!" }
+            }
+        };
+
+        Assert.Equal("<p>Hallo wereld</p>", req.Html);
+        Assert.Equal("en", req.TargetLanguage);
+        Assert.Single(req.Items);
+
+        var resp = new TranslateResponseDto
+        {
+            Success = true,
+            TranslatedHtml = "<p>Hello world</p>",
+            TranslatedItems = new System.Collections.Generic.Dictionary<string, string>
+            {
+                { "1", "Great post!" }
+            }
+        };
+
+        Assert.True(resp.Success);
+        Assert.Equal("<p>Hello world</p>", resp.TranslatedHtml);
+        Assert.Equal("Great post!", resp.TranslatedItems["1"]);
+    }
 }

@@ -16,6 +16,7 @@ public partial class SettingsForSpotsList : UserControl, IAdvancedSettingsContro
 {
     private static readonly Logger Log = LogManager.GetCurrentClassLogger();
     private static MainWindowViewModel MainWindowVm => ((ViewModelLocator)Application.Current.Resources["Locator"]).MainWindow;
+    private static VisibilityViewModel VisibilityVm => ((ViewModelLocator)Application.Current.Resources["Locator"]).Visibility;
 
     public static event Action ColoringForSpotsChanged;
     public static event Action ColoringForFiltersChanged;
@@ -90,6 +91,11 @@ public partial class SettingsForSpotsList : UserControl, IAdvancedSettingsContro
                 SettingsForSpotsList.ColoringForFiltersChanged?.Invoke();
             }
 
+            if (Settings.Default.VisibleViewModeButtons != VisibleViewModeButtonsCheck.IsChecked.GetValueOrDefault())
+            {
+                VisibilityVm.UpdateVisibility(HideableElement.ViewModeButtons, VisibleViewModeButtonsCheck.IsChecked.GetValueOrDefault());
+            }
+
             return true;
         }
         catch (Exception ex)
@@ -102,6 +108,7 @@ public partial class SettingsForSpotsList : UserControl, IAdvancedSettingsContro
     private void OnInitialized(object sender, EventArgs e)
     {
         ShowErotica.IsChecked = Settings.Default.ShowEroticaInSearchResults;
+        VisibleViewModeButtonsCheck.IsChecked = Settings.Default.VisibleViewModeButtons;
         AutoShowNewSpotsInTheList.IsChecked = Settings.Default.AutoShowNewSpotsInTheList;
         HideBlacklistedSpots.IsChecked = Settings.Default.HideBlacklistedSpots;
         ShowTrustedOnly.IsChecked = Settings.Default.ShowTrustedOnlyEnabled;

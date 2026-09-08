@@ -19,6 +19,7 @@ using Spotnet.Helpers;
 using Spotnet.Model;
 using Spotnet.Properties;
 using Spotnet.Notifications;
+using Spotnet.Services;
 
 namespace Spotnet.Remote;
 
@@ -314,7 +315,8 @@ public class RemoteServer
                 IsSyncing = DbUpdater.IsDbUpdateInProgress,
                 DefaultNickname = Settings.Default.Nickname ?? "",
                 RequireAuth = currentConfig.RequireAuth,
-                HasPasswordAuth = !string.IsNullOrEmpty(currentConfig.PasswordHash)
+                HasPasswordAuth = !string.IsNullOrEmpty(currentConfig.PasswordHash),
+                UserLanguage = Settings.Default.UserLanguage ?? "nl"
             });
         });
 
@@ -577,6 +579,44 @@ public class RemoteServer
         {
             NotificationManager.Instance.ClearAllNotifications();
             return Results.Json(new { success = true, unreadCount = 0 });
+        });
+
+        // Translation
+        protectedGroup.MapPost("/translate", async (TranslateRequestDto req) =>
+        {
+            if (req == null)
+            {
+                return Results.BadRequest(new TranslateResponseDto { Success = false, ErrorMessage = "Invalid request." });
+            }
+
+            var target = string.IsNullOrWhiteSpace(req.TargetLanguage) ? (Settings.Default.UserLanguage ?? "nl") : req.TargetLanguage;
+
+            try
+            {
+                var response = new TranslateResponseDto { Success = true };
+
+                if (!string.IsNullOrWhiteSpace(req.Html))
+                {
+                    response.TranslatedHtml = await TranslationService.Instance.TranslateAsync(req.Html, target);
+                }
+
+                if (req.Items != null && req.Items.Count > 0)
+                {
+                    var translatedDict = await TranslationService.Instance.TranslateBatchAsync(req.Items, target);
+                    response.TranslatedItems = translatedDict.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                }
+
+                return Results.Json(response);
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Remote translation error: {0}", ex.Message);
+                return Results.Json(new TranslateResponseDto
+                {
+                    Success = false,
+                    ErrorMessage = ex.Message
+                });
+            }
         });
     }
 

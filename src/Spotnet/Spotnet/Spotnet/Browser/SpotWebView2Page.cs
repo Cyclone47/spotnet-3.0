@@ -27,6 +27,7 @@ using Spotnet.Extensions;
 using Spotnet.Helpers;
 using Spotnet.Model;
 using Spotnet.Properties;
+using Spotnet.Services;
 using Spotnet.Utilities;
 using Spotnet.ViewModel;
 
@@ -280,6 +281,12 @@ internal class SpotWebView2Page : WebView2Page, ISpotPage
 				{
 					ToggleImageSize();
 				}
+				break;
+			case "translate_post":
+				HandleTranslatePost(message);
+				break;
+			case "translate_comments":
+				HandleTranslateComments(message);
 				break;
 			default:
 				Log.Debug("Ignoring an unrecognized web message from the spot page.");
@@ -605,6 +612,7 @@ internal class SpotWebView2Page : WebView2Page, ISpotPage
 			UpdateImdbPanel();
 			UpdateSmileysPanel();
 			UpdatePreviewPanel();
+			InitializeTranslationUi();
 			StartProcessImage();
 			StartProcessComments();
 		}
@@ -691,6 +699,100 @@ internal class SpotWebView2Page : WebView2Page, ISpotPage
 		{
 			ToolbarPopup.IsOpen = !SpotEx.IsPreview;
 			_showOnActivated = false;
+		}
+	}
+
+	// --- translation ---------------------------------------------------------
+
+	private void InitializeTranslationUi()
+	{
+		if (IsClosing)
+		{
+			return;
+		}
+		var payload = new JObject
+		{
+			["translatePost"] = Words.TranslatePost,
+			["translateComments"] = Words.TranslateComments,
+			["translateAll"] = Words.TranslateAll,
+			["showOriginal"] = Words.ShowOriginal,
+			["translating"] = Words.Translating,
+			["failed"] = Words.TranslationFailed,
+			["automatedLabel"] = Words.TranslationAutomatedLabel,
+			["disclaimer"] = Words.TranslationDisclaimer
+		};
+		ExecuteJavascript($"window.spotnet.initTranslationUi({payload.ToString(Newtonsoft.Json.Formatting.None)});");
+	}
+
+	private async void HandleTranslatePost(JObject message)
+	{
+		if (IsClosing)
+		{
+			return;
+		}
+		string html = Text(message, "html");
+		if (html.IsNullOrWhiteSpace())
+		{
+			html = SpotEx.Body;
+		}
+		string targetLang = UserLanguageHelper.Language;
+		try
+		{
+			string translated = await TranslationService.Instance.TranslateAsync(html, targetLang);
+			if (!IsClosing)
+			{
+				ExecuteJavascript($"window.spotnet.applyPostTranslation(true, {Quoted(translated)});");
+			}
+		}
+		catch (Exception ex)
+		{
+			Log.Warn("Failed to translate spot post: " + ex.Message);
+			if (!IsClosing)
+			{
+				ExecuteJavascript("window.spotnet.applyPostTranslation(false, null);");
+			}
+		}
+	}
+
+	private async void HandleTranslateComments(JObject message)
+	{
+		if (IsClosing)
+		{
+			return;
+		}
+		var commentsObj = message["comments"] as JObject;
+		if (commentsObj == null || !commentsObj.HasValues)
+		{
+			return;
+		}
+
+		var dict = new Dictionary<string, string>();
+		foreach (var prop in commentsObj.Properties())
+		{
+			dict[prop.Name] = prop.Value?.Value<string>() ?? "";
+		}
+
+		string targetLang = UserLanguageHelper.Language;
+		try
+		{
+			var translatedDict = await TranslationService.Instance.TranslateBatchAsync(dict, targetLang);
+			if (!IsClosing)
+			{
+				var resultObj = new JObject();
+				foreach (var kvp in translatedDict)
+				{
+					resultObj[kvp.Key] = kvp.Value;
+				}
+				ExecuteJavascript($"window.spotnet.applyCommentsTranslation(true, {resultObj.ToString(Newtonsoft.Json.Formatting.None)});");
+			}
+		}
+		catch (Exception ex)
+		{
+			Log.Warn("Failed to translate comments: " + ex.Message);
+			if (!IsClosing)
+			{
+				ExecuteJavascript("window.spotnet.applyCommentsTranslation(false, null);");
+			}
 		}
 	}
 

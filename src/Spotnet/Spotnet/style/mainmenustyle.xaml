@@ -207,6 +207,9 @@
     <Setter Property="Padding" Value="8,4,8,4" />
     <Setter Property="Template" Value="{StaticResource SpotnetMenuItemRow}" />
     <Style.Triggers>
+      <Trigger Property="Role" Value="TopLevelHeader">
+        <Setter Property="Padding" Value="5,3,5,3" />
+      </Trigger>
       <Trigger Property="IsHighlighted" Value="True">
         <Setter Property="Foreground" Value="{DynamicResource SpotnetMenuHighlightForeground}" />
       </Trigger>

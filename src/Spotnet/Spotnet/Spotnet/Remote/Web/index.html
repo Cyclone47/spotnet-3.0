@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Spotnet Remote">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/svg+xml" href="/icon.svg">
-  <link rel="stylesheet" href="/app.css?v=3.0.7.5">
+  <link rel="stylesheet" href="/app.css?v=3.0.8.0">
 </head>
 <body>
   <!-- Pull to Refresh Indicator (Mobile Web / PWA) -->
@@ -331,22 +331,43 @@
         </div>
 
         <div class="detail-description-section">
-          <h3>Omschrijving</h3>
-          <div class="description-body" id="detailDescription">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <h3 id="detailDescHeading" style="margin: 0;">Omschrijving</h3>
+            <div id="descTransBar" class="trans-bar-web" style="display: none; width: auto; margin: 0;">
+              <button type="button" id="btnTranslateDesc" class="btn-translate-web">
+                <span>🌐</span> <span id="btnTranslateDescText">Vertaal omschrijving</span>
+              </button>
+              <span id="descTransBadge" style="display: none;" class="trans-badge-web">
+                <span id="descTransBadgeLabel">Automatisch vertaald</span>
+                <span id="descTransBadgeIcon" class="trans-info-icon" title="Deze vertaling is automatisch gegenereerd en kan onnauwkeurigheden bevatten.">i</span>
+              </span>
+            </div>
+          </div>
+          <div class="description-body" id="detailDescription" style="margin-top: 8px;">
             Laden...
           </div>
         </div>
 
         <div class="detail-comments-section">
           <div class="comments-header-row">
-            <h3>Reacties (<span id="commentsCount">0</span>)</h3>
+            <h3><span id="commentsHeadingText">Reacties</span> (<span id="commentsCount">0</span>)</h3>
             <button class="btn-refresh-comments" id="btnRefreshComments" title="Reacties vernieuwen">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M23 4v6h-6"></path>
                 <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
               </svg>
-              <span>Vernieuwen</span>
+              <span id="commentsRefreshText">Vernieuwen</span>
             </button>
+          </div>
+
+          <div id="commentsTransBar" class="trans-bar-web comments-trans-bar" style="display: none;">
+            <button type="button" id="btnTranslateComments" class="btn-translate-web">
+              <span>🌐</span> <span id="btnTranslateCommentsText">Vertaal reacties</span>
+            </button>
+            <span id="commentsTransBadge" style="display: none;" class="trans-badge-web">
+              <span id="commentsTransBadgeLabel">Automatisch vertaald</span>
+              <span id="commentsTransBadgeIcon" class="trans-info-icon" title="Deze vertaling is automatisch gegenereerd en kan onnauwkeurigheden bevatten.">i</span>
+            </span>
           </div>
 
           <div class="comments-list" id="commentsList">
@@ -475,6 +496,6 @@
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <script src="/app.js?v=3.0.7.6"></script>
+  <script src="/app.js?v=3.0.8.0"></script>
 </body>
 </html>

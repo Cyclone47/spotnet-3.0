@@ -467,21 +467,6 @@ public partial class MainToolBarControl : UserControl
         advancedSettings.ShowDialog();
     }
 
-    private void SpotsListNoDetails_Click(object sender, RoutedEventArgs e)
-    {
-        Sys.MainWindow.ShowSpotsListAs(SpotsListTypeEnum.NoDetails);
-    }
-
-    private void SpotsListWithDetails_Click(object sender, RoutedEventArgs e)
-    {
-        Sys.MainWindow.ShowSpotsListAs(SpotsListTypeEnum.WithDetails);
-    }
-
-    private void SpotsListThumbs_Click(object sender, RoutedEventArgs e)
-    {
-        Sys.MainWindow.ShowSpotsListAs(SpotsListTypeEnum.Thumbs);
-    }
-
     private void SpotsThemeChange_Click(object sender, RoutedEventArgs e)
     {
         ChangeSpotThemeWindow changeSpotThemeWindow = new ChangeSpotThemeWindow();

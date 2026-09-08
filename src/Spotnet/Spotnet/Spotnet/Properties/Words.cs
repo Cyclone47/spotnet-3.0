@@ -661,6 +661,10 @@ public class Words
 
 	public static string MenuVisibleControlsStatusBar => ResourceManager.GetString("MenuVisibleControlsStatusBar", resourceCulture);
 
+	public static string MenuVisibleControlsViewModeButtons => ResourceManager.GetString("MenuVisibleControlsViewModeButtons", resourceCulture);
+
+	public static string MenuShowViewModeButtons => ResourceManager.GetString("MenuShowViewModeButtons", resourceCulture);
+
 	public static string MessageIDIsWrong => ResourceManager.GetString("MessageIDIsWrong", resourceCulture);
 
 	public static string MessageIsSend => ResourceManager.GetString("MessageIsSend", resourceCulture);
@@ -1778,4 +1782,20 @@ public class Words
 	public static string CleanupSuggestions => ResourceManager.GetString("CleanupSuggestions", resourceCulture);
 
 	public static string CleanupExternalNzbGet => ResourceManager.GetString("CleanupExternalNzbGet", resourceCulture);
+
+	public static string TranslatePost => ResourceManager.GetString("TranslatePost", resourceCulture);
+
+	public static string TranslateComments => ResourceManager.GetString("TranslateComments", resourceCulture);
+
+	public static string TranslateAll => ResourceManager.GetString("TranslateAll", resourceCulture);
+
+	public static string ShowOriginal => ResourceManager.GetString("ShowOriginal", resourceCulture);
+
+	public static string Translating => ResourceManager.GetString("Translating", resourceCulture);
+
+	public static string TranslationFailed => ResourceManager.GetString("TranslationFailed", resourceCulture);
+
+	public static string TranslationAutomatedLabel => ResourceManager.GetString("TranslationAutomatedLabel", resourceCulture);
+
+	public static string TranslationDisclaimer => ResourceManager.GetString("TranslationDisclaimer", resourceCulture);
 }
