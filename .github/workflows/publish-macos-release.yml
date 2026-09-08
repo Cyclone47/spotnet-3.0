@@ -18,7 +18,7 @@ jobs:
   publish-macos:
     runs-on: macos-14
     env:
-      VERSION: ${{ inputs.version }}
+      VERSION: 3.0.0.2
     steps:
       - name: Checkout macOS client
         uses: actions/checkout@v4
