@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:element name="root" msdata:IsDataSet="true">
@@ -50,7 +50,15 @@
   </data>
   <data name="whatsnew" xml:space="preserve">
     <value>&lt;section class="notes-section gh-release"&gt;
-&lt;h3&gt;Spotnet 3.0.14.0 &lt;span class="gh-tag"&gt;New&lt;/span&gt;&lt;span class="gh-date"&gt;Current version&lt;/span&gt;&lt;/h3&gt;
+&lt;h3&gt;Spotnet 3.0.15.0 &lt;span class="gh-tag"&gt;New&lt;/span&gt;&lt;span class="gh-date"&gt;Current version&lt;/span&gt;&lt;/h3&gt;
+&lt;div class="gh-body"&gt;&lt;ul class="section-items tagged"&gt;
+&lt;li&gt;&lt;strong&gt;Startup loading fixed:&lt;/strong&gt; The spot list no longer stays stuck behind a loading spinner after launch. The overlay now only appears when data is genuinely still loading, and clears automatically when the initial load completes.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Release notes on update:&lt;/strong&gt; The Release Notes tab opens automatically the first time Spotnet starts after an update, so you always see what changed.&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section class="notes-section gh-release"&gt;
+&lt;h3&gt;Spotnet 3.0.14.0 &lt;span class="gh-date"&gt;8 September 2026&lt;/span&gt;&lt;/h3&gt;
 &lt;div class="gh-body"&gt;&lt;ul class="section-items tagged"&gt;
 &lt;li&gt;&lt;strong&gt;Automatic RSA key container recovery:&lt;/strong&gt; Prevents startup crashes (CryptographicException) by detecting corrupted Windows key containers, safely cleaning them up, and automatically generating a fresh working key.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;View mode buttons restored:&lt;/strong&gt; Quick view mode buttons (List, Details, Images) are back in the top toolbar next to the main menu with crisp vector icons and active highlight. Can be toggled via View &amp;gt; Visible controls or Settings &amp;gt; Spots.&lt;/li&gt;
@@ -133,7 +141,7 @@
     &lt;h3&gt;Spotnet 3.0.7.0 &lt;span class="gh-date"&gt;4 September 2026&lt;/span&gt;&lt;/h3&gt;
     &lt;div class="gh-body"&gt;
         &lt;div class="feature-highlight" style="background: rgba(2, 132, 199, 0.08); border-left: 4px solid #0284c7; padding: 14px 18px; margin-bottom: 18px; border-radius: 4px;"&gt;
-            &lt;h4 style="margin: 0 0 6px 0; color: #0284c7; font-size: 16px; font-weight: 700;"&gt;🚀 Highlight: Spotnet Remote (Mobile Companion)&lt;/h4&gt;
+            &lt;h4 style="margin: 0 0 6px 0; color: #0284c7; font-size: 16px; font-weight: 700;"&gt;ðŸš€ Highlight: Spotnet Remote (Mobile Companion)&lt;/h4&gt;
             &lt;p style="margin: 0; line-height: 1.55;"&gt;
                 Control Spotnet directly from your smartphone or tablet! With Spotnet Remote, you have your entire Usenet catalogue in your pocket, anywhere in your home over Wi-Fi or on the go via port-forwarding.
             &lt;/p&gt;
@@ -146,7 +154,7 @@
                 &lt;div style="margin-top: 6px;"&gt;
                     Wirelessly control Spotnet from any phone, tablet, or browser on your network:
                     &lt;ul style="margin: 6px 0 6px 18px; padding-left: 0;"&gt;
-                        &lt;li&gt;&lt;strong&gt;Silent &amp;amp; Instant QR Pairing:&lt;/strong&gt; Simply scan the QR code displayed in Spotnet using your mobile camera. Your phone is automatically authorized with a secure pairing token — no manual typing of usernames or passwords required on your mobile device.&lt;/li&gt;
+                        &lt;li&gt;&lt;strong&gt;Silent &amp;amp; Instant QR Pairing:&lt;/strong&gt; Simply scan the QR code displayed in Spotnet using your mobile camera. Your phone is automatically authorized with a secure pairing token â€” no manual typing of usernames or passwords required on your mobile device.&lt;/li&gt;
                         &lt;li&gt;&lt;strong&gt;Full Catalogue &amp;amp; Interaction:&lt;/strong&gt; Real-time searching, filter synchronization with your PC, spot details and images, read comments, and post new comments with smileys.&lt;/li&gt;
                         &lt;li&gt;&lt;strong&gt;Remote Downloads &amp;amp; Sync:&lt;/strong&gt; Trigger NZB downloads on your PC or external downloader, and trigger Usenet synchronization remotely to fetch the newest spots.&lt;/li&gt;
                         &lt;li&gt;&lt;strong&gt;Strong Security:&lt;/strong&gt; Optional authentication with username and salted PBKDF2-SHA256 password hashing for safe remote access via port-forwarding.&lt;/li&gt;
@@ -160,10 +168,10 @@
                 &lt;div style="margin-top: 6px;"&gt;
                     Convenient live status lights positioned in the titlebar next to the SPOTNET logo:
                     &lt;ul style="margin: 6px 0 6px 18px; padding-left: 0;"&gt;
-                        &lt;li&gt;&lt;span style="color: #22c55e; font-weight: bold;"&gt;● Green light (Active):&lt;/span&gt; Remote server is running and ready for connections.&lt;/li&gt;
-                        &lt;li&gt;&lt;span style="color: #3b82f6; font-weight: bold;"&gt;● Blue light (In Use):&lt;/span&gt; One or more mobile devices are actively connected.&lt;/li&gt;
-                        &lt;li&gt;&lt;span style="color: #eab308; font-weight: bold;"&gt;☀ Sun/Eye icon (Stay Awake):&lt;/span&gt; Sleep prevention is active, ensuring your PC stays on while using your phone.&lt;/li&gt;
-                        &lt;li&gt;&lt;span style="color: #94a3b8; font-weight: bold;"&gt;● Grey light (Off):&lt;/span&gt; Spotnet Remote is disabled. Click any indicator to quickly open settings or display the QR pairing code.&lt;/li&gt;
+                        &lt;li&gt;&lt;span style="color: #22c55e; font-weight: bold;"&gt;â— Green light (Active):&lt;/span&gt; Remote server is running and ready for connections.&lt;/li&gt;
+                        &lt;li&gt;&lt;span style="color: #3b82f6; font-weight: bold;"&gt;â— Blue light (In Use):&lt;/span&gt; One or more mobile devices are actively connected.&lt;/li&gt;
+                        &lt;li&gt;&lt;span style="color: #eab308; font-weight: bold;"&gt;â˜€ Sun/Eye icon (Stay Awake):&lt;/span&gt; Sleep prevention is active, ensuring your PC stays on while using your phone.&lt;/li&gt;
+                        &lt;li&gt;&lt;span style="color: #94a3b8; font-weight: bold;"&gt;â— Grey light (Off):&lt;/span&gt; Spotnet Remote is disabled. Click any indicator to quickly open settings or display the QR pairing code.&lt;/li&gt;
                     &lt;/ul&gt;
                 &lt;/div&gt;
             &lt;/li&gt;
@@ -194,7 +202,7 @@
 &lt;/section&gt;
 
 &lt;section class="notes-section" id="new-features"&gt;
-&lt;h3&gt;What’s New&lt;/h3&gt;
+&lt;h3&gt;Whatâ€™s New&lt;/h3&gt;
 
 &lt;br&gt;&lt;h5&gt;3.0.6.8&lt;/h5&gt;
     &lt;ul class="section-items tagged"&gt;
@@ -8150,7 +8158,15 @@ if (browserok) {
   </data>
   <data name="whatsnew_nl" xml:space="preserve">
     <value>&lt;section class="notes-section gh-release"&gt;
-&lt;h3&gt;Spotnet 3.0.14.0 &lt;span class="gh-tag"&gt;Nieuw&lt;/span&gt;&lt;span class="gh-date"&gt;Huidige versie&lt;/span&gt;&lt;/h3&gt;
+&lt;h3&gt;Spotnet 3.0.15.0 &lt;span class="gh-tag"&gt;Nieuw&lt;/span&gt;&lt;span class="gh-date"&gt;Huidige versie&lt;/span&gt;&lt;/h3&gt;
+&lt;div class="gh-body"&gt;&lt;ul class="section-items tagged"&gt;
+&lt;li&gt;&lt;strong&gt;Laadindicator bij opstarten opgelost:&lt;/strong&gt; De spotlijst blijft na het opstarten niet langer hangen achter een draaiende laadcirkel. Het overzicht laadt direct uit cache en de laadindicator verdwijnt automatisch zodra de spots gereed zijn.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Automatisch releasenotes tonen:&lt;/strong&gt; Na het installeren van een update wordt het tabblad Releasenotes automatisch geopend bij de eerste start, zodat u direct ziet wat er nieuw is.&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section class="notes-section gh-release"&gt;
+&lt;h3&gt;Spotnet 3.0.14.0 &lt;span class="gh-date"&gt;8 september 2026&lt;/span&gt;&lt;/h3&gt;
 &lt;div class="gh-body"&gt;&lt;ul class="section-items tagged"&gt;
 &lt;li&gt;&lt;strong&gt;Automatisch herstel van RSA-sleutelcontainers:&lt;/strong&gt; Voorkomt opstartfouten (CryptographicException) door beschadigde Windows-sleutelcontainers automatisch te detecteren, veilig op te schonen en direct een schone werkende sleutel aan te maken.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;Weergaveknoppen op de voorgrond:&lt;/strong&gt; Snelle knoppen voor weergavemodi (Lijst, Details, Afbeeldingen) zijn weer direct bereikbaar in de bovenbalk naast het menu, voorzien van scherpe pictogrammen en actieve markering. In- of uitschakelbaar via Beeld &amp;gt; Zichtbare controles of Instellingen &amp;gt; Spots.&lt;/li&gt;
@@ -8165,7 +8181,7 @@ if (browserok) {
 &lt;div class="gh-body"&gt;&lt;ul class="section-items tagged"&gt;
 &lt;li&gt;&lt;strong&gt;Live taalwissel zonder herstart:&lt;/strong&gt; Schakelen tussen Nederlands en Engels werkt direct in de hele gebruikersinterface zonder dat u de app opnieuw hoeft te starten.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;Klassieke moderatielijsten:&lt;/strong&gt; Volledige ondersteuning voor klassieke Spotnet blacklists en whitelists in de moderatie- en community-instellingen.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Automatische filtervertaling:&lt;/strong&gt; Standaardcategorieën, genres, tijdsfilters en filtersets in het linkerpaneel worden automatisch vertaald naar de gekozen taal, met behoud van eigen filters en zonder filters.xml aan te passen.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Automatische filtervertaling:&lt;/strong&gt; StandaardcategorieÃ«n, genres, tijdsfilters en filtersets in het linkerpaneel worden automatisch vertaald naar de gekozen taal, met behoud van eigen filters en zonder filters.xml aan te passen.&lt;/li&gt;
 &lt;/ul&gt;&lt;/div&gt;
 &lt;/section&gt;
 
@@ -8207,7 +8223,7 @@ if (browserok) {
 &lt;li&gt;&lt;strong&gt;Ondersteuning voor moderatie:&lt;/strong&gt; Configureer moderatorsleutels en optionele controle van ondertekende moderatielijsten. Communities kunnen geldige handtekeningen verplicht stellen; deze controle staat standaard uit.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;Remote buiten de deur:&lt;/strong&gt; Maak vanuit de Remote-instellingen of het koppelvenster een Cloudflare Quick Tunnel en verbind via een HTTPS-link zonder port forwarding. Het benodigde onderdeel wordt bij het eerste gebruik gedownload. De link is tijdelijk en kan veranderen wanneer de tunnel opnieuw start; Spotnet en de pc moeten aan blijven.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;Remote-inloggen en koppelen:&lt;/strong&gt; Kies bij koppelen met een QR-code tussen lokale wifi en Cloudflare. Uitloggen trekt nu het sessietoken op de server in, gewijzigde authenticatie-instellingen werken zonder Remote opnieuw te starten en spotafbeeldingen vereisen een geldig token wanneer authenticatie aanstaat.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;WebP-afbeeldingen:&lt;/strong&gt; Bekijk WebP-spotafbeeldingen en kies .webp-bestanden of image/webp-URL's bij het toevoegen van een spot. Het lezen gebruikt de Windows WIC-codec; bij een ontbrekende codec verschijnt een installatiehint. Voor compatibiliteit met andere clients wordt WebP vóór het posten naar JPEG omgezet, waardoor transparantie vervalt.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;WebP-afbeeldingen:&lt;/strong&gt; Bekijk WebP-spotafbeeldingen en kies .webp-bestanden of image/webp-URL's bij het toevoegen van een spot. Het lezen gebruikt de Windows WIC-codec; bij een ontbrekende codec verschijnt een installatiehint. Voor compatibiliteit met andere clients wordt WebP vÃ³Ã³r het posten naar JPEG omgezet, waardoor transparantie vervalt.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;Oude telemetrie verwijderd:&lt;/strong&gt; Google Analytics-rapportage over opstarten, afsluiten, geopende spots en updates is verwijderd, samen met de bijbehorende apparaatidentificatie.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;Promotielinks verwijderd:&lt;/strong&gt; Downloadfouten door ontbrekende artikelen linken niet meer naar een providerpromotie en nieuwe reacties krijgen geen automatische promotietekst meer. De actie om een verkeerd uitpakwachtwoord te wijzigen blijft beschikbaar.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;Onderhoud:&lt;/strong&gt; Het Over-venster en de projectdocumentatie zijn bijgewerkt, de broncodemap heet nu src/Spotnet en conflicten door gedeelde toestand in regressietests zijn opgelost.&lt;/li&gt;
@@ -8233,7 +8249,7 @@ if (browserok) {
     &lt;h3&gt;Spotnet 3.0.7.0 &lt;span class="gh-date"&gt;4 september 2026&lt;/span&gt;&lt;/h3&gt;
     &lt;div class="gh-body"&gt;
         &lt;div class="feature-highlight" style="background: rgba(2, 132, 199, 0.08); border-left: 4px solid #0284c7; padding: 14px 18px; margin-bottom: 18px; border-radius: 4px;"&gt;
-            &lt;h4 style="margin: 0 0 6px 0; color: #0284c7; font-size: 16px; font-weight: 700;"&gt;🚀 Uitgelicht: Spotnet Remote (Mobiele Companion)&lt;/h4&gt;
+            &lt;h4 style="margin: 0 0 6px 0; color: #0284c7; font-size: 16px; font-weight: 700;"&gt;ðŸš€ Uitgelicht: Spotnet Remote (Mobiele Companion)&lt;/h4&gt;
             &lt;p style="margin: 0; line-height: 1.55;"&gt;
                 Bedien Spotnet nu volledig vanaf uw smartphone of tablet! Met Spotnet Remote heeft u uw complete Usenet-collectie altijd bij de hand, waar u ook bent in huis (via Wi-Fi) of onderweg (via port-forwarding).
             &lt;/p&gt;
@@ -8246,8 +8262,8 @@ if (browserok) {
                 &lt;div style="margin-top: 6px;"&gt;
                     Bedien Spotnet draadloos vanaf elke smartphone, tablet of computer in uw netwerk:
                     &lt;ul style="margin: 6px 0 6px 18px; padding-left: 0;"&gt;
-                        &lt;li&gt;&lt;strong&gt;Stille &amp;amp; directe QR-koppeling:&lt;/strong&gt; Scan eenvoudig de QR-code op uw scherm met uw mobiele camera. Uw apparaat wordt direct geautoriseerd met een veilig pairing-token — u hoeft op uw telefoon &lt;em&gt;nooit&lt;/em&gt; handmatig een gebruikersnaam of wachtwoord in te vullen.&lt;/li&gt;
-                        &lt;li&gt;&lt;strong&gt;Volledige functionaliteit:&lt;/strong&gt; Real-time zoeken, categorieën en filters synchroniseren met Spotnet op de pc, spots en posters bekijken, reacties lezen en direct reacties plaatsen met emoticons/smileys.&lt;/li&gt;
+                        &lt;li&gt;&lt;strong&gt;Stille &amp;amp; directe QR-koppeling:&lt;/strong&gt; Scan eenvoudig de QR-code op uw scherm met uw mobiele camera. Uw apparaat wordt direct geautoriseerd met een veilig pairing-token â€” u hoeft op uw telefoon &lt;em&gt;nooit&lt;/em&gt; handmatig een gebruikersnaam of wachtwoord in te vullen.&lt;/li&gt;
+                        &lt;li&gt;&lt;strong&gt;Volledige functionaliteit:&lt;/strong&gt; Real-time zoeken, categorieÃ«n en filters synchroniseren met Spotnet op de pc, spots en posters bekijken, reacties lezen en direct reacties plaatsen met emoticons/smileys.&lt;/li&gt;
                         &lt;li&gt;&lt;strong&gt;Downloads &amp;amp; Usenet bedienen:&lt;/strong&gt; Start NZB downloads direct op afstand via uw downloadclient of Spotnet, en trigger handmatig een Usenet-synchronisatie om direct de nieuwste spots binnen te halen.&lt;/li&gt;
                         &lt;li&gt;&lt;strong&gt;Geavanceerde beveiliging:&lt;/strong&gt; Optionele authenticatie met gebruikersnaam en sterk gehasht wachtwoord (PBKDF2-SHA256) voor veilige toegang buitenshuis via port-forwarding.&lt;/li&gt;
                         &lt;li&gt;&lt;strong&gt;Houd computer wakker:&lt;/strong&gt; Nieuwe instelling in Spotnet Remote die voorkomt dat Windows in slaapstand valt zolang Spotnet Remote actief is.&lt;/li&gt;
@@ -8260,10 +8276,10 @@ if (browserok) {
                 &lt;div style="margin-top: 6px;"&gt;
                     Direct rechts naast het SPOTNET-logo in de titelbalk ziet u direct de live status van Spotnet Remote:
                     &lt;ul style="margin: 6px 0 6px 18px; padding-left: 0;"&gt;
-                        &lt;li&gt;&lt;span style="color: #22c55e; font-weight: bold;"&gt;● Groen lampje (Aan):&lt;/span&gt; Spotnet Remote server is actief en gereed voor verbindingen.&lt;/li&gt;
-                        &lt;li&gt;&lt;span style="color: #3b82f6; font-weight: bold;"&gt;● Blauw lampje (In gebruik):&lt;/span&gt; Er is momenteel een mobiele telefoon of tablet verbonden (inclusief teller van actieve apparaten).&lt;/li&gt;
-                        &lt;li&gt;&lt;span style="color: #eab308; font-weight: bold;"&gt;☀ Zon-/waakicoon (Houd PC wakker):&lt;/span&gt; Slaapstandpreventie is ingeschakeld zodat de computer niet uitvalt tijdens mobiel gebruik.&lt;/li&gt;
-                        &lt;li&gt;&lt;span style="color: #94a3b8; font-weight: bold;"&gt;● Grijs lampje (Uit):&lt;/span&gt; Spotnet Remote is uitgeschakeld. Klik op de lampjes om direct het configuratiemenu of de QR-code te openen.&lt;/li&gt;
+                        &lt;li&gt;&lt;span style="color: #22c55e; font-weight: bold;"&gt;â— Groen lampje (Aan):&lt;/span&gt; Spotnet Remote server is actief en gereed voor verbindingen.&lt;/li&gt;
+                        &lt;li&gt;&lt;span style="color: #3b82f6; font-weight: bold;"&gt;â— Blauw lampje (In gebruik):&lt;/span&gt; Er is momenteel een mobiele telefoon of tablet verbonden (inclusief teller van actieve apparaten).&lt;/li&gt;
+                        &lt;li&gt;&lt;span style="color: #eab308; font-weight: bold;"&gt;â˜€ Zon-/waakicoon (Houd PC wakker):&lt;/span&gt; Slaapstandpreventie is ingeschakeld zodat de computer niet uitvalt tijdens mobiel gebruik.&lt;/li&gt;
+                        &lt;li&gt;&lt;span style="color: #94a3b8; font-weight: bold;"&gt;â— Grijs lampje (Uit):&lt;/span&gt; Spotnet Remote is uitgeschakeld. Klik op de lampjes om direct het configuratiemenu of de QR-code te openen.&lt;/li&gt;
                     &lt;/ul&gt;
                 &lt;/div&gt;
             &lt;/li&gt;
@@ -8271,11 +8287,11 @@ if (browserok) {
                 &lt;b class="tag tag-new"&gt;[Nieuw]&lt;/b&gt;
                 &lt;b&gt;Spotnet Meldingsysteem &amp;amp; Meldingcentrum:&lt;/b&gt;
                 &lt;div style="margin-top: 6px;"&gt;
-                    Mis nooit meer nieuwe spots met het geïntegreerde meldingsysteem:
+                    Mis nooit meer nieuwe spots met het geÃ¯ntegreerde meldingsysteem:
                     &lt;ul style="margin: 6px 0 6px 18px; padding-left: 0;"&gt;
                         &lt;li&gt;&lt;strong&gt;Twee soorten alerts:&lt;/strong&gt; Maak meldingen op basis van &lt;em&gt;Filters&lt;/em&gt; (nieuwe content in geselecteerde filters) of &lt;em&gt;Trefwoorden&lt;/em&gt; (Pepper-stijl alerts op zoektermen zoals &lt;code&gt;F1&lt;/code&gt;, &lt;code&gt;Formule 1&lt;/code&gt;, serie- of filmnamen).&lt;/li&gt;
-                        &lt;li&gt;&lt;strong&gt;Flexibele planning:&lt;/strong&gt; Controleer periodiek (per 15 min, 30 min, 1 uur, 8 uur, 24 uur of aangepaste minuten), óf direct bij elke Usenet-synchronisatie.&lt;/li&gt;
-                        &lt;li&gt;&lt;strong&gt;Slimme bundeling:&lt;/strong&gt; Geen spam bij tientallen spots; resultaten per controlecyclus worden netjes samengevat in één duidelijke melding.&lt;/li&gt;
+                        &lt;li&gt;&lt;strong&gt;Flexibele planning:&lt;/strong&gt; Controleer periodiek (per 15 min, 30 min, 1 uur, 8 uur, 24 uur of aangepaste minuten), Ã³f direct bij elke Usenet-synchronisatie.&lt;/li&gt;
+                        &lt;li&gt;&lt;strong&gt;Slimme bundeling:&lt;/strong&gt; Geen spam bij tientallen spots; resultaten per controlecyclus worden netjes samengevat in Ã©Ã©n duidelijke melding.&lt;/li&gt;
                         &lt;li&gt;&lt;strong&gt;Direct doorklikken:&lt;/strong&gt; Spots in het meldingcentrum zijn direct aanklikbaar en openen meteen in Spotnet.&lt;/li&gt;
                         &lt;li&gt;&lt;strong&gt;Regels bewerken:&lt;/strong&gt; Bestaande meldingsregels kunnen te allen tijde eenvoudig worden aangepast via 'Bewerken'.&lt;/li&gt;
                         &lt;li&gt;&lt;strong&gt;Bureaubladintegratie:&lt;/strong&gt; Inclusief inheemse Windows Toast notificaties en een meldingenbel rechtsboven in de titelbalk met teller van ongelezen spots.&lt;/li&gt;
@@ -8357,11 +8373,11 @@ if (browserok) {
         &lt;ul class="section-items tagged"&gt;
             &lt;li&gt;
                 &lt;b class="tag tag-fixed"&gt;[Verbeterd]&lt;/b&gt;
-                &lt;b&gt;Directe in-place updates:&lt;/b&gt; Het updaten van Spotnet behoudt de database direct op zijn plek zonder onnodige kopieën van gigabytes naar de Backups-map te maken. Updates voltooien in 1-2 seconden zonder schijfruimteverspilling.
+                &lt;b&gt;Directe in-place updates:&lt;/b&gt; Het updaten van Spotnet behoudt de database direct op zijn plek zonder onnodige kopieÃ«n van gigabytes naar de Backups-map te maken. Updates voltooien in 1-2 seconden zonder schijfruimteverspilling.
             &lt;/li&gt;
             &lt;li&gt;
                 &lt;b class="tag tag-fixed"&gt;[Verbeterd]&lt;/b&gt;
-                &lt;b&gt;Profielmigratie:&lt;/b&gt; Het kopiëren en verifiëren van het profiel is nu strikt gereserveerd voor initiële migraties vanaf Spotnet 2.0.
+                &lt;b&gt;Profielmigratie:&lt;/b&gt; Het kopiÃ«ren en verifiÃ«ren van het profiel is nu strikt gereserveerd voor initiÃ«le migraties vanaf Spotnet 2.0.
             &lt;/li&gt;
         &lt;/ul&gt;
     &lt;/div&gt;
@@ -8441,7 +8457,7 @@ if (browserok) {
             &lt;/li&gt;
             &lt;li&gt;
                 &lt;b class="tag tag-changed"&gt;[Verwijderd]&lt;/b&gt;
-                &lt;b&gt;VPN Nederland integratie:&lt;/b&gt; Externe commerciële VPN-knoppen en pop-ups zijn volledig verwijderd.
+                &lt;b&gt;VPN Nederland integratie:&lt;/b&gt; Externe commerciÃ«le VPN-knoppen en pop-ups zijn volledig verwijderd.
             &lt;/li&gt;
         &lt;/ul&gt;
     &lt;/div&gt;
@@ -8514,7 +8530,7 @@ if (browserok) {
 &lt;section class="notes-section gh-release"&gt;
     &lt;h3&gt;Spotnet 3.0.0 &lt;span class="gh-date"&gt;31 augustus 2026&lt;/span&gt;&lt;/h3&gt;
     &lt;div class="gh-body"&gt;
-        &lt;p&gt;Eerste officiële installatieversie van de gemoderniseerde 64-bit (x64) Spotnet client.&lt;/p&gt;
+        &lt;p&gt;Eerste officiÃ«le installatieversie van de gemoderniseerde 64-bit (x64) Spotnet client.&lt;/p&gt;
         &lt;ul class="section-items tagged"&gt;
             &lt;li&gt;
                 &lt;b class="tag tag-new"&gt;[Nieuw]&lt;/b&gt;
@@ -8569,7 +8585,7 @@ if (browserok) {
             &lt;/li&gt;
             &lt;li&gt;
                 &lt;b class="tag tag-changed"&gt;[Verbeterd]&lt;/b&gt;
-                Volledige spotgrootte zichtbaar in downloads-tabblad met initiële voortgang.
+                Volledige spotgrootte zichtbaar in downloads-tabblad met initiÃ«le voortgang.
             &lt;/li&gt;
         &lt;/ul&gt;
         &lt;br&gt;&lt;h5&gt;2.0.0.250&lt;/h5&gt;

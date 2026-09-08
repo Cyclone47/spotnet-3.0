@@ -138,6 +138,7 @@ public abstract class SpotsContainer : UserControl, ISpotsContainer
 		{
 			DispatcherHelper.CheckBeginInvokeOnUI(delegate
 			{
+				SpotsListVm.IsSpotsListLoading = false;
 				Spots.ItemsSource = new VirtualList<ISpotRow>(Sys.MainWindow.SpotProvider, 250);
 				IcStopWait = true;
 				VirtualList<ISpotRow> virtualList = (VirtualList<ISpotRow>)Spots.ItemsSource;

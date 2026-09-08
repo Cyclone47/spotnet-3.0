@@ -1963,7 +1963,6 @@ public partial class MainWindow : MetroWindow
             {
                 if (!Sys.IsShutdownRequested)
                 {
-                    SpotsListVm.IsSpotsListLoading = true;
                     PrepareWindow();
                     EndWait();
                     base.Visibility = Visibility.Visible;
@@ -2092,9 +2091,16 @@ public partial class MainWindow : MetroWindow
     {
         try
         {
-            if (SquirrelStuff.IsNewVersion)
+            if (VersionHelper.CheckAndAcknowledgeUpdate() || SquirrelStuff.IsNewVersion)
             {
-                OpenPage(PageTypeEnum.ReleaseNotes).Wait();
+                try
+                {
+                    OpenPage(PageTypeEnum.ReleaseNotes).Wait();
+                }
+                catch (Exception ex)
+                {
+                    Log.Warn("Failed to open release notes on update: {0}", ex.Message);
+                }
             }
 
             PromotionHelper.OpenTabsAsync();

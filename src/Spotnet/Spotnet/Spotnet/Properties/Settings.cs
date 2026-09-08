@@ -820,6 +820,21 @@ internal sealed class Settings : ApplicationSettingsBase
 
 	[UserScopedSetting]
 	[DebuggerNonUserCode]
+	[DefaultSettingValue("")]
+	public string LastSeenVersion
+	{
+		get
+		{
+			return (string)this["LastSeenVersion"];
+		}
+		set
+		{
+			this["LastSeenVersion"] = value;
+		}
+	}
+
+	[UserScopedSetting]
+	[DebuggerNonUserCode]
 	[DefaultSettingValue("True")]
 	public bool HideCommentsWithLinks
 	{

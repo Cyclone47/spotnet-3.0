@@ -10,7 +10,7 @@ Spotnet is een *client*, geen Usenet-dienst. Je regelt zelf toegang tot een news
 
 | | |
 | --- | --- |
-| **Versie** | 3.0.14.0 |
+| **Versie** | 3.0.15.0 |
 | **Platform** | Windows 10/11 x64 Ã‚Â· C# / WPF Ã‚Â· .NET 10 (meegeleverd in de setup) |
 | **Tests** | 470 geslaagd op de x64 Release-host |
 | **Gebaseerd op** | Spotnet 2.0 (build 2.0.0.284), met Spotnet 1.8.1 als referentie |
@@ -19,8 +19,8 @@ Spotnet is een *client*, geen Usenet-dienst. Je regelt zelf toegang tot een news
 
 ## Downloaden
 
-**[Download Spotnet 3.0.14.0 Setup](https://github.com/Cyclone47/spotnet-3.0/releases/download/v3.0.14.0/Spotnet-3.0-x64-Setup.exe)**
-Ã‚Â· [Release notes en SHA-256](https://github.com/Cyclone47/spotnet-3.0/releases/tag/v3.0.14.0)
+**[Download Spotnet 3.0.15.0 Setup](https://github.com/Cyclone47/spotnet-3.0/releases/download/v3.0.15.0/Spotnet-3.0-x64-Setup.exe)**
+Ã‚Â· [Release notes en SHA-256](https://github.com/Cyclone47/spotnet-3.0/releases/tag/v3.0.15.0)
 
 De setup werkt zowel voor een nieuwe installatie als voor een upgrade vanaf een bestaand
 Spotnet 2.x-profiel. Spotnet wordt netjes afgesloten, je gekozen profiel wordt naar een
@@ -102,7 +102,7 @@ die dezelfde Remote-server gebruikt:
 - de downloadwachtrij bekijken en beheren.
 
 De APK (`SpotnetCompanion.apk`) staat als bijlage bij
-[release v3.0.7.0](https://github.com/Cyclone47/spotnet-3.0/releases/tag/v3.0.14.0); de
+[release v3.0.7.0](https://github.com/Cyclone47/spotnet-3.0/releases/tag/v3.0.15.0); de
 broncode staat in [`android/`](android/).
 
 ### Meldingen en alerts
