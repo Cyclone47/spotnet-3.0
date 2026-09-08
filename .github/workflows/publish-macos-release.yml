@@ -1,6 +1,9 @@
 name: Publish macOS release asset
 
 on:
+  push:
+    branches:
+      - macos-client
   workflow_dispatch:
     inputs:
       version:
@@ -19,6 +22,8 @@ jobs:
     steps:
       - name: Checkout macOS client
         uses: actions/checkout@v4
+        with:
+          ref: macos-client
 
       - name: Build Intel app bundle
         run: ./tools/make_app_bundle.sh x64
