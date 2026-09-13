@@ -18,6 +18,15 @@ public sealed class CommentItem
     /// <summary>Poster's RSA modulus from the article's X-User-Key header, if signed.</summary>
     public string Modulus { get; set; } = string.Empty;
 
+    /// <summary>Raw signature from the article's X-User-Signature header, if signed.</summary>
+    public string Signature { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Whether the signature verified against <see cref="Modulus"/>, as Windows'
+    /// Comment.User.ValidSignature. Only meaningful while CheckSignatures is on.
+    /// </summary>
+    public bool ValidSignature { get; set; }
+
     public DateTime DateTime => DateTimeOffset.FromUnixTimeSeconds(Date).LocalDateTime;
 
     /// <summary>Windows writes comment dates as "3 sep 2026 12:20".</summary>

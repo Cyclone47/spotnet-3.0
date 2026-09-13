@@ -55,13 +55,6 @@ public sealed class PostProcessCoordinator
     /// <summary>Mirrors Settings.RemovePar2FilesAfterDownload.</summary>
     public bool RemovePar2Files { get; init; } = true;
 
-    /// <summary>
-    /// Called when a repair is short of blocks, so the caller can fetch extra par2
-    /// volumes from Usenet the way SpotnetDownloaderItemViewModel.DownloadParPieces
-    /// does. Return true when new blocks landed and the repair should be retried.
-    /// </summary>
-    public Func<int, CancellationToken, Task<bool>>? FetchExtraPar2Blocks { get; init; }
-
     public PostProcessCoordinator(
         string workingDir,
         PostProcessToolset tools,
@@ -103,16 +96,11 @@ public sealed class PostProcessCoordinator
                 Report(DownloadStage.Checking, 0);
                 par2.ProgressChanged += pct => Report(CurrentPar2Stage, pct);
 
-                (bool repaired, Par2Result result) = await par2.RunAsync(
-                    tryFetchMoreBlocks: async (blocksShort, token) =>
-                    {
-                        if (FetchExtraPar2Blocks == null) return false;
-                        Report(DownloadStage.Par2PieceDownloading, -1);
-                        bool got = await FetchExtraPar2Blocks(blocksShort, token).ConfigureAwait(false);
-                        Report(DownloadStage.Repairing, 0);
-                        return got;
-                    },
-                    ct: ct).ConfigureAwait(false);
+                // No tryFetchMoreBlocks, unlike Windows' DownloadParPieces: the
+                // downloader already fetched every <file> in the NZB, par2 volumes
+                // included, so a short recovery set means the posting never carried
+                // more blocks and there is nothing left to download.
+                (bool repaired, Par2Result result) = await par2.RunAsync(ct: ct).ConfigureAwait(false);
 
                 if (result == Par2Result.Repaired) CurrentPar2Stage = DownloadStage.Repairing;
 

@@ -1,24 +1,24 @@
 <Spotnet>
-  <Filter Name=" Nieuw" Image="/Images/2/Vandaag.png"><![CDATA[rowid > [SN:NEW] AND cat != 9]]></Filter>
-  <Filter Name=" Overzicht" Image="/Images/2/Overzicht.png" Query="cat!=9">
-    <Filter Name=" Films" Image="/Images/cc/48px-Crystal_Clear_app_camera.png"><![CDATA[cat = 1]]></Filter>
+  <Filter Name=" New" Image="/Images/2/Vandaag.png"><![CDATA[rowid > [SN:NEW] AND cat != 9]]></Filter>
+  <Filter Name=" All" Image="/Images/2/Overzicht.png" Query="cat!=9">
+    <Filter Name=" Movies" Image="/Images/cc/48px-Crystal_Clear_app_camera.png"><![CDATA[cat = 1]]></Filter>
     <Filter Name=" Series" Image="/Images/cc/48px-Crystal_Clear_app_aktion.png"><![CDATA[cat = 6]]></Filter>
-    <Filter Name=" Boeken" Image="/Images/cc/48px-Crystal_Clear_device_pda_blue.png"><![CDATA[cat = 5]]></Filter>
-    <Filter Name=" Muziek" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cat = 2]]></Filter>
-    <Filter Name=" Spellen" Image="/Images/cc/48px-Crystal_Clear_device_joystick.png"><![CDATA[cat = 3]]></Filter>
-    <Filter Name=" Applicaties" Image="/Images/cc/48px-Crystal_Clear_app_demo.png"><![CDATA[cat = 4]]></Filter>
-    <Filter Name=" Erotiek" Image="/Images/sex-male-female.png"><![CDATA[cat = 9]]></Filter>
+    <Filter Name=" Books" Image="/Images/cc/48px-Crystal_Clear_device_pda_blue.png"><![CDATA[cat = 5]]></Filter>
+    <Filter Name=" Audio" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cat = 2]]></Filter>
+    <Filter Name=" Games" Image="/Images/cc/48px-Crystal_Clear_device_joystick.png"><![CDATA[cat = 3]]></Filter>
+    <Filter Name=" Software" Image="/Images/cc/48px-Crystal_Clear_app_demo.png"><![CDATA[cat = 4]]></Filter>
+    <Filter Name=" Erotica" Image="\Images\sex-male-female.png"><![CDATA[cat = 9]]></Filter>
   </Filter>
-  <Filter Name=" Laatste 24 uur" Image="/Images/2/Vandaag.png" Query="date > ([SN:DATE] - 86400) AND cat != 9">
-    <Filter Name=" Movies Vandaag" Image="/Images/cc/48px-Crystal_Clear_app_camera.png"><![CDATA[cat = 1 AND date > ( [SN:DATE] - 86400 )]]></Filter>
-    <Filter Name=" Series Vandaag" Image="/Images/cc/48px-Crystal_Clear_app_aktion.png"><![CDATA[cat = 6 AND date > ( [SN:DATE] - 86400 )]]></Filter>
-    <Filter Name=" Books Vandaag" Image="/Images/cc/48px-Crystal_Clear_device_pda_blue.png"><![CDATA[cat = 5 AND date > ( [SN:DATE] - 86400 )]]></Filter>
-    <Filter Name=" Audio Vandaag" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cat = 2 AND date > ( [SN:DATE] - 86400 )]]></Filter>
-    <Filter Name=" Games Vandaag" Image="/Images/cc/48px-Crystal_Clear_device_joystick.png"><![CDATA[cat = 3 AND date > ( [SN:DATE] - 86400 )]]></Filter>
-    <Filter Name=" Software Vandaag" Image="/Images/cc/48px-Crystal_Clear_app_demo.png"><![CDATA[cat = 4 AND date > ( [SN:DATE] - 86400 )]]></Filter>
-    <Filter Name=" Erotica Vandaag" Image="/Images/sex-male-female.png"><![CDATA[cat = 9 AND date > ( [SN:DATE] - 86400 )]]></Filter>
+  <Filter Name=" Last 24 hours" Image="/Images/2/Vandaag.png" Query="date > ([SN:DATE] - 86400) AND cat != 9">
+    <Filter Name=" Movies Today" Image="/Images/cc/48px-Crystal_Clear_app_camera.png"><![CDATA[cat = 1 AND date > ( [SN:DATE] - 86400 )]]></Filter>
+    <Filter Name=" Series Today" Image="/Images/cc/48px-Crystal_Clear_app_aktion.png"><![CDATA[cat = 6 AND date > ( [SN:DATE] - 86400 )]]></Filter>
+    <Filter Name=" Books Today" Image="/Images/cc/48px-Crystal_Clear_device_pda_blue.png"><![CDATA[cat = 5 AND date > ( [SN:DATE] - 86400 )]]></Filter>
+    <Filter Name=" Audio Today" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cat = 2 AND date > ( [SN:DATE] - 86400 )]]></Filter>
+    <Filter Name=" Games Today" Image="/Images/cc/48px-Crystal_Clear_device_joystick.png"><![CDATA[cat = 3 AND date > ( [SN:DATE] - 86400 )]]></Filter>
+    <Filter Name=" Software Today" Image="/Images/cc/48px-Crystal_Clear_app_demo.png"><![CDATA[cat = 4 AND date > ( [SN:DATE] - 86400 )]]></Filter>
+    <Filter Name=" Erotica Today" Image="/Images/sex-male-female.png"><![CDATA[cat = 9 AND date > ( [SN:DATE] - 86400 )]]></Filter>
   </Filter>
-  <Filter Name=" Beeld" Image="/Images/2/red.png" Query="cat=1">
+  <Filter Name=" Movies" Image="/Images/2/red.png" Query="cat=1">
     <Filter Name=" 3D Films" Image="/Images/cc/48px-Crystal_Clear_mimetype_source_moc.png"><![CDATA[cat=1 AND subject LIKE '%3d%']]></Filter>
     <Filter Name=" Bluray" Image="/Images/cc/48px-Crystal_Clear_device_cdwriter_unmount.png"><![CDATA[cats MATCH '1a6']]></Filter>
     <Filter Name=" Bluray NL" Image="/Images/cc/48px-Crystal_Clear_device_cdwriter_unmount.png"><![CDATA[cats MATCH '(1a6 AND (1c11 OR 1c1 OR 1c2 OR 1c6))']]></Filter>
@@ -38,57 +38,57 @@
     <Filter Name=" R5" Image="/Images/cc/48px-Crystal_Clear_device_cdrom_mount.png"><![CDATA[cats MATCH '((1a0 OR 1a3) AND 1b7 AND (1c10 OR 1c11 OR 1c12 OR 1c13 OR 1c14 OR 1c1 OR 1c2 OR 1c6))']]></Filter>
     <Filter Name=" WMV" Image="/Images/cc/48px-Crystal_Clear_mimetype_source_py.png"><![CDATA[cats MATCH '1a1']]></Filter>
   </Filter>
-  <Filter Name=" Beeld - Genres" Image="/Images/2/blue.png" Query="cat=1">
-    <Filter Name=" Actie" Image="/Images/cc/48px-Crystal_Clear_app_aim3.png"><![CDATA[cats MATCH '((1b3 OR 1b7) AND (1c10 OR 1c11 OR 1c12 OR 1c13 OR 1c14 OR 1c3 OR 1c4 OR 1c7 OR 1c1 OR 1c2 OR 1c6) AND 1d0)']]></Filter>
-    <Filter Name=" Avontuur" Image="/Images/cc/48px-Crystal_Clear_app_access.png"><![CDATA[cats MATCH '((1b3 OR 1b7) AND (1c10 OR 1c11 OR 1c12 OR 1c13 OR 1c14 OR 1c3 OR 1c4 OR 1c7 OR 1c1 OR 1c2 OR 1c6) AND 1d1)']]></Filter>
+  <Filter Name=" Movies - Genres" Image="/Images/2/blue.png" Query="cat=1">
+    <Filter Name=" Action" Image="/Images/cc/48px-Crystal_Clear_app_aim3.png"><![CDATA[cats MATCH '((1b3 OR 1b7) AND (1c10 OR 1c11 OR 1c12 OR 1c13 OR 1c14 OR 1c3 OR 1c4 OR 1c7 OR 1c1 OR 1c2 OR 1c6) AND 1d0)']]></Filter>
+    <Filter Name=" Adventure" Image="/Images/cc/48px-Crystal_Clear_app_access.png"><![CDATA[cats MATCH '((1b3 OR 1b7) AND (1c10 OR 1c11 OR 1c12 OR 1c13 OR 1c14 OR 1c3 OR 1c4 OR 1c7 OR 1c1 OR 1c2 OR 1c6) AND 1d1)']]></Filter>
     <Filter Name=" Cabaret" Image="/Images/cc/48px-Crystal_Clear_app_proxy.png"><![CDATA[cats MATCH '((1a3 OR 1a10 OR 1a6 OR 1a7 OR 1a8 OR 1a9 OR 1a0 OR 1a2) AND (1d3))']]></Filter>
     <Filter Name=" Comedy" Image="/Images/cc/48px-Crystal_Clear_app_amor.png"><![CDATA[cats MATCH '((1b3 OR 1b7) AND (1c10 OR 1c11 OR 1c12 OR 1c13 OR 1c14 OR 1c3 OR 1c4 OR 1c7 OR 1c1 OR 1c2 OR 1c6) AND 1d4)']]></Filter>
-    <Filter Name=" Documentaire" Image="/Images/cc/48px-Crystal_Clear_app_Staroffice.png"><![CDATA[cats MATCH '((1a3 OR 1a6 OR 1a10) AND (1d6))']]></Filter>
+    <Filter Name=" Documentary" Image="/Images/cc/48px-Crystal_Clear_app_Staroffice.png"><![CDATA[cats MATCH '((1a3 OR 1a6 OR 1a10) AND (1d6))']]></Filter>
     <Filter Name=" Drama" Image="/Images/cc/48px-Crystal_Clear_app_ksame.png"><![CDATA[cats MATCH '((1b3 OR 1b7) AND (1c10 OR 1c11 OR 1c12 OR 1c13 OR 1c14 OR 1c3 OR 1c4 OR 1c7 OR 1c1 OR 1c2 OR 1c6) AND 1d7)']]></Filter>
     <Filter Name=" Horror" Image="/Images/cc/48px-Crystal_Clear_app_web.png"><![CDATA[cats MATCH '((1b3 OR 1b7) AND (1c10 OR 1c11 OR 1c12 OR 1c13 OR 1c14 OR 1c3 OR 1c4 OR 1c7 OR 1c1 OR 1c2 OR 1c6) AND 1d12)']]></Filter>
-    <Filter Name=" Kerst" Image="/Images/cc/48px-Crystal_Clear_app_ksplash.png"><![CDATA[cats MATCH '1b3 OR 1b7' AND rowid IN (SELECT rowid FROM search WHERE subject LIKE '%christmas%' OR subject LIKE '%kerst%')]]></Filter>
-    <Filter Name=" Kids" Image="/Images/cc/48px-Crystal_Clear_app_gadu.png"><![CDATA[cats MATCH '((1b3 OR 1b7) AND (1c10 OR 1c11 OR 1c3 OR 1c4 OR 1c7 OR 1c1 OR 1c2 OR 1c6) AND (1d2 OR 1d32 OR 1d33 OR 1d34 ))']]></Filter>
-    <Filter Name=" Muziek DVD" Image="/Images/cc/48px-Crystal_Clear_device_dvd_unmount.png"><![CDATA[cats MATCH '((1a3 OR 1a10 OR 1a6) AND (1b3 OR 1b7) AND (1d13 OR 1d14))']]></Filter>
-    <Filter Name=" Oorlog" Image="/Images/cc/48px-Crystal_Clear_app_kbattleship.png"><![CDATA[cats MATCH '((1b3 OR 1b7) AND (1c10 OR 1c11 OR 1c12 OR 1c13 OR 1c14 OR 1c3 OR 1c4 OR 1c7 OR 1c1 OR 1c2 OR 1c6) AND 1d21)']]></Filter>
+    <Filter Name=" War" Image="/Images/cc/48px-Crystal_Clear_app_kbattleship.png"><![CDATA[cats MATCH '((1b3 OR 1b7) AND (1c10 OR 1c11 OR 1c12 OR 1c13 OR 1c14 OR 1c3 OR 1c4 OR 1c7 OR 1c1 OR 1c2 OR 1c6) AND 1d21)']]></Filter>
     <Filter Name=" Science Fiction" Image="/Images/cc/48px-Crystal_Clear_app_katomic.png"><![CDATA[cats MATCH '((1b3 OR 1b7) AND (1c10 OR 1c11 OR 1c12 OR 1c13 OR 1c14 OR 1c3 OR 1c4 OR 1c7 OR 1c1 OR 1c2 OR 1c6) AND 1d17)']]></Filter>
+    <Filter Name=" Kids" Image="/Images/cc/48px-Crystal_Clear_app_gadu.png"><![CDATA[cats MATCH '((1b3 OR 1b7) AND (1c10 OR 1c11 OR 1c3 OR 1c4 OR 1c7 OR 1c1 OR 1c2 OR 1c6) AND (1d2 OR 1d32 OR 1d33 OR 1d34 ))']]></Filter>
+    <Filter Name=" Music DVD" Image="/Images/cc/48px-Crystal_Clear_device_dvd_unmount.png"><![CDATA[cats MATCH '((1a3 OR 1a10 OR 1a6) AND (1b3 OR 1b7) AND (1d13 OR 1d14))']]></Filter>
+    <Filter Name=" Christmas" Image="/Images/cc/48px-Crystal_Clear_app_ksplash.png"><![CDATA[cats MATCH '1b3 OR 1b7' AND rowid IN (SELECT rowid FROM search WHERE subject LIKE '%christmas%' OR subject LIKE '%kerst%')]]></Filter>
     <Filter Name=" Sport" Image="/Images/cc/48px-Crystal_Clear_app_clicknrun.png"><![CDATA[cats MATCH '1d18']]></Filter>
     <Filter Name=" Thriller" Image="/Images/cc/48px-Crystal_Clear_app_pysol.png"><![CDATA[cats MATCH '((1b3 OR 1b7) AND (1c10 OR 1c11 OR 1c12 OR 1c13 OR 1c14 OR 1c3 OR 1c4 OR 1c7 OR 1c1 OR 1c2 OR 1c6) AND 1d20)']]></Filter>
   </Filter>
-  <Filter Name=" Beeld - TV Series" Image="/Images/2/green.png" Query="cat=6">
+  <Filter Name=" Movies - TV Series" Image="/Images/2/green.png" Query="cat=6">
     <Filter Name=" MPG/WMV/DIVX" Image="/Images/cc/48px-Crystal_Clear_mimetype_dvi.png"><![CDATA[cats MATCH '(6a2 OR 6a1 OR 6a0)']]></Filter>
     <Filter Name=" DVD5 + DVD9" Image="/Images/cc/48px-Crystal_Clear_device_dvd_unmount.png"><![CDATA[cats MATCH '(6a3 OR 6a10)']]></Filter>
     <Filter Name=" x264 + Bluray" Image="/Images/cc/48px-Crystal_Clear_device_cdwriter_unmount.png"><![CDATA[cats MATCH '(6a6 OR 6a9)']]></Filter>
   </Filter>
-  <Filter Name=" Boeken" Image="/Images/2/Books.png" Query="cat=5">
-    <Filter Name=" Boeken" Image="/Images/cc/48px-Crystal_Clear_device_pda.png"><![CDATA[cat=5 AND tag LIKE '%ebook%']]></Filter>
-    <Filter Name=" Boeken NL" Image="/Images/cc/48px-Crystal_Clear_boeken_NL.png"><![CDATA[cats MATCH '5c2'AND tag LIKE '%ebook%']]></Filter>
+  <Filter Name=" Books" Image="/Images/2/Books.png" Query="cat=5">
+    <Filter Name=" Books" Image="/Images/cc/48px-Crystal_Clear_device_pda.png"><![CDATA[cat=5 AND tag LIKE '%ebook%']]></Filter>
+    <Filter Name=" Books NL" Image="/Images/cc/48px-Crystal_Clear_boeken_NL.png"><![CDATA[cat=5 AND tag LIKE '%ebook%']]></Filter>
     <Filter Name=" CD/DVD Covers" Image="/Images/cc/48px-Crystal_Clear_device_dvd_unmount.png"><![CDATA[cats MATCH '5d30']]></Filter>
     <Filter Name=" Epub" Image="/Images/cc/48px-Crystal_Clear_device_pda_blue.png"><![CDATA[cat = 5 AND subject LIKE '%epub%' OR tag LIKE '%epub%']]></Filter>
-    <Filter Name=" Knipvellen" Image="/Images/cc/48px-Crystal_Clear_action_editcut.png"><![CDATA[cat = 5 AND tag LIKE '%knipvel%' OR subject LIKE '%knipvel%']]></Filter>
+    <Filter Name=" Cuttingsheets" Image="/Images/cc/48px-Crystal_Clear_action_editcut.png"><![CDATA[cat = 5 AND tag LIKE '%knipvel%' OR subject LIKE '%knipvel%']]></Filter>
     <Filter Name=" Magazines" Image="/Images/cc/48px-Crystal_Clear_app_wine.png"><![CDATA[cat = 5 AND subject LIKE '%Magazine%' OR subject LIKE '%Tijdschrift%' OR tag LIKE '%Magazine%' OR tag LIKE '%tijdschrift%']]></Filter>
     <Filter Name=" Strips" Image="/Images/cc/48px-Crystal_Clear_app_krita.png"><![CDATA[cats MATCH '5d31' AND rowid IN (SELECT rowid FROM search WHERE subject LIKE '%strip%' OR tag LIKE '%strip%')]]></Filter>
   </Filter>
-  <Filter Name=" Muziek" Image="/Images/2/Music.png" Query="cat=2">
+  <Filter Name=" Music" Image="/Images/2/Music.png" Query="cat=2">
     <Filter Name=" Compressed" Image="/Images/cc/48px-Crystal_Clear_compressed.png"><![CDATA[cats MATCH '(2a0 OR 2a1)']]></Filter>
-    <Filter Name=" Discografie" Image="/Images/cc/48px-Crystal_Clear_discografie.png"><![CDATA[tag LIKE  '%discografie%' OR subject LIKE '%discografie%' OR tag LIKE  '%discography%' OR subject LIKE '%discography%']]></Filter>
+    <Filter Name=" Discography" Image="/Images/cc/48px-Crystal_Clear_discografie.png"><![CDATA[tag LIKE  '%discografie%' OR subject LIKE '%discografie%' OR tag LIKE  '%discography%' OR subject LIKE '%discography%']]></Filter>
     <Filter Name=" Lossless" Image="/Images/cc/48px-Crystal_Clear_lossless.png"><![CDATA[cats MATCH '(2a2 OR 2a3 OR 2a4 OR 2a5 OR 2a6 OR 2a7 OR 2a8)']]></Filter>
-    <Filter Name=" Luisterboeken" Image="/Images/cc/48px-Crystal_Clear_luisterboek.png"><![CDATA[cat = 2 AND subject LIKE '%audioboek%' OR subject LIKE '%luisterboek%']]></Filter>
+    <Filter Name=" Audiobooks" Image="/Images/cc/48px-Crystal_Clear_luisterboek.png"><![CDATA[cat = 2 AND subject LIKE '%audioboek%' OR subject LIKE '%luisterboek%']]></Filter>
   </Filter>
-  <Filter Name=" Muziek - Genres" Image="/Images/2/MusicGenres.png" Query="cat=2">
+  <Filter Name=" Music - Genres" Image="/Images/2/MusicGenres.png" Query="cat=2">
     <Filter Name=" Blues" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cats MATCH '2d0']]></Filter>
     <Filter Name=" Cabaret" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cats MATCH '2d2']]></Filter>
     <Filter Name=" Classics" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cats MATCH '2d24']]></Filter>
+    <Filter Name=" Classics2" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cats MATCH '2d9']]></Filter>
     <Filter Name=" Country" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cats MATCH '2d26']]></Filter>
     <Filter Name=" Dance" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cats MATCH '2d3']]></Filter>
     <Filter Name=" Disco" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cats MATCH '2d23']]></Filter>
-    <Filter Name=" Diversen" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cats MATCH '2d4']]></Filter>
+    <Filter Name=" Miscellaneous" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cats MATCH '2d4']]></Filter>
     <Filter Name=" Dubstep" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cats MATCH '2d27']]></Filter>
     <Filter Name=" Funk" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cat= 2 AND subject LIKE '%funk%' ]]></Filter>
     <Filter Name=" Hardstyle" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cats MATCH '2d5']]></Filter>
     <Filter Name=" Hiphop" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cats MATCH '2d15']]></Filter>
-    <Filter Name=" Hollands" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cats MATCH '2d11']]></Filter>
+    <Filter Name=" Dutch" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cats MATCH '2d11']]></Filter>
     <Filter Name=" Jazz" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cats MATCH '2d7']]></Filter>
-    <Filter Name=" Klassiek" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cats MATCH '2d9']]></Filter>
     <Filter Name=" Metal" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cats MATCH '2d25']]></Filter>
     <Filter Name=" Pop" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cats MATCH '2d13']]></Filter>
     <Filter Name=" RnB" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cats MATCH '2d14']]></Filter>
@@ -99,14 +99,14 @@
     <Filter Name=" Trance" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cats MATCH '2d33']]></Filter>
     <Filter Name=" Techno" Image="/Images/cc/48px-Crystal_Clear_app_mp3.png"><![CDATA[cats MATCH '2d35']]></Filter>
   </Filter>
-  <Filter Name=" Spellen" Image="/Images/2/Games.png" Query="cat=3">
+  <Filter Name=" Games" Image="/Images/2/Games.png" Query="cat=3">
     <Filter Name=" Windows" Image="/Images/os_windows.png"><![CDATA[cats MATCH '3a0']]></Filter>
     <Filter Name=" Mac" Image="/Images/os_apple.png"><![CDATA[cats MATCH '3a1']]></Filter>
     <Filter Name=" Linux" Image="/Images/os_linux.png"><![CDATA[cats MATCH '3a2']]></Filter>
     <Filter Name=" Retro / Emulators" Image="\Images\mario.ico"><![CDATA[cats MATCH '3a0 OR 3a1 OR 3a2 OR 3a4 OR 3a5 OR 3a6 OR 3a7 OR 3a8 OR 3a9 OR 3a10 OR 3a11 OR 3a12' AND rowid IN (SELECT rowid FROM search WHERE subject LIKE '%Amiga%' OR subject LIKE '%CPC%' OR subject LIKE '%Amstrad%' OR subject LIKE '%Atari%' OR subject LIKE '%C64%' OR subject LIKE '%Commodore%' OR subject LIKE '%CBM%' OR subject LIKE '%gameboy%' OR subject LIKE '%game boy%' OR subject LIKE '%MSX%' OR subject LIKE '% NES %' OR subject LIKE '%SNES%' OR subject LIKE '%ZX%' OR subject LIKE '% Spectrum %')]]></Filter>
     <Filter Name=" Flightsims" Image="\Images\aircraft.png"><![CDATA[cats MATCH '3a0' AND rowid IN (SELECT rowid FROM search WHERE tag LIKE '%fsx%' OR subject LIKE '%fsx%' OR tag LIKE '%Flightsim%'OR subject LIKE '%Flightsim%' OR tag LIKE '%Fs2004%' or subject LIKE '%Fs2004%')]]></Filter>
   </Filter>
-  <Filter Name=" Spellen - Console" Image="/Images/2/Games.png" Query="cat=3">
+  <Filter Name=" Games - Console" Image="/Images/2/Games.png" Query="cat=3">
     <Filter Name=" Playstation 1" Image="/Images/cc/48px-Crystal_Clear_device_joystick.png"><![CDATA[cats MATCH '3a3']]></Filter>
     <Filter Name=" Playstation 2" Image="/Images/cc/48px-Crystal_Clear_device_joystick.png"><![CDATA[cats MATCH '3a4']]></Filter>
     <Filter Name=" Playstation 3" Image="/Images/cc/48px-Crystal_Clear_device_joystick.png"><![CDATA[cats MATCH '3a12']]></Filter>
@@ -122,7 +122,7 @@
     <Filter Name=" Wii" Image="/Images/wii.png"><![CDATA[cats MATCH '3a11']]></Filter>
     <Filter Name=" Wii-U" Image="/Images/wii.png"><![CDATA[cat = 3 AND subject LIKE '%Wii-U%' OR '%Wii U%']]></Filter>
   </Filter>
-  <Filter Name=" Spellen - Mobile" Image="/Images/2/Games.png" Query="cat=3">
+  <Filter Name=" Games - Mobile" Image="/Images/2/Games.png" Query="cat=3">
     <Filter Name=" Android" Image="/Images/os_android.png"><![CDATA[cat = 3 AND subject LIKE '%android%']]></Filter>
     <Filter Name=" Android Tablet" Image="/Images/android-tablet.png"><![CDATA[cats MATCH '3a13 OR 3a15' AND rowid IN (SELECT rowid FROM search WHERE subject LIKE '%honeycomb%' OR subject LIKE '%ice cream sandwich%' OR subject LIKE '%tablet%')]]></Filter>
     <Filter Name=" Windows Mobile" Image="/Images/os_windows.png"><![CDATA[cats MATCH '3a13' AND (NOT( subject LIKE '%iphone%' OR subject LIKE '%ipad%' OR subject LIKE '%android%' OR subject LIKE '%blackberry%' ))]]></Filter>
@@ -131,15 +131,15 @@
     <Filter Name=" Blackberry" Image="/Images/blackberry.png"><![CDATA[cat = 3 AND subject LIKE '%blackberry%']]></Filter>
     <Filter Name=" Symbian" Image="/Images/symbian.png"><![CDATA[cat = 3 AND tag LIKE '%symbian%' OR subject LIKE '%symbian%' OR subject LIKE '%S^3%']]></Filter>
   </Filter>
-  <Filter Name=" Applicaties" Image="/Images/2/Applications.png" Query="cat=4">
+  <Filter Name=" Software" Image="/Images/2/Applications.png" Query="cat=4">
     <Filter Name=" Windows " Image="/Images/os_windows.png"><![CDATA[cats MATCH '4a0']]></Filter>
     <Filter Name=" Linux/OS2" Image="/Images/os_linux.png"><![CDATA[cats MATCH '(4a2 OR 4a3)']]></Filter>
     <Filter Name=" Mac " Image="/Images/os_apple.png"><![CDATA[cats MATCH '4a1']]></Filter>
-    <Filter Name=" Navigatie" Image="/Images/cc/48px-Crystal_Clear_filesystem_chardevice.png"><![CDATA[cats MATCH '4a5']]></Filter>
+    <Filter Name=" Navigators" Image="/Images/cc/48px-Crystal_Clear_filesystem_chardevice.png"><![CDATA[cats MATCH '4a5']]></Filter>
     <Filter Name=" Portable" Image="/Images/os_windows.png"><![CDATA[cat = 4 AND subject LIKE '%portable%']]></Filter>
     <Filter Name=" Spotnet" Image="/Images/cc/48px-Crystal_Clear_spotnet.png"><![CDATA[cat = 4 AND subject LIKE '%Spotnet%' OR subject LIKE '%spotnet%' ]]></Filter>
   </Filter>
-  <Filter Name=" Applicaties - Mobile" Image="/Images/2/Applications.png" Query="cat=4">
+  <Filter Name=" Software - Mobile" Image="/Images/2/Applications.png" Query="cat=4">
     <Filter Name=" Android " Image="/Images/os_android.png"><![CDATA[cats MATCH '4a7 OR 4a4' AND subject LIKE '%android%']]></Filter>
     <Filter Name=" Android Tablet " Image="/Images/android-tablet.png"><![CDATA[cats MATCH '4a7 OR 4a8' AND rowid IN (SELECT rowid FROM search WHERE subject LIKE '%honeycomb%' OR subject LIKE '%ice cream sandwich%' OR subject LIKE '%tablet%')]]></Filter>
     <Filter Name=" Windows Mobile " Image="/Images/os_windows.png"><![CDATA[cats MATCH '4a4' AND (NOT( subject LIKE '%iphone%' OR subject LIKE '%ipad%' OR subject LIKE '%android%' OR subject LIKE '%blackberry%' ))]]></Filter>
@@ -148,14 +148,14 @@
     <Filter Name=" Blackberry " Image="/Images/blackberry.png"><![CDATA[cat = 4 AND subject LIKE '%blackberry%']]></Filter>
     <Filter Name=" Symbian " Image="/Images/symbian.png"><![CDATA[cat = 4 AND tag LIKE '%symbian%' OR subject LIKE '%symbian%' OR subject LIKE '%S^3%']]></Filter>
   </Filter>
-  <Filter Name=" Erotiek" Image="/Images/2/Erotic.png" Query="cat=9">
+  <Filter Name="Erotica" Image="/Images/2/Erotic.png" Query="cat=9">
     <Filter Name=" Hetero" Image="/Images/sex-male-female.png"><![CDATA[cats MATCH '(9d23 OR 9d76 OR 9d84 OR 9d89 OR 9d87 OR 9d82 OR 9d77 OR 9d86 OR 9d80 OR 9d83 OR 9d78 OR 9d85 OR 9d81 OR 9d79)']]></Filter>
-    <Filter Name=" Gay-mannen" Image="/Images/sex-male.png"><![CDATA[cats MATCH '9d24']]></Filter>
-    <Filter Name=" Gay-vrouwen" Image="/Images/sex-female.png"><![CDATA[cats MATCH '9d25']]></Filter>
+    <Filter Name=" Homo" Image="/Images/sex-male.png"><![CDATA[cats MATCH '9d24']]></Filter>
+    <Filter Name=" Lesbo" Image="/Images/sex-female.png"><![CDATA[cats MATCH '9d25']]></Filter>
     <Filter Name=" Bi" Image="/Images/sex-male-female.png"><![CDATA[cats MATCH '9d23 OR 9d24 OR 9d25 OR 9d26']]></Filter>
     <Filter Name=" HD All" Image="/Images/sex-male-female.png"><![CDATA[cats MATCH '(9a6 OR 9a9)']]></Filter>
-    <Filter Name=" HD All No Gay (M/V)" Image="/Images/sex-male-female.png"><![CDATA[cats MATCH '((9a6 OR 9a9) AND (9d23 OR 9d76 OR 9d84 OR 9d89 OR 9d87 OR 9d82 OR 9d77 OR 9d86 OR 9d88 OR 9d80 OR 9d83 OR 9d78 OR 9d85 OR 9d81 OR 9d79))']]></Filter>
+    <Filter Name=" HD All (M/W only)" Image="/Images/sex-male-female.png"><![CDATA[cats MATCH '((9a6 OR 9a9) AND (9d23 OR 9d76 OR 9d84 OR 9d89 OR 9d87 OR 9d82 OR 9d77 OR 9d86 OR 9d88 OR 9d80 OR 9d83 OR 9d78 OR 9d85 OR 9d81 OR 9d79))']]></Filter>
     <Filter Name=" Hentai" Image="/Images/sex-male-female.png"><![CDATA[cats MATCH '9a2 OR 9a1 OR 9a0 OR 9a3 OR 9a10 OR 9a6 OR 9a9' AND rowid IN (SELECT rowid FROM search WHERE tag LIKE '%hentai%' OR subject LIKE '%hentai%')]]></Filter>
-    <Filter Name=" Afbeeldingen" Image="/Images/sex-male-female.png"><![CDATA[cats MATCH '((9a5) AND (9d23 OR 9d76 OR 9d84 OR 9d89 OR 9d87 OR 9d82 OR 9d77 OR 9d86 OR 9d88 OR 9d80 OR 9d83 OR 9d78 OR 9d85 OR 9d81 OR 9d79 OR 9d24 OR 9d25 OR 9d26))']]></Filter>
+    <Filter Name=" Photos" Image="/Images/sex-male-female.png"><![CDATA[cats MATCH '((9a5) AND (9d23 OR 9d76 OR 9d84 OR 9d89 OR 9d87 OR 9d82 OR 9d77 OR 9d86 OR 9d88 OR 9d80 OR 9d83 OR 9d78 OR 9d85 OR 9d81 OR 9d79 OR 9d24 OR 9d25 OR 9d26))']]></Filter>
   </Filter>
 </Spotnet>

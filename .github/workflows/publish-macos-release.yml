@@ -11,7 +11,7 @@ on:
       version:
         description: macOS release version
         required: true
-        default: 3.0.0.4
+        default: 3.0.0.5
 
 permissions:
   contents: write
@@ -20,7 +20,7 @@ jobs:
   publish-macos:
     runs-on: macos-14
     env:
-      VERSION: 3.0.0.4
+      VERSION: 3.0.0.5
     steps:
       - name: Checkout macOS client
         uses: actions/checkout@v4
@@ -28,6 +28,8 @@ jobs:
           ref: macos-client
 
       - name: Build Intel app bundle
+        env:
+          BUNDLE_VERSION: ${{ env.VERSION }}
         run: ./tools/make_app_bundle.sh x64
 
       - name: Package and verify release asset

@@ -40,6 +40,12 @@ public sealed class FilterItem : INotifyPropertyChanged
 
     public string Icon { get; init; } = string.Empty;
 
+    /// <summary>
+    /// The Image attribute a Windows filters.xml carries for this node, kept so a set
+    /// saved here still shows its icons when opened on Windows. Not used for display.
+    /// </summary>
+    public string ImageRef { get; init; } = string.Empty;
+
     private int _count;
     public int Count
     {
@@ -97,6 +103,18 @@ public sealed class FilterItem : INotifyPropertyChanged
     }
 
     public bool HasGenreDot => !string.IsNullOrEmpty(GenreDotColor);
+
+    /// <summary>
+    /// Windows' ColoringFilters-voorkeur, proces-breed. De view-model houdt dit gelijk
+    /// aan de voorkeur en roept <see cref="RefreshColoring"/> aan over de boom wanneer
+    /// de voorkeur omgaat; een static vlag kan zelf geen per-node melding geven.
+    /// </summary>
+    public static bool ColoringEnabled { get; set; } = true;
+
+    /// <summary>Of de gekleurde stip getoond mag worden: eigen categorie én de voorkeur aan.</summary>
+    public bool ShowGenreDot => HasGenreDot && ColoringEnabled;
+
+    public void RefreshColoring() => OnPropertyChanged(nameof(ShowGenreDot));
 
     /// <summary>cats column prefix to LIKE filter on (e.g. "1a3"); null = no subcat filter</summary>
     public string? SubcatTag { get; init; }

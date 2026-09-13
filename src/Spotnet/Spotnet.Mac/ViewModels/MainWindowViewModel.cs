@@ -27,7 +27,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private readonly UserPreferencesService _prefsService;
     private readonly SpotSyncService _syncService;
     private readonly NzbService _nzbService;
-    private readonly CustomFilterService _customFilterService;
+    private readonly FilterSetService _filterSets;
     private readonly CommentService _commentService;
     private readonly ComplaintService _complaintService;
     private readonly UserKeyService _userKeyService;
@@ -244,9 +244,6 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
     public ObservableCollection<FilterItem> FilterTree { get; } = new();
 
-    // Flat list of custom filter items for easy save/load
-    private readonly ObservableCollection<FilterItem> _customFilters = new();
-
     // ── Sub-view-models ───────────────────────────────────────────────────────
     public SpotDetailViewModel SpotDetail { get; }
 
@@ -280,7 +277,10 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         {
             if (SetProperty(ref _selectedSpot, value))
             {
-                SpotDetail.Spot = value;
+                // Deliberately not feeding SpotDetail here. It is only rendered by
+                // OpenSpot in Window mode, which assigns it as the window opens;
+                // assigning it per row selection made every arrow-key press open two
+                // uncached NNTP connections for a body and comments nothing displays.
                 OnPropertyChanged(nameof(IsDetailOpen));
             }
         }
@@ -416,8 +416,24 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
                 prefs.ColoringFilters = value;
                 _prefsService.Save(prefs);
                 OnPropertyChanged();
+                RefreshFilterColoring();
             }
         }
+    }
+
+    /// <summary>
+    /// De stippen lezen de voorkeur via een static vlag op FilterItem, dus bij een
+    /// omgezette voorkeur moet elke node zijn afgeleide property opnieuw melden.
+    /// </summary>
+    private void RefreshFilterColoring()
+    {
+        Models.FilterItem.ColoringEnabled = ColoringFilters;
+        void Walk(Models.FilterItem item)
+        {
+            item.RefreshColoring();
+            foreach (var child in item.Children) Walk(child);
+        }
+        foreach (var node in FilterTree) Walk(node);
     }
 
     /// <summary>Windows' SaveTabs: geopende spot-tabbladen heropenen bij het opstarten.</summary>
@@ -678,6 +694,12 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public ICommand SetThemeCommand { get; }
     public ICommand AddCustomFilterCommand { get; }
     public ICommand DeleteFilterCommand { get; }
+    public ICommand EditFilterCommand { get; }
+    public ICommand MoveFilterUpCommand { get; }
+    public ICommand MoveFilterDownCommand { get; }
+    public ICommand SelectFilterSetCommand { get; }
+    public ICommand SaveFilterSetAsCommand { get; }
+    public ICommand RemoveFilterSetCommand { get; }
     public ICommand ToggleFilterExpandCommand { get; }
     public ICommand SelectFilterCommand { get; }
     public ICommand OpenSpotCommand { get; }
@@ -711,6 +733,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public ICommand AddSpotToFavoritesCommand { get; }
     public ICommand RemoveSpotFromFavoritesCommand { get; }
     public ICommand ComplainToSpotCommand { get; }
+    public ICommand DownloadSpotCommand { get; }
 
     public bool ShowTrustedOnlyMode
     {
@@ -800,6 +823,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     public event Action? RequestOpenReleaseNotes;
     public event Action? RequestCheckForUpdates;
     public event Action? RequestAddCustomFilter;
+    public event Action<FilterItem>? RequestEditFilter;
     public event Action<SpotItem>? RequestOpenComplaintDialog;
     public event Action? RequestPickDownloadFolder;
     public event Action<DownloadItem>? RequestSetDownloadPassword;
@@ -817,7 +841,9 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         _dbService = dbService;
         _prefsService = prefsService ?? new UserPreferencesService(_appPaths);
         _extensiveSearch = _prefsService.Current.AdvancedSearch;
-        _customFilterService = new CustomFilterService(_appPaths);
+        Models.FilterItem.ColoringEnabled = _prefsService.Current.ColoringFilters;
+        _filterSets = new FilterSetService(_appPaths, _prefsService);
+        _filterSets.InitializeDefaultSets();
         _trustService = trustService ?? new TrustService(_appPaths, _prefsService);
 
         _trustService.ListsChanged += () =>
@@ -832,7 +858,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         _userKeyService = new UserKeyService(_dbService);
         _nzbService = new NzbService(_appPaths, _secretStore, _prefsService);
         _syncService = new SpotSyncService(_appPaths, _secretStore, _dbService, _prefsService, _trustService);
-        _commentService = new CommentService(_appPaths, _secretStore, _dbService, _userKeyService);
+        _commentService = new CommentService(_appPaths, _secretStore, _dbService, _userKeyService, _prefsService);
         _complaintService = new ComplaintService(_appPaths, _secretStore, _dbService, _prefsService, _trustService, _userKeyService);
         _bodyService = new SpotBodyService(_appPaths, _secretStore);
         _searchHistory = new Services.SearchHistoryService(_appPaths);
@@ -978,14 +1004,45 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
         DeleteFilterCommand = new RelayCommand(param =>
         {
-            if (param is FilterItem item && item.IsCustom)
-                RemoveCustomFilter(item);
+            if (param is FilterItem item) RemoveCustomFilter(item);
+        });
+
+        EditFilterCommand = new RelayCommand(param =>
+        {
+            if (param is FilterItem item) RequestEditFilter?.Invoke(item);
+        });
+
+        MoveFilterUpCommand = new RelayCommand(param => MoveFilter(param, up: true));
+        MoveFilterDownCommand = new RelayCommand(param => MoveFilter(param, up: false));
+
+        SelectFilterSetCommand = new RelayCommand(param =>
+        {
+            if (param is string name &&
+                !string.Equals(name, _filterSets.ActiveSet, StringComparison.OrdinalIgnoreCase))
+            {
+                SaveExpansionState();
+                _filterSets.ActiveSet = name;
+                ReloadFilterTree();
+            }
+        });
+
+        SaveFilterSetAsCommand = new RelayCommand(() => RequestSaveFilterSetAs?.Invoke());
+
+        RemoveFilterSetCommand = new RelayCommand(param =>
+        {
+            if (param is string name && _filterSets.RemoveSet(name))
+            {
+                ReloadFilterTree();
+            }
         });
 
         ToggleFilterExpandCommand = new RelayCommand(param =>
         {
             if (param is FilterItem item && item.HasChildren)
+            {
                 item.IsExpanded = !item.IsExpanded;
+                SaveExpansionState();
+            }
         });
 
         SelectFilterCommand = new RelayCommand(param =>
@@ -1009,7 +1066,14 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
         SetSpotsListTypeCommand = new RelayCommand(param =>
         {
-            if (param is int type) SpotsListType = type;
+            // The menu passes "0"/"3" as strings; older callers pass an int.
+            int? type = param switch
+            {
+                int i => i,
+                string s when int.TryParse(s, out int parsed) => parsed,
+                _ => null
+            };
+            if (type != null) SpotsListType = type.Value;
         });
 
         LoadMoreThumbsCommand = new RelayCommand(async () => await LoadMoreThumbsAsync());
@@ -1040,7 +1104,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             {
                 DownloadsTab.RemoveCommand.Execute(DownloadsTab.Selected);
             }
-            else if (SelectedSpot != null && SelectedTab == null)
+            else if (SelectedSpot != null && SelectedTab is OverviewTabViewModel)
             {
                 // Delete on the spot list adds the spot to the blacklist, exactly like Windows
                 if (!string.IsNullOrWhiteSpace(SelectedSpot.MsgId))
@@ -1170,6 +1234,12 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             {
                 RequestOpenComplaintDialog?.Invoke(spot);
             }
+        });
+
+        DownloadSpotCommand = new RelayCommand(async param =>
+        {
+            var spot = param as SpotItem ?? SelectedSpot;
+            if (spot != null) await DownloadSpotAsync(spot);
         });
 
         DownloadExternalListsCommand = new RelayCommand(async () =>
@@ -1320,16 +1390,26 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         SelectedTab = DownloadsTab;
     }
 
+    /// <summary>
+    /// Refreshes one row's spam-report badge from the database, for the view to call
+    /// after a complaint has been filed against that spot.
+    /// </summary>
+    public async System.Threading.Tasks.Task RefreshSpamReportsAsync(SpotItem? spot)
+    {
+        if (spot == null || string.IsNullOrWhiteSpace(spot.MsgId)) return;
+        var reports = await _dbService.GetSpamReportsAsync(spot.MsgId);
+        spot.NumberOfSpamReports = reports.Count;
+    }
+
     // ── Filter Tree ───────────────────────────────────────────────────────────
 
-    private FilterItem _customGroup = null!;
     private FilterItem _defaultFilter = null!;
 
     private void BuildFilterTree()
     {
         FilterTree.Clear();
 
-        // ── Favorieten filter node ────────────────────────────────────────────
+        // ── Favorieten filter node, injected the way Windows' LoadPersistentFilters does ──
         var favFilter = new FilterItem
         {
             Id = "def_Favorieten",
@@ -1340,52 +1420,81 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         };
         FilterTree.Add(favFilter);
 
-        // ── Bundled advanced filters ──────────────────────────────────────────
-        // Same tree the Windows client ships (Nieuw, Overzicht, Laatste 24 uur,
-        // Beeld, Beeld - Genres, Beeld - TV Series, Boeken, Muziek, Muziek - Genres,
-        // Spellen, Spellen - Console, Spellen - Mobile, Applicaties,
-        // Applicaties - Mobile, Erotiek), loaded from the shared XML.
-        foreach (var item in DefaultFilterProvider.Load())
+        // ── The active set's tree, read from Filters.v2 in the Windows format ──
+        foreach (var item in _filterSets.LoadActiveTree())
         {
             FilterTree.Add(item);
         }
 
-        // ── Custom filters group ──────────────────────────────────────────────
-        _customGroup = new FilterItem
+        // ── Expansion state, as Windows' filters.expanded.txt ──
+        var expanded = _filterSets.LoadExpanded();
+        void ApplyExpansion(FilterItem node, string path)
         {
-            Id = "custom",
-            Kind = FilterKind.Custom,
-            Name = "Eigen filters",
-            Icon = "🔖",
-            IsExpanded = true
-        };
-
-        // Load persisted custom filters
-        var saved = _customFilterService.Load();
-        foreach (var def in saved)
-        {
-            var customItem = new FilterItem
-            {
-                Id = def.Id,
-                Kind = FilterKind.Custom,
-                Name = def.Name,
-                Icon = def.Icon,
-                CategoryId = def.CategoryId,
-                SubcatTag = def.SubcatTag,
-                MaxAgeHours = def.MaxAgeHours,
-                KeywordFilter = def.KeywordFilter,
-                Query = ComposeQuery(def.CategoryId, def.SubcatTag, def.MaxAgeHours)
-            };
-            _customGroup.Children.Add(customItem);
-            _customFilters.Add(customItem);
+            node.IsExpanded = expanded.Contains(path);
+            foreach (var child in node.Children) ApplyExpansion(child, path + "/" + child.Name);
         }
+        foreach (var node in FilterTree) ApplyExpansion(node, node.Name);
 
-        FilterTree.Add(_customGroup);
-
-        // Default selection: "Overzicht", as on Windows.
-        _defaultFilter = FilterTree.FirstOrDefault(f => f.Id == "def_Overzicht") ?? FilterTree.First();
+        // Default selection: "Overzicht", as on Windows; "All" in the English sets.
+        _defaultFilter = FilterTree.FirstOrDefault(f => f.Name is "Overzicht" or "All") ?? FilterTree.First();
         _selectedFilter = _defaultFilter;
         _defaultFilter.IsSelected = true;
+    }
+
+    /// <summary>The set the sidebar currently shows, for the FILTERS header.</summary>
+    public string FilterSetLabel => _filterSets.ActiveSet;
+
+    /// <summary>All sets available to switch to, shipped ones first.</summary>
+    public IReadOnlyList<string> FilterSetNames => _filterSets.GetSetNames();
+
+    public bool IsActiveFilterSetImmutable => _filterSets.IsActiveSetImmutable;
+
+    public event Action? RequestSaveFilterSetAs;
+
+    /// <summary>Saves the sidebar tree as a new set and switches to it.</summary>
+    public bool SaveCurrentSetAs(string newName)
+    {
+        var (ok, _) = _filterSets.SaveAs(newName, SetNodes());
+        if (ok)
+        {
+            ReloadFilterTree();
+        }
+        return ok;
+    }
+
+    /// <summary>The sidebar tree without the injected Favorieten node, i.e. what a set holds.</summary>
+    private List<FilterItem> SetNodes() => FilterTree.Where(n => n.Id != "def_Favorieten").ToList();
+
+    private void ReloadFilterTree()
+    {
+        BuildFilterTree();
+        OnPropertyChanged(nameof(FilterSetLabel));
+        OnPropertyChanged(nameof(FilterSetNames));
+        OnPropertyChanged(nameof(IsActiveFilterSetImmutable));
+        _ = RefreshSpotsAsync();
+        _ = UpdateFilterCountsAsync();
+    }
+
+    /// <summary>Writes the sidebar tree back into the active set.</summary>
+    private void SaveFilterTree()
+    {
+        if (!_filterSets.SaveTree(_filterSets.ActiveSet, SetNodes()))
+        {
+            StatusText = "Deze filterlijst is alleen-lezen.";
+        }
+    }
+
+    /// <summary>The expanded nodes' paths, one per line, as Windows' filters.expanded.txt.</summary>
+    private void SaveExpansionState()
+    {
+        var paths = new List<string>();
+        void Walk(FilterItem node, string path)
+        {
+            if (node.IsExpanded) paths.Add(path);
+            foreach (var child in node.Children) Walk(child, path + "/" + child.Name);
+        }
+        foreach (var node in FilterTree) Walk(node, node.Name);
+        _filterSets.SaveExpanded(paths);
     }
 
     /// <summary>
@@ -1393,12 +1502,25 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     /// "filter toevoegen" dialog collects. Keyword matching stays out of the
     /// expression: it is applied as a free-text search alongside it.
     /// </summary>
-    private static string ComposeQuery(int? categoryId, string? subcatTag, int? maxAgeHours)
+    private static string ComposeQuery(int? categoryId, string? subcatTag, int? maxAgeHours) =>
+        ComposeQuery(categoryId is > 0 ? new[] { categoryId.Value } : Array.Empty<int>(), subcatTag, maxAgeHours);
+
+    /// <summary>
+    /// Builds a filter expression the way Windows' GetFilterString does: one cat = N for
+    /// a single category, an OR group for several, then the subcategory and age terms.
+    /// Keyword matching stays out of the expression: it is applied as a free-text
+    /// search alongside it.
+    /// </summary>
+    private static string ComposeQuery(IReadOnlyCollection<int> categoryIds, string? subcatTag, int? maxAgeHours)
     {
         var parts = new List<string>();
-        if (categoryId is > 0)
+        if (categoryIds.Count == 1)
         {
-            parts.Add($"cat = {categoryId.Value}");
+            parts.Add($"cat = {categoryIds.First()}");
+        }
+        else if (categoryIds.Count > 1)
+        {
+            parts.Add("(" + string.Join(" OR ", categoryIds.Select(c => $"cat = {c}")) + ")");
         }
         if (!string.IsNullOrWhiteSpace(subcatTag))
         {
@@ -1414,51 +1536,144 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     }
 
     /// <summary>
-    /// Adds a new user-created filter to the custom group and persists it.
+    /// Adds a new user-created filter to the active set and persists it.
     /// </summary>
     public void AddCustomFilter(string name, string icon, int? categoryId, string? subcatTag, int? maxAgeHours, string? keyword)
+        => AddCustomFilter(name, icon,
+                           categoryId is > 0 ? new[] { categoryId.Value } : Array.Empty<int>(),
+                           subcatTag, maxAgeHours, keyword);
+
+    public void AddCustomFilter(string name, string icon, IReadOnlyList<int> categoryIds, string? subcatTag, int? maxAgeHours, string? keyword)
     {
-        var item = new FilterItem
+        _filterSets.EnsureMutableSet(SetNodes());
+
+        FilterTree.Add(CreateCustomFilter(name, icon, categoryIds, subcatTag, maxAgeHours, keyword, isSelected: false));
+        SaveFilterTree();
+        _ = UpdateFilterCountsAsync();
+    }
+
+    /// <summary>
+    /// Replaces a filter with the edited fields, keeping its position in the tree —
+    /// Windows' Edit re-saves under the (possibly changed) name the same way.
+    /// </summary>
+    public void ApplyFilterEdit(FilterItem existing, string name, string icon, IReadOnlyList<int> categoryIds,
+                                string? subcatTag, int? maxAgeHours, string? keyword)
+    {
+        _filterSets.EnsureMutableSet(SetNodes());
+
+        ObservableCollection<FilterItem>? siblings = null;
+        int index = FilterTree.IndexOf(existing);
+        if (index >= 0)
         {
+            siblings = FilterTree;
+        }
+        else
+        {
+            foreach (var node in FilterTree)
+            {
+                index = node.Children.IndexOf(existing);
+                if (index >= 0)
+                {
+                    siblings = node.Children;
+                    break;
+                }
+            }
+        }
+
+        if (siblings == null || index < 0) return;
+
+        bool wasSelected = SelectedFilter == existing;
+        siblings[index] = CreateCustomFilter(name, icon, categoryIds, subcatTag, maxAgeHours, keyword, wasSelected);
+        if (wasSelected) _selectedFilter = siblings[index];
+
+        SaveFilterTree();
+        _ = UpdateFilterCountsAsync();
+    }
+
+    private static FilterItem CreateCustomFilter(string name, string icon, IReadOnlyList<int> categoryIds,
+                                                 string? subcatTag, int? maxAgeHours, string? keyword, bool isSelected)
+    {
+        return new FilterItem
+        {
+            Id = name,
             Kind = FilterKind.Custom,
             Name = name,
             Icon = icon,
-            CategoryId = categoryId,
+            CategoryId = categoryIds.Count > 0 ? categoryIds[0] : null,
             SubcatTag = subcatTag,
             MaxAgeHours = maxAgeHours,
             KeywordFilter = keyword,
-            Query = ComposeQuery(categoryId, subcatTag, maxAgeHours)
+            Query = ComposeQuery(categoryIds, subcatTag, maxAgeHours),
+            IsSelected = isSelected
         };
-
-        _customGroup.Children.Add(item);
-        _customFilters.Add(item);
-        PersistCustomFilters();
     }
 
     private void RemoveCustomFilter(FilterItem item)
     {
-        _customGroup.Children.Remove(item);
-        _customFilters.Remove(item);
-        PersistCustomFilters();
+        if (item.Id == "def_Favorieten") return;
+
+        _filterSets.EnsureMutableSet(SetNodes());
+
+        if (!RemoveFromTree(item)) return;
+
+        SaveFilterTree();
+        _ = UpdateFilterCountsAsync();
 
         if (SelectedFilter == item)
             SelectedFilter = _defaultFilter;
     }
 
-    private void PersistCustomFilters()
+    private bool RemoveFromTree(FilterItem item)
     {
-        var defs = _customFilters.Select(f => new CustomFilterDefinition
+        if (FilterTree.Remove(item)) return true;
+        foreach (var node in FilterTree)
         {
-            Id = f.Id,
-            Name = f.Name,
-            Icon = f.Icon,
-            CategoryId = f.CategoryId,
-            SubcatTag = f.SubcatTag,
-            MaxAgeHours = f.MaxAgeHours,
-            KeywordFilter = f.KeywordFilter
-        }).ToList();
+            if (RemoveFrom(node, item)) return true;
+        }
+        return false;
+    }
 
-        _customFilterService.Save(defs);
+    private static bool RemoveFrom(FilterItem parent, FilterItem item)
+    {
+        if (parent.Children.Remove(item)) return true;
+        foreach (var child in parent.Children)
+        {
+            if (RemoveFrom(child, item)) return true;
+        }
+        return false;
+    }
+
+    /// <summary>Moves a filter one slot among its siblings, as Windows' SwapFilter.</summary>
+    private void MoveFilter(object? param, bool up)
+    {
+        if (param is not FilterItem item || item.Id == "def_Favorieten") return;
+
+        ObservableCollection<FilterItem>? siblings = null;
+        int index = -1;
+        if ((index = FilterTree.IndexOf(item)) >= 0)
+        {
+            siblings = FilterTree;
+        }
+        else
+        {
+            foreach (var node in FilterTree)
+            {
+                index = node.Children.IndexOf(item);
+                if (index >= 0)
+                {
+                    siblings = node.Children;
+                    break;
+                }
+            }
+        }
+
+        if (siblings == null) return;
+        int target = index + (up ? -1 : 1);
+        if (target < 0 || target >= siblings.Count) return;
+
+        _filterSets.EnsureMutableSet(SetNodes());
+        siblings.Move(index, target);
+        SaveFilterTree();
     }
 
     // ── Initialise ────────────────────────────────────────────────────────────
@@ -1498,6 +1713,14 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             // Tabbladen onthouden (fase 6): de opgeslagen spot-tabbladen heropenen,
             // zoals Windows' ReopenTabs in PrepareWindow.
             await ReopenSavedTabsAsync();
+
+            // Windows start de timer én trapt bij het opstarten meteen één sync af
+            // (Views/MainWindow.cs: DbUpdateTimerStart(); ScheduleDbUpdate();). Zonder
+            // dit zouden nieuwe spots pas komen nadat de eerste interval verstreken is.
+            if (_prefsService.Current.DbAutoUpdateEnabled && _prefsService.Current.DbAutoUpdateIntervalMin > 0)
+            {
+                _ = RunAutoSyncAsync();
+            }
         }
         catch (Exception ex)
         {
@@ -1757,12 +1980,21 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             return;
         }
 
+        await RunAutoSyncAsync();
+    }
+
+    /// <summary>
+    /// One header sync plus the list refresh that follows it. Shared by the periodic
+    /// timer and the single sync Windows kicks off immediately at launch.
+    /// </summary>
+    private async Task RunAutoSyncAsync()
+    {
         await _dispatcher.InvokeAsync(async () =>
         {
-            if (IsSyncing || IsLoading) return;
+            if (IsSyncing) return;
             try
             {
-                Log.Info("Auto-sync timer elapsed; starting automated sync.");
+                Log.Info("Starting automated spot sync.");
                 IsSyncing = true;
                 await _syncService.SyncSpotsAsync();
                 IsSyncing = false;
@@ -1961,6 +2193,23 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         var rows = await _dbService.QueryByFilterAsync(
             filterQuery: null, searchText: null, skip: 0, take: (int)Math.Min(rowId, int.MaxValue));
         return rows.FirstOrDefault(s => s.Id == rowId)?.MsgId;
+    }
+
+    /// <summary>
+    /// Downloaden rechtstreeks vanuit de spotlijst, zoals de DownloadNzb-knop op
+    /// Windows' spotslisttoolbar: de spot hoeft niet eerst in een tabblad geopend te
+    /// worden. Een mislukte NZB-fetch landt ook in de lijst, zodat de rij laat zien
+    /// waarom het niet lukte.
+    /// </summary>
+    public async System.Threading.Tasks.Task<(bool success, string? path, string message, Network.NzbDownloadJob? job)>
+        DownloadSpotAsync(SpotItem spot)
+    {
+        StatusText = "NZB ophalen van Usenet...";
+        var result = await _nzbService.DownloadAsync(spot);
+        DownloadsTab.Add(spot, result.success, result.filePath, result.message, result.job);
+        SelectedTab = DownloadsTab;
+        StatusText = result.message;
+        return result;
     }
 
     /// <summary>Downloaden vanaf de telefoon: zelfde pad als de Downloadknop op de spotpagina.</summary>

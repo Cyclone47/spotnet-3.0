@@ -23,3 +23,5 @@ build_diag.txt
 /decompiled_200/
 /src/Spotnet/lib/Spotnet.exe
 .freebuff/
+# Locally built app bundle (132 MB); the release workflow builds its own in artifacts/.
+/apps/

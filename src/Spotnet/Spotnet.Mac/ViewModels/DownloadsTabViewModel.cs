@@ -470,14 +470,23 @@ public sealed class DownloadsTabViewModel : WorkspaceTabViewModel
     public async System.Threading.Tasks.Task RunPostProcessAsync(DownloadItem item)
     {
         string dir = item.DownloadDir;
-        if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir))
+        if (string.IsNullOrEmpty(dir))
         {
+            // No integrated download ever ran for this row (SaveNzb / OpenNzb /
+            // NZBGet), so there is nothing to verify. Leave the stage the NZB fetch
+            // set instead of promoting it to a success it did not earn.
+            return;
+        }
+
+        if (!Directory.Exists(dir))
+        {
+            Log.Warn("Post-process skipped for {0}: download directory {1} does not exist", item.MsgId, dir);
             Dispatcher.UIThread.Post(() =>
             {
-                item.SetStage(DownloadStage.Success);
+                item.SetStage(DownloadStage.Failure, "downloadmap ontbreekt");
                 Persist();
-                _notificationService.NotifyDownloadFinished(item.Title, success: true);
-                RecordDownloadComplete(item.Title, success: true);
+                _notificationService.NotifyDownloadFinished(item.Title, success: false, detail: "downloadmap ontbreekt");
+                RecordDownloadComplete(item.Title, success: false);
             });
             return;
         }

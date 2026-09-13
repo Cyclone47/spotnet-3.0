@@ -4,9 +4,9 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>3.0.0.4</Version>
-    <AssemblyVersion>3.0.0.4</AssemblyVersion>
-    <FileVersion>3.0.0.4</FileVersion>
+    <Version>3.0.0.5</Version>
+    <AssemblyVersion>3.0.0.5</AssemblyVersion>
+    <FileVersion>3.0.0.5</FileVersion>
     <Product>Spotnet 3.0 (macOS Alpha)</Product>
     <Company>Spotnet Project Team</Company>
   </PropertyGroup>
@@ -34,6 +34,7 @@
     <!-- LogicalName is explicit because "*.nl.*"-style names would otherwise be
          mistaken for a Dutch satellite resource and moved out of the assembly. -->
     <EmbeddedResource Include="Resources\FiltersAdvanced.xml" LogicalName="Spotnet.Mac.Resources.FiltersAdvanced.xml" />
+    <EmbeddedResource Include="Resources\FiltersAdvanced_en.xml" LogicalName="Spotnet.Mac.Resources.FiltersAdvanced_en.xml" />
   </ItemGroup>
 
   <ItemGroup>

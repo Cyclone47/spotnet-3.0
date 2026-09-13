@@ -419,10 +419,12 @@ public sealed class TrustService : IDisposable
         var prefs = _prefsService.Current;
         if (prefs.DownloadExternalLists && prefs.ExternalListsUpdateInterval > 0)
         {
+            // Windows start deze timer in de static constructor van BlackAndWhite met
+            // dueTime Zero, dus de centrale lijsten komen meteen bij het opstarten.
             _autoUpdateTimer = new System.Threading.Timer(
                 _ => _ = UpdateExternalListsAsync(),
                 null,
-                TimeSpan.FromMinutes(1),
+                TimeSpan.Zero,
                 TimeSpan.FromMinutes(prefs.ExternalListsUpdateInterval));
         }
     }

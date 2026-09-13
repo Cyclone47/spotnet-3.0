@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -45,6 +46,9 @@ public partial class MainWindow : Window
         _viewModel.RequestOpenReleaseNotes += ShowReleaseNotesWindow;
         _viewModel.RequestCheckForUpdates += () => _ = CheckForUpdatesAsync();
         _viewModel.RequestAddCustomFilter += ShowAddCustomFilterDialog;
+        _viewModel.RequestEditFilter += ShowEditCustomFilterDialog;
+        _viewModel.RequestSaveFilterSetAs += ShowSaveFilterSetAsDialog;
+        FiltersHeader.PointerPressed += OnFiltersHeaderPressed;
         _viewModel.RequestOpenSpotWindow += detail => new SpotDetailWindow(detail).Show(this);
         _viewModel.RequestPickDownloadFolder += ShowPickDownloadFolderDialog;
         _viewModel.RequestOpenComplaintDialog += ShowComplaintDialog;
@@ -62,7 +66,7 @@ public partial class MainWindow : Window
         _viewModel.DownloadsTab.RequestRememberRemoveFilesAnswer = () => _rememberRemoveFilesAnswer;
 
         DataContext = _viewModel;
-        Loaded += OnWindowLoaded;
+        Opened += OnWindowOpened;
         Closed += (s, e) =>
         {
             _updater.Dispose();
@@ -70,12 +74,16 @@ public partial class MainWindow : Window
         };
     }
 
-    private async void OnWindowLoaded(object? sender, RoutedEventArgs e)
+    private async void OnWindowOpened(object? sender, EventArgs e)
     {
         if (_updateChecked) return;
         _updateChecked = true;
-        await _viewModel.InitializeAsync();
+
+        // Start the updater immediately after the window is visible. Database setup
+        // can involve a large SQLite file and must not delay the startup update dialog.
+        Task initializeTask = _viewModel.InitializeAsync();
         await CheckForUpdatesAsync();
+        await initializeTask;
     }
 
     private async Task CheckForUpdatesAsync()
@@ -156,7 +164,7 @@ public partial class MainWindow : Window
             if (success)
             {
                 _viewModel.StatusText = message;
-                await _viewModel.SpotDetail.ReloadSpamReportsAsync();
+                await _viewModel.RefreshSpamReportsAsync(spot);
             }
         };
         var window = new ComplaintWindow(vm);
@@ -176,37 +184,84 @@ public partial class MainWindow : Window
         await window.ShowDialog(this);
     }
 
+    /// <summary>
+    /// The set menu behind the FILTERS header, as Windows' LeftPanelUserControl builds
+    /// it: shipped sets in italic with a check on the active one, then the mutable
+    /// sets, then save-as and, for a mutable active set, remove.
+    /// </summary>
+    private void OnFiltersHeaderPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+    {
+        if (sender is not Control control) return;
+
+        var menu = new ContextMenu();
+        foreach (string setName in _viewModel.FilterSetNames)
+        {
+            string captured = setName;
+            var item = new MenuItem { Header = setName };
+            if (FilterSetService.ImmutableSetNames.Contains(setName, StringComparer.OrdinalIgnoreCase))
+            {
+                item.FontStyle = FontStyle.Italic;
+            }
+            if (string.Equals(setName, _viewModel.FilterSetLabel, StringComparison.OrdinalIgnoreCase))
+            {
+                item.IsChecked = true;
+            }
+            item.Click += (_, _) => _viewModel.SelectFilterSetCommand.Execute(captured);
+            menu.Items.Add(item);
+        }
+
+        menu.Items.Add(new Separator());
+        var saveAs = new MenuItem { Header = "Opslaan als..." };
+        saveAs.Click += (_, _) => _viewModel.SaveFilterSetAsCommand.Execute(null);
+        menu.Items.Add(saveAs);
+
+        if (!_viewModel.IsActiveFilterSetImmutable)
+        {
+            string active = _viewModel.FilterSetLabel;
+            var remove = new MenuItem { Header = $"Verwijderen: {active}" };
+            remove.Click += (_, _) => _viewModel.RemoveFilterSetCommand.Execute(active);
+            menu.Items.Add(remove);
+        }
+
+        menu.Open(control);
+    }
+
     private async void ShowAddCustomFilterDialog()
     {
-        // Simple inline dialog: name, icon, optional category, optional keyword, optional max age
-        var nameBox = new TextBox { Watermark = "Filternaam (bijv. Mijn HD Films)", Width = 280 };
-        var iconBox = new TextBox { Watermark = "Pictogram (bijv. ⭐ 🎯 🎞️)", Width = 80, Text = "🔖" };
-        var keywordBox = new TextBox { Watermark = "Zoekwoord filter (optioneel)", Width = 280 };
-        var ageBox = new TextBox { Watermark = "Max leeftijd uren (optioneel, bijv. 48)", Width = 280 };
+        var dialog = new FilterEditorWindow();
+        await dialog.ShowDialog(this);
+        if (!dialog.Confirmed) return;
 
-        var catCombo = new ComboBox
-        {
-            Width = 280,
-            PlaceholderText = "Categorie (optioneel)"
-        };
-        catCombo.Items.Add("(Alle categorieën)");
-        catCombo.Items.Add("Beeld");
-        catCombo.Items.Add("Muziek");
-        catCombo.Items.Add("Spellen");
-        catCombo.Items.Add("Applicaties");
-        catCombo.Items.Add("Boeken");
-        catCombo.Items.Add("Beeld - TV Series");
-        catCombo.Items.Add("Erotiek");
-        catCombo.SelectedIndex = 0;
+        _viewModel.AddCustomFilter(
+            name: dialog.FilterName,
+            icon: dialog.Icon,
+            categoryIds: dialog.CategoryIds,
+            subcatTag: dialog.SubcatTag,
+            maxAgeHours: dialog.MaxAgeHours,
+            keyword: dialog.Keyword);
+    }
 
-        var okButton = new Button { Content = "Filter aanmaken", Classes = { "accent" }, Margin = new Thickness(0, 0, 8, 0) };
+    private async void ShowEditCustomFilterDialog(Models.FilterItem item)
+    {
+        var dialog = new FilterEditorWindow(item);
+        await dialog.ShowDialog(this);
+        if (!dialog.Confirmed) return;
+
+        _viewModel.ApplyFilterEdit(item, dialog.FilterName, dialog.Icon, dialog.CategoryIds,
+                                   dialog.SubcatTag, dialog.MaxAgeHours, dialog.Keyword);
+    }
+
+    private async void ShowSaveFilterSetAsDialog()
+    {
+        var nameBox = new TextBox { Watermark = "Naam van de filterlijst", Width = 260 };
+        var okButton = new Button { Content = "Opslaan", Classes = { "accent" } };
         var cancelButton = new Button { Content = "Annuleren" };
 
         var dialog = new Window
         {
-            Title = "Eigen filter toevoegen",
-            Width = 380,
-            Height = 370,
+            Title = "Opslaan als...",
+            Width = 320,
+            Height = 170,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             CanResize = false,
             Content = new StackPanel
@@ -215,40 +270,15 @@ public partial class MainWindow : Window
                 Spacing = 12,
                 Children =
                 {
-                    new TextBlock { Text = "Nieuw filter", FontSize = 16, FontWeight = FontWeight.Bold },
-                    new StackPanel { Spacing = 4, Children =
+                    new TextBlock { Text = "Voer een nieuwe filterlijstnaam in:" },
+                    nameBox,
+                    new StackPanel
                     {
-                        new TextBlock { Text = "Naam", FontSize = 12 },
-                        nameBox
-                    }},
-                    new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children =
-                    {
-                        new StackPanel { Spacing = 4, Children =
-                        {
-                            new TextBlock { Text = "Pictogram", FontSize = 12 },
-                            iconBox
-                        }},
-                    }},
-                    new StackPanel { Spacing = 4, Children =
-                    {
-                        new TextBlock { Text = "Categorie beperken", FontSize = 12 },
-                        catCombo
-                    }},
-                    new StackPanel { Spacing = 4, Children =
-                    {
-                        new TextBlock { Text = "Zoekwoord filter", FontSize = 12 },
-                        keywordBox
-                    }},
-                    new StackPanel { Spacing = 4, Children =
-                    {
-                        new TextBlock { Text = "Maximale leeftijd (uren)", FontSize = 12 },
-                        ageBox
-                    }},
-                    new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Spacing = 8, Children =
-                    {
-                        cancelButton,
-                        okButton
-                    }}
+                        Orientation = Orientation.Horizontal,
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Spacing = 8,
+                        Children = { cancelButton, okButton }
+                    }
                 }
             }
         };
@@ -259,35 +289,18 @@ public partial class MainWindow : Window
 
         await dialog.ShowDialog(this);
 
-        if (!confirmed || string.IsNullOrWhiteSpace(nameBox.Text))
-            return;
-
-        // Map combo index to category id
-        int? catId = catCombo.SelectedIndex switch
+        string name = nameBox.Text?.Trim() ?? "";
+        // Windows' FilterSaveAsWindow rule: letters, digits and spaces, 1-17 chars.
+        if (!confirmed || name.Length == 0 || name.Length > 17 ||
+            !System.Text.RegularExpressions.Regex.IsMatch(name, "^[a-zA-Z0-9\\ ]+$"))
         {
-            1 => 1,
-            2 => 2,
-            3 => 3,
-            4 => 4,
-            5 => 5,
-            6 => 6,
-            7 => 9,
-            _ => null
-        };
+            return;
+        }
 
-        int? maxAge = null;
-        if (int.TryParse(ageBox.Text, out int parsedAge) && parsedAge > 0)
-            maxAge = parsedAge;
-
-        string? keyword = string.IsNullOrWhiteSpace(keywordBox.Text) ? null : keywordBox.Text.Trim();
-
-        _viewModel.AddCustomFilter(
-            name: nameBox.Text!.Trim(),
-            icon: string.IsNullOrWhiteSpace(iconBox.Text) ? "🔖" : iconBox.Text.Trim(),
-            categoryId: catId,
-            subcatTag: null,
-            maxAgeHours: maxAge,
-            keyword: keyword);
+        if (!_viewModel.SaveCurrentSetAs(name))
+        {
+            _viewModel.StatusText = "Die filterlijst bestaat al of is een standaardlijst.";
+        }
     }
 
     private async void OnAboutClick(object? sender, RoutedEventArgs e)
@@ -371,6 +384,16 @@ public partial class MainWindow : Window
             if (_viewModel.SelectedSpot != null)
             {
                 _viewModel.DeleteSelectedCommand.Execute(null);
+                e.Handled = true;
+            }
+        }
+        else if (e.Key == Key.D &&
+                 e.KeyModifiers.HasFlag(KeyModifiers.Meta) &&
+                 e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+        {
+            if (_viewModel.SelectedSpot != null)
+            {
+                _viewModel.DownloadSpotCommand.Execute(_viewModel.SelectedSpot);
                 e.Handled = true;
             }
         }

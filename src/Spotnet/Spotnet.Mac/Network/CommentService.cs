@@ -12,6 +12,7 @@ using Spotnet.Mac.DAL;
 using Spotnet.Mac.Models;
 using Spotnet.Model;
 using Spotnet.Platform;
+using SpotnetEnc;
 
 namespace Spotnet.Mac.Network;
 
@@ -22,12 +23,16 @@ public sealed class CommentService
     private readonly SpotDatabaseService _dbService;
     private readonly UsenetConnection _connection;
     private readonly Services.IUserKeyService _userKeyService;
+    private readonly Services.UserPreferencesService? _prefsService;
 
-    public CommentService(IAppPaths appPaths, ISecretStore secretStore, SpotDatabaseService dbService, Services.IUserKeyService? userKeyService = null)
+    public CommentService(IAppPaths appPaths, ISecretStore secretStore, SpotDatabaseService dbService,
+                          Services.IUserKeyService? userKeyService = null,
+                          Services.UserPreferencesService? prefsService = null)
     {
         _dbService = dbService;
         _connection = new UsenetConnection(appPaths, secretStore);
         _userKeyService = userKeyService ?? new Services.UserKeyService(dbService);
+        _prefsService = prefsService;
     }
 
     /// <summary>The group Spotnet replies are posted to (Windows' ReplyGroup setting).</summary>
@@ -54,6 +59,8 @@ public sealed class CommentService
 
             await client.SelectGroupAsync(ReplyGroup, cancellationToken);
 
+            bool checkSignatures = _prefsService?.Current.CheckSignatures ?? true;
+
             foreach (long article in articles)
             {
                 if (cancellationToken.IsCancellationRequested) break;
@@ -61,7 +68,7 @@ public sealed class CommentService
                 string? raw = await client.ReadArticleAsync(article.ToString(CultureInfo.InvariantCulture), cancellationToken);
                 if (string.IsNullOrWhiteSpace(raw)) continue;
 
-                var comment = ParseCommentArticle(raw, spot.MsgId.Trim('<', '>'));
+                var comment = ParseCommentArticle(raw, spot.MsgId.Trim('<', '>'), checkSignatures);
                 if (comment != null) comments.Add(comment);
             }
 
@@ -83,7 +90,7 @@ public sealed class CommentService
     /// headers up to the first blank line, the display name is the part of From before
     /// "&lt;", and X-User-Key carries the poster's modulus.
     /// </summary>
-    internal static CommentItem? ParseCommentArticle(string article, string spotMsgId)
+    internal static CommentItem? ParseCommentArticle(string article, string spotMsgId, bool checkSignatures = false)
     {
         var (headers, rawBody) = SpotArticle.Split(article);
 
@@ -92,7 +99,7 @@ public sealed class CommentService
         string body = SpotArticle.ReinterpretUtf8(rawBody.TrimEnd('\r', '\n'));
         if (string.IsNullOrWhiteSpace(body)) return null;
 
-        string from = "", msgId = "", modulus = "";
+        string from = "", msgId = "", modulus = "", signature = "";
         long date = 0;
 
         foreach (var header in headers)
@@ -133,19 +140,67 @@ public sealed class CommentService
                     modulus = PosterIdentity.Unescape(key);
                 }
             }
+            else if (line.StartsWith("X-User-Signature:", StringComparison.OrdinalIgnoreCase))
+            {
+                signature = line[17..].Trim();
+            }
         }
 
         if (from.Length == 0 || msgId.Length == 0) return null;
 
-        return new CommentItem
+        string cleanBody = body.Replace("\r\n..", "\r\n.", StringComparison.Ordinal);
+
+        var comment = new CommentItem
         {
             MsgId = msgId,
             Date = date,
             Sender = from,
             SpotMsgId = spotMsgId,
             Modulus = modulus,
-            Body = body.Replace("\r\n..", "\r\n.", StringComparison.Ordinal)
+            Signature = signature,
+            Body = cleanBody
         };
+
+        // Windows' Comment.Parse rejects a comment whose signature does not verify
+        // while CheckSignatures is on; an unsigned comment fails too, because there is
+        // then no key to verify against.
+        if (checkSignatures)
+        {
+            comment.ValidSignature = VerifyCommentSignature(modulus, signature, msgId, cleanBody, from);
+            if (!comment.ValidSignature) return null;
+        }
+
+        return comment;
+    }
+
+    /// <summary>
+    /// Mirrors SpotHelper.CheckUserSignature over the two payloads Windows tries
+    /// (Comment.cs): the comment's own Message-ID, and for older clients the
+    /// Message-ID plus body and display name.
+    /// </summary>
+    private static bool VerifyCommentSignature(string modulus, string signature, string msgId, string body, string from)
+    {
+        if (string.IsNullOrEmpty(modulus) || string.IsNullOrEmpty(signature)) return false;
+
+        // MakeRsa hands back a cached verifier, so it must not be disposed here.
+        RSA? rsa = SpotnetSignatureVerifier.MakeRsa(modulus);
+        if (rsa == null) return false;
+
+        byte[] sigBytes;
+        try
+        {
+            sigBytes = Convert.FromBase64String(SpotnetSignatureVerifier.UnescapeBase64(signature));
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+
+        string withBrackets = msgId.StartsWith('<') ? msgId : $"<{msgId}>";
+        return rsa.VerifyHash(SHA1.HashData(Encoding.Latin1.GetBytes(withBrackets)), sigBytes,
+                              HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1)
+            || rsa.VerifyHash(SHA1.HashData(Encoding.Latin1.GetBytes(withBrackets + body + "\r\n" + from)), sigBytes,
+                              HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1);
     }
 
     public async Task<(bool success, CommentItem? comment, string message)> PostCommentAsync(
@@ -195,9 +250,15 @@ public sealed class CommentService
             string pubKeyXml = rsa.ToXmlString(includePrivateParameters: false);
 
             string spotMsgId = spot.MsgId.Trim('<', '>');
-            byte[] msgIdBytes = Encoding.UTF8.GetBytes(spotMsgId);
-            byte[] signatureBytes = rsa.SignData(msgIdBytes, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1);
-            string signature = Convert.ToBase64String(signatureBytes);
+
+            // Windows signs a reply over the Message-ID the reply itself is posted
+            // with (Spots.CreateComment: CreateUserSignature(MakeMsg(hashMessageId))),
+            // and that id carries the proof-of-work hash. Signing the spot's id instead,
+            // as this used to do, made signature-checking clients drop our replies.
+            string commentMsgId = CreateProofOfWorkMsgId();
+            byte[] signatureBytes = rsa.SignData(Encoding.Latin1.GetBytes(commentMsgId),
+                                                 HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1);
+            string signature = SpecialString(Convert.ToBase64String(signatureBytes));
 
             // 2. Connect and authenticate. Posting goes to the upload server, which
             // several providers run on a separate hostname from the reader.
@@ -211,7 +272,7 @@ public sealed class CommentService
             string subject = $"Re: {spot.Subject}";
             string from = $"{sender.Trim()} <spotnet@spot.net>";
             string references = $"<{spotMsgId}>";
-            string extraHeaders = $"X-User-Signature: {signature}\r\nX-User-Key: {pubKeyXml}";
+            string extraHeaders = $"Message-ID: {commentMsgId}\r\nX-User-Signature: {signature}\r\nX-User-Key: {pubKeyXml}";
 
             var (postSuccess, postMsg) = await client.PostArticleAsync(
                 ReplyGroup,
@@ -228,11 +289,10 @@ public sealed class CommentService
                 return (false, null, postMsg);
             }
 
-            // 4. Save to local SQLite comments
-            string commentMsgId = $"{Guid.NewGuid():N}@spot.net";
+            // 4. Save to local SQLite comments under the id that went on the wire.
             var newComment = new CommentItem
             {
-                MsgId = commentMsgId,
+                MsgId = commentMsgId.Trim('<', '>'),
                 Date = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                 Sender = sender.Trim(),
                 Rating = 0,
@@ -250,5 +310,32 @@ public sealed class CommentService
             Log.Error(ex, "Fout bij plaatsen van reactie: {0}", ex.Message);
             return (false, null, $"Fout: {ex.Message}");
         }
+    }
+
+    /// <summary>Windows' SpotHelper.SpecialString: URL-safe base64 without padding.</summary>
+    private static string SpecialString(string value) =>
+        value.Replace("/", "-s", StringComparison.Ordinal)
+             .Replace("+", "-p", StringComparison.Ordinal)
+             .Replace("=", "");
+
+    /// <summary>
+    /// Builds a Message-ID whose SHA1 digest over the Latin-1 bytes starts with two
+    /// zero bytes — the proof-of-work SpotHelper.CreateHash gives Windows-generated
+    /// ids, and which SpotHelper.CheckHash and the signature verifier both require.
+    /// Roughly one candidate in 65536 qualifies, so the loop ends almost immediately.
+    /// </summary>
+    internal static string CreateProofOfWorkMsgId()
+    {
+        string token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(9))
+            .Replace('/', 's').Replace('+', 'p').TrimEnd('=');
+
+        for (int nonce = 0; nonce < 1_000_000; nonce++)
+        {
+            string id = $"<{token}.{nonce}@spot.net>";
+            byte[] hash = SHA1.HashData(Encoding.Latin1.GetBytes(id));
+            if (hash[0] == 0 && hash[1] == 0) return id;
+        }
+
+        return $"<{token}@spot.net>";
     }
 }

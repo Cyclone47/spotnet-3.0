@@ -98,6 +98,12 @@ public sealed class UserPreferences
     public string Nickname { get; set; } = "Spotter";
 
     /// <summary>
+    /// The active filter set, mirroring Windows' Settings.Default.Filter. Empty falls
+    /// back to the mutable "Aangepast" set, as on Windows.
+    /// </summary>
+    public string FilterSetName { get; set; } = "";
+
+    /// <summary>
     /// Accept a news server's TLS certificate even when it fails validation. Off by
     /// default, as on Windows. Only turn this on for a provider using a self-signed
     /// certificate: it removes the protection against another machine impersonating the

@@ -191,6 +191,8 @@
         <MenuItem Header="  Spots van zwarte lijst gebruikers niet tonen" IsVisible="{Binding !HideBlacklistedSpots}" Command="{Binding ToggleHideBlacklistedSpotsCommand}"/>
         <MenuItem Header="✓ Toon erotiek in de zoekresultaten" IsVisible="{Binding ShowEroticaInSearchResults}" Command="{Binding ToggleShowEroticaCommand}"/>
         <MenuItem Header="  Toon erotiek in de zoekresultaten" IsVisible="{Binding !ShowEroticaInSearchResults}" Command="{Binding ToggleShowEroticaCommand}"/>
+        <MenuItem Header="Kleur categorieën in spots" IsChecked="{Binding ColoringSpots, Mode=TwoWay}"/>
+        <MenuItem Header="Kleur categorieën in filters" IsChecked="{Binding ColoringFilters, Mode=TwoWay}"/>
         <Separator/>
         <MenuItem Header="Spots tonen als">
           <MenuItem Header="✓ Lijst" IsVisible="{Binding IsListView}" Command="{Binding SetSpotsListTypeCommand}" CommandParameter="0"/>
@@ -320,10 +322,12 @@
           <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="0">
               <Grid ColumnDefinitions="*,Auto" Margin="12,8,12,4">
-                <Border Grid.Column="0" Classes="SidebarBar" HorizontalAlignment="Stretch">
+                <Border Grid.Column="0" Classes="SidebarBar" HorizontalAlignment="Stretch"
+                        x:Name="FiltersHeader" Cursor="Hand"
+                        ToolTip.Tip="Kies een filterlijst">
                   <Panel>
                     <TextBlock Text="FILTERS" HorizontalAlignment="Left"/>
-                    <TextBlock Text="{Binding SelectedFilterLabel}" HorizontalAlignment="Right" Opacity="0.7" FontSize="9"/>
+                    <TextBlock Text="{Binding FilterSetLabel}" HorizontalAlignment="Right" Opacity="0.7" FontSize="9"/>
                   </Panel>
                 </Border>
                 <Border Grid.Column="1"
@@ -371,7 +375,27 @@
                                 Command="{Binding $parent[Window].DataContext.SelectFilterCommand}"
                                 CommandParameter="{Binding}"
                                 Padding="0,4">
-                          <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,0,10,0">
+                          <Button.ContextMenu>
+                            <ContextMenu>
+                              <MenuItem Header="Omhoog"
+                                        Command="{Binding $parent[Window].DataContext.MoveFilterUpCommand}"
+                                        CommandParameter="{Binding}"/>
+                              <MenuItem Header="Omlaag"
+                                        Command="{Binding $parent[Window].DataContext.MoveFilterDownCommand}"
+                                        CommandParameter="{Binding}"/>
+                              <Separator/>
+                              <MenuItem Header="Bewerken"
+                                        Command="{Binding $parent[Window].DataContext.EditFilterCommand}"
+                                        CommandParameter="{Binding}"/>
+                              <MenuItem Header="Verwijderen"
+                                        Command="{Binding $parent[Window].DataContext.DeleteFilterCommand}"
+                                        CommandParameter="{Binding}"/>
+                              <Separator/>
+                              <MenuItem Header="Opslaan als..."
+                                        Command="{Binding $parent[Window].DataContext.SaveFilterSetAsCommand}"/>
+                            </ContextMenu>
+                          </Button.ContextMenu>
+                          <Grid ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,0,10,0">
                             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                               <TextBlock Text="{Binding Icon}" FontSize="13" VerticalAlignment="Center"/>
                               <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold"
@@ -384,8 +408,8 @@
                             <Ellipse Grid.Column="2" Width="8" Height="8" Margin="6,0,2,0"
                                      VerticalAlignment="Center"
                                      Fill="{Binding GenreDotColor, Converter={x:Static views:HexToBrushConverter.Instance}}"
-                                     IsVisible="{Binding HasGenreDot, Converter={x:Static views:BoolAndConverter.Instance}, ConverterParameter={Binding $parent[Window].DataContext.ColoringFilters}}"/>
-                            <Button Grid.Column="2"
+                                     IsVisible="{Binding ShowGenreDot}"/>
+                            <Button Grid.Column="3"
                                     Content="✕" FontSize="9" Padding="3,1" Margin="2,0,0,0"
                                     VerticalAlignment="Center"
                                     IsVisible="{Binding CanDelete}"
@@ -405,7 +429,27 @@
                                     Command="{Binding $parent[Window].DataContext.SelectFilterCommand}"
                                     CommandParameter="{Binding}"
                                     Padding="0,3">
-                              <Grid ColumnDefinitions="*,Auto,Auto" Margin="30,0,10,0">
+                              <Button.ContextMenu>
+                                <ContextMenu>
+                                  <MenuItem Header="Omhoog"
+                                            Command="{Binding $parent[Window].DataContext.MoveFilterUpCommand}"
+                                            CommandParameter="{Binding}"/>
+                                  <MenuItem Header="Omlaag"
+                                            Command="{Binding $parent[Window].DataContext.MoveFilterDownCommand}"
+                                            CommandParameter="{Binding}"/>
+                                  <Separator/>
+                                  <MenuItem Header="Bewerken"
+                                            Command="{Binding $parent[Window].DataContext.EditFilterCommand}"
+                                            CommandParameter="{Binding}"/>
+                                  <MenuItem Header="Verwijderen"
+                                            Command="{Binding $parent[Window].DataContext.DeleteFilterCommand}"
+                                            CommandParameter="{Binding}"/>
+                                  <Separator/>
+                                  <MenuItem Header="Opslaan als..."
+                                            Command="{Binding $parent[Window].DataContext.SaveFilterSetAsCommand}"/>
+                                </ContextMenu>
+                              </Button.ContextMenu>
+                              <Grid ColumnDefinitions="*,Auto,Auto,Auto" Margin="30,0,10,0">
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                   <TextBlock Text="{Binding Icon}" FontSize="12" VerticalAlignment="Center"/>
                                   <TextBlock Text="{Binding Name}" FontSize="11"
@@ -418,8 +462,8 @@
                                 <Ellipse Grid.Column="2" Width="8" Height="8" Margin="6,0,2,0"
                                          VerticalAlignment="Center"
                                          Fill="{Binding GenreDotColor, Converter={x:Static views:HexToBrushConverter.Instance}}"
-                                         IsVisible="{Binding HasGenreDot, Converter={x:Static views:BoolAndConverter.Instance}, ConverterParameter={Binding $parent[Window].DataContext.ColoringFilters}}"/>
-                                <Button Grid.Column="2"
+                                         IsVisible="{Binding ShowGenreDot}"/>
+                                <Button Grid.Column="3"
                                         Content="✕" FontSize="9" Padding="3,1" Margin="2,0,0,0"
                                         VerticalAlignment="Center"
                                         IsVisible="{Binding CanDelete}"
@@ -498,7 +542,34 @@
         <TabControl.DataTemplates>
           <!-- The spot list -->
           <DataTemplate DataType="vm:OverviewTabViewModel">
-            <Panel>
+            <Grid RowDefinitions="Auto,*">
+            <!-- Actiebalk boven de spotlijst, naar Windows' spotslisttoolbar: de
+                 acties die op de geselecteerde rij werken, zonder dat de spot eerst
+                 in een tabblad geopend hoeft te worden. -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="10,8"
+                        IsEnabled="{Binding $parent[Window].DataContext.SelectedSpot, Converter={x:Static ObjectConverters.IsNotNull}}">
+              <Button Content="⬇ Downloaden"
+                      ToolTip.Tip="Download deze spot"
+                      Command="{Binding $parent[Window].DataContext.DownloadSpotCommand}"
+                      CommandParameter="{Binding $parent[Window].DataContext.SelectedSpot}"/>
+              <Button Content="★ Favoriet"
+                      ToolTip.Tip="Toevoegen aan of verwijderen uit Favorieten"
+                      Command="{Binding $parent[Window].DataContext.ToggleSpotFavoriteCommand}"
+                      CommandParameter="{Binding $parent[Window].DataContext.SelectedSpot}"/>
+              <Button Content="⚠ Melding"
+                      ToolTip.Tip="Melding versturen over deze spot"
+                      Command="{Binding $parent[Window].DataContext.ComplainToSpotCommand}"
+                      CommandParameter="{Binding $parent[Window].DataContext.SelectedSpot}"/>
+              <Button Content="⊘ Zwarte lijst"
+                      ToolTip.Tip="Spot toevoegen aan zwarte lijst"
+                      Command="{Binding $parent[Window].DataContext.AddSpotToBlacklistCommand}"
+                      CommandParameter="{Binding $parent[Window].DataContext.SelectedSpot}"/>
+              <Button Content="✓ Witte lijst"
+                      ToolTip.Tip="Spot toevoegen aan witte lijst"
+                      Command="{Binding $parent[Window].DataContext.AddSpotToWhitelistCommand}"
+                      CommandParameter="{Binding $parent[Window].DataContext.SelectedSpot}"/>
+            </StackPanel>
+            <Panel Grid.Row="1">
             <DataGrid x:Name="SpotsGrid"
                       FontSize="{Binding $parent[Window].DataContext.SpotsFontSize}"
                       ItemsSource="{Binding $parent[Window].DataContext.Spots}"
@@ -518,6 +589,12 @@
                       HorizontalGridLinesBrush="{DynamicResource AppGridLineBrush}">
               <DataGrid.ContextMenu>
                 <ContextMenu>
+                  <MenuItem Header="Downloaden"
+                            InputGesture="Cmd+Shift+D"
+                            Command="{Binding $parent[Window].DataContext.DownloadSpotCommand}"
+                            CommandParameter="{Binding $parent[Window].DataContext.SelectedSpot}"
+                            IsEnabled="{Binding $parent[Window].DataContext.SelectedSpot, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                  <Separator/>
                   <MenuItem Header="Toevoegen aan Favorieten"
                             Command="{Binding $parent[Window].DataContext.AddSpotToFavoritesCommand}"
                             CommandParameter="{Binding $parent[Window].DataContext.SelectedSpot}"
@@ -704,12 +781,17 @@
               </StackPanel>
             </ScrollViewer>
             </Panel>
+            </Grid>
           </DataTemplate>
 
           <!-- The download list -->
           <DataTemplate DataType="vm:DownloadsTabViewModel">
             <Grid RowDefinitions="Auto,Auto,*">
-              <views:PlayerView Grid.Row="0" DataContext="{Binding Player}"/>
+              <!-- Ingeklapt tot er echt iets speelt: HasMedia gaat aan bij de eerste
+                   preview en weer uit zodra de rij weg is, zodat de knop ▶ Voorbeeld
+                   het paneel op afroep toont in plaats van dat het de halve tab vult. -->
+              <views:PlayerView Grid.Row="0" DataContext="{Binding Player}"
+                                IsVisible="{Binding Player.HasMedia}"/>
               <!-- Toolbar, mirroring the actions Windows offers on a download row -->
               <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8"
                           Margin="10,8" VerticalAlignment="Center">

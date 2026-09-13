@@ -149,13 +149,17 @@ public sealed class NzbDownloadJob
         var speedCalc  = new SpeedCalculator();
         speedCalc.Start();
 
+        // Two <file> entries can sanitise to the same name; without this the second
+        // one silently overwrote the first, because each file is opened FileMode.Create.
+        var usedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         for (int fi = 0; fi < files.Count; fi++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             pauseGate?.Wait(cancellationToken);
 
             var nzbFile = files[fi];
-            string fileName = ExtractFileName(nzbFile.Subject) ?? $"file{fi + 1}.bin";
+            string fileName = MakeUniqueName(ExtractFileName(nzbFile.Subject) ?? $"file{fi + 1}.bin", usedNames);
             string filePath = Path.Combine(outputDir, fileName);
 
             Log.Info("Downloading {0} ({1} segments)", fileName, nzbFile.Segments.Count);
@@ -198,96 +202,204 @@ public sealed class NzbDownloadJob
         var queue = new System.Collections.Concurrent.ConcurrentQueue<int>(
             Enumerable.Range(0, segments.Count));
 
-        // One buffer per output position, filled as segments arrive.
-        var buffers = new byte[segments.Count][];
+        // Decoded segments that arrived out of order and are waiting on an earlier
+        // one. Everything else goes straight to disk, so memory stays bounded by this
+        // reorder window rather than by the size of the release.
+        var pending = new Dictionary<int, byte[]>();
+        long bufferedBytes = 0;
+        int  nextToWrite   = 0;
+
         var errors  = new List<Exception>();
         var lockObj = new object();
 
-        // Windows caps a single file's decoded-buffer bookkeeping; the Mac client keeps
-        // whole decoded segments in memory until the file is written out, so the cache
-        // size is applied as a soft cap on how many segments may sit in buffers at once.
-        long maxBufferedBytes = (long)_options.DownloaderCacheSizeMb * 1024 * 1024;
+        // DownloaderCacheSizeMb is the budget for that window: how much decoded data
+        // may sit in memory behind a slow segment before the workers start waiting.
+        long maxBufferedBytes = Math.Max(1, _options.DownloaderCacheSizeMb) * 1024L * 1024L;
 
         int connections = Math.Min(_maxConnections, segments.Count);
 
-        // Open connections in parallel
-        var workers = new Task[connections];
-        for (int c = 0; c < connections; c++)
+        // Cancelled as soon as one worker hits a fatal problem, so the rest of the
+        // file stops instead of downloading segments around a hole nothing can fill.
+        using var failCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        CancellationToken token = failCts.Token;
+
+        var fs = new FileStream(outputPath, FileMode.Create, FileAccess.Write,
+            FileShare.None, bufferSize: 65536, useAsync: false);
+        try
         {
-            workers[c] = Task.Run(async () =>
+            // Writes the contiguous run starting at nextToWrite. Caller holds lockObj.
+            void FlushContiguous()
             {
-                NntpClient? client = null;
-                try
+                while (pending.TryGetValue(nextToWrite, out byte[]? buf))
                 {
-                    client = await _connection.OpenAsync(ServerRole.Download, ct);
-                    if (client == null) return;
+                    pending.Remove(nextToWrite);
+                    bufferedBytes -= buf.Length;
+                    fs.Write(buf, 0, buf.Length);
+                    nextToWrite++;
 
-                    await client.SelectGroupAsync(nzbFile.Group.Length > 0
-                        ? nzbFile.Group : "alt.binaries.misc", ct);
+                    // Progress counts bytes that actually reached the file, so a
+                    // segment that never arrived can no longer pull the bar to 100%.
+                    reportBytes(buf.Length);
+                }
+                Monitor.PulseAll(lockObj);
+            }
 
-                    while (queue.TryDequeue(out int idx))
+            void Fail(Exception ex)
+            {
+                lock (lockObj) errors.Add(ex);
+                Log.Warn(ex, "Download of {0} failed", Path.GetFileName(outputPath));
+                try { failCts.Cancel(); } catch (ObjectDisposedException) { }
+            }
+
+            // Open connections in parallel
+            var workers = new Task[connections];
+            for (int c = 0; c < connections; c++)
+            {
+                workers[c] = Task.Run(async () =>
+                {
+                    NntpClient? client = null;
+                    try
                     {
-                        ct.ThrowIfCancellationRequested();
-                        pauseGate?.Wait(ct);
-
-                        // The download schedule, as on Windows: a worker outside the
-                        // active window parks itself and re-checks once a minute.
-                        if (_scheduleEnabled &&
-                            !DownloadSchedule.IsDownloaderActiveTime(true, _scheduleStart, _scheduleEnd, ScheduleClock().TimeOfDay))
+                        client = await _connection.OpenAsync(ServerRole.Download, ct);
+                        if (client == null)
                         {
-                            Log.Info("Downloads are outside the scheduled window ({0:hh\\:mm} - {1:hh\\:mm}); waiting.",
-                                _scheduleStart, _scheduleEnd);
-                            await DownloadSchedule.WaitUntilActiveAsync(
-                                _scheduleStart, _scheduleEnd, ScheduleClock, ct);
+                            // Used to return quietly, leaving every queued segment
+                            // undownloaded and the file silently short.
+                            Fail(new IOException("Kon geen verbinding maken met de downloadserver."));
+                            return;
                         }
 
-                        var seg = segments[idx];
+                        await client.SelectGroupAsync(nzbFile.Group.Length > 0
+                            ? nzbFile.Group : "alt.binaries.misc", token);
 
-                        byte[]? decoded = await DownloadSegmentWithRetriesAsync(client, seg, ct);
-                        if (decoded != null)
+                        while (queue.TryDequeue(out int idx))
                         {
+                            token.ThrowIfCancellationRequested();
+                            pauseGate?.Wait(token);
+
+                            // The download schedule, as on Windows: a worker outside the
+                            // active window parks itself and re-checks once a minute.
+                            if (_scheduleEnabled &&
+                                !DownloadSchedule.IsDownloaderActiveTime(true, _scheduleStart, _scheduleEnd, ScheduleClock().TimeOfDay))
+                            {
+                                Log.Info("Downloads are outside the scheduled window ({0:hh\\:mm} - {1:hh\\:mm}); waiting.",
+                                    _scheduleStart, _scheduleEnd);
+                                await DownloadSchedule.WaitUntilActiveAsync(
+                                    _scheduleStart, _scheduleEnd, ScheduleClock, token);
+                            }
+
+                            var seg = segments[idx];
+
+                            byte[]? decoded = await DownloadSegmentWithRetriesAsync(client, seg, token);
+                            if (decoded == null || (decoded.Length == 0 && seg.Bytes > 0))
+                            {
+                                // An empty decode means the article carried no yEnc data;
+                                // writing it would advance the position and leave a hole
+                                // that still passes the completeness check below.
+                                Log.Error("Segment {0} not available after {1} attempt(s)",
+                                    seg.MessageId, Math.Max(1, _options.Retries));
+                                Fail(new IOException(
+                                    $"Segment {seg.MessageId} niet ontvangen na {Math.Max(1, _options.Retries)} poging(en)."));
+                                return;
+                            }
+
                             // The throttle point of the Windows client: VirtualNNTP feeds
                             // every received segment into one shared account and sleeps
                             // here until the average is back within the limit.
-                            SpeedLimiter.ThrottleIfNeeded(ct);
-                            buffers[idx] = decoded;
-                        }
-                        else
-                        {
-                            Log.Warn("Segment {0} not available after {1} attempt(s)",
-                                seg.MessageId, Math.Max(1, _options.Retries));
-                        }
+                            SpeedLimiter.ThrottleIfNeeded(token);
 
-                        reportBytes(seg.Bytes);
+                            lock (lockObj)
+                            {
+                                // Hold a segment back only while it cannot be written
+                                // yet. The one that is next in line always goes straight
+                                // to disk: writing it is what frees budget for everybody
+                                // else, so a worker holding it must never park.
+                                // The pending.Count guard keeps a single segment larger
+                                // than the whole budget from deadlocking the worker.
+                                while (idx != nextToWrite &&
+                                       pending.Count > 0 &&
+                                       bufferedBytes + decoded.Length > maxBufferedBytes &&
+                                       !failCts.IsCancellationRequested)
+                                {
+                                    Monitor.Wait(lockObj, 250);
+                                }
+
+                                pending[idx] = decoded;
+                                bufferedBytes += decoded.Length;
+                                FlushContiguous();
+                            }
+                        }
                     }
-                }
-                catch (OperationCanceledException) { }
-                catch (Exception ex)
-                {
-                    lock (lockObj) errors.Add(ex);
-                    Log.Warn(ex, "Worker error on segment download");
-                }
-                finally
-                {
-                    client?.Dispose();
-                }
-            }, ct);
+                    catch (OperationCanceledException)
+                    {
+                        // Either the user cancelled (the caller rethrows below) or another
+                        // worker already recorded the failure that cancelled us.
+                    }
+                    catch (Exception ex)
+                    {
+                        Fail(ex);
+                    }
+                    finally
+                    {
+                        client?.Dispose();
+                    }
+                }, ct);
+            }
+
+            await Task.WhenAll(workers);
+            fs.Flush(flushToDisk: true);
+        }
+        finally
+        {
+            fs.Dispose();
         }
 
-        await Task.WhenAll(workers);
         ct.ThrowIfCancellationRequested();
 
-        // Write all decoded segments in order
-        await using var fs = new FileStream(outputPath, FileMode.Create, FileAccess.Write,
-            FileShare.None, bufferSize: 65536, useAsync: true);
+        if (errors.Count == 0 && nextToWrite == segments.Count) return;
 
-        for (int i = 0; i < buffers.Length; i++)
+        // Never leave a short file behind: the post-processing pipeline treats
+        // whatever is in the directory as the finished download.
+        TryDelete(outputPath);
+
+        if (errors.Count == 1) throw errors[0];
+        if (errors.Count > 1)
         {
-            if (buffers[i] is { Length: > 0 } buf)
-            {
-                await fs.WriteAsync(buf, ct);
-            }
+            throw new AggregateException(
+                $"Downloaden van {Path.GetFileName(outputPath)} is mislukt ({errors.Count} fouten).", errors);
         }
+        throw new IOException(
+            $"{segments.Count - nextToWrite} van de {segments.Count} segmenten van {Path.GetFileName(outputPath)} ontbreken.");
+    }
+
+    private static void TryDelete(string path)
+    {
+        try
+        {
+            if (File.Exists(path)) File.Delete(path);
+        }
+        catch (Exception ex)
+        {
+            Log.Warn(ex, "Kon het onvolledige bestand {0} niet verwijderen", path);
+        }
+    }
+
+    /// <summary>
+    /// Keeps two files in the same job from colliding on one output name by adding a
+    /// " (n)" suffix, the way a browser does.
+    /// </summary>
+    private static string MakeUniqueName(string fileName, HashSet<string> usedNames)
+    {
+        if (usedNames.Add(fileName)) return fileName;
+
+        string stem = Path.GetFileNameWithoutExtension(fileName);
+        string ext  = Path.GetExtension(fileName);
+        for (int n = 2; n <= 999; n++)
+        {
+            string candidate = $"{stem} ({n}){ext}";
+            if (usedNames.Add(candidate)) return candidate;
+        }
+        return fileName;
     }
 
     /// <summary>

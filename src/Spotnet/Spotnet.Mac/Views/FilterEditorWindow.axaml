@@ -1,0 +1,61 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Spotnet.Mac.Views.FilterEditorWindow"
+        Title="Filter"
+        Width="440"
+        Height="560"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource AppBackground}">
+  <!-- Naar Windows' filter-editor: naam, pictogram en de categorieën met hun
+       subcategorieën. De subcategorie-tag gaat hier wel mee in de query, in
+       tegenstelling tot de oude dialoog die hem weggooide. -->
+  <StackPanel Margin="20" Spacing="10">
+    <TextBlock x:Name="HeadingLabel" Text="Nieuw filter" FontSize="16" FontWeight="Bold"
+               Foreground="{DynamicResource AppTextBrush}"/>
+
+    <TextBlock Text="Naam" FontSize="12" Foreground="{DynamicResource AppTextBrush}"/>
+    <TextBox x:Name="NameBox" Watermark="bijv. Mijn HD Films"/>
+
+    <Grid ColumnDefinitions="90,*" Margin="0,4,0,0">
+      <StackPanel Grid.Column="0" Spacing="4">
+        <TextBlock Text="Pictogram" FontSize="12" Foreground="{DynamicResource AppTextBrush}"/>
+        <TextBox x:Name="IconBox" Text="🔖"/>
+      </StackPanel>
+      <StackPanel Grid.Column="1" Margin="10,0,0,0" Spacing="4">
+        <TextBlock Text="Max leeftijd (uren)" FontSize="12" Foreground="{DynamicResource AppTextBrush}"/>
+        <TextBox x:Name="AgeBox" Watermark="optioneel, bijv. 48"/>
+      </StackPanel>
+    </Grid>
+
+    <TextBlock Text="Categorieën" FontSize="12" Margin="0,6,0,0"
+               Foreground="{DynamicResource AppTextBrush}"/>
+    <Border BorderBrush="{DynamicResource AppGridLineBrush}" BorderThickness="1"
+            CornerRadius="4" Padding="10,6">
+      <WrapPanel>
+        <CheckBox x:Name="CatBeeld" Content="Beeld" Margin="0,2,14,2" Foreground="{DynamicResource AppTextBrush}"/>
+        <CheckBox x:Name="CatSeries" Content="Series" Margin="0,2,14,2" Foreground="{DynamicResource AppTextBrush}"/>
+        <CheckBox x:Name="CatBoeken" Content="Boeken" Margin="0,2,14,2" Foreground="{DynamicResource AppTextBrush}"/>
+        <CheckBox x:Name="CatMuziek" Content="Muziek" Margin="0,2,14,2" Foreground="{DynamicResource AppTextBrush}"/>
+        <CheckBox x:Name="CatSpellen" Content="Spellen" Margin="0,2,14,2" Foreground="{DynamicResource AppTextBrush}"/>
+        <CheckBox x:Name="CatApplicaties" Content="Applicaties" Margin="0,2,14,2" Foreground="{DynamicResource AppTextBrush}"/>
+        <CheckBox x:Name="CatErotiek" Content="Erotiek" Margin="0,2,14,2" Foreground="{DynamicResource AppTextBrush}"/>
+      </WrapPanel>
+    </Border>
+
+    <TextBlock Text="Subcategorie-tag (optioneel)" FontSize="12" Margin="0,6,0,0"
+               Foreground="{DynamicResource AppTextBrush}"/>
+    <TextBox x:Name="SubcatBox" Watermark="bijv. 1a6 voor BluRay, 1d17 voor comedy"/>
+    <TextBlock Text="Formaat: &lt;categorie&gt;&lt;letter&gt;&lt;nummer&gt;, meerdere met spatie ertussen."
+               FontSize="10" Opacity="0.6" Foreground="{DynamicResource AppTextBrush}"/>
+
+    <TextBlock Text="Zoekwoord (optioneel)" FontSize="12" Margin="0,6,0,0"
+               Foreground="{DynamicResource AppTextBrush}"/>
+    <TextBox x:Name="KeywordBox" Watermark="wordt als vrije tekstzoekopdracht toegepast"/>
+
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,14,0,0">
+      <Button x:Name="CancelButton" Content="Annuleren"/>
+      <Button x:Name="OkButton" Content="Opslaan" Classes="accent"/>
+    </StackPanel>
+  </StackPanel>
+</Window>

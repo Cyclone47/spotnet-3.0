@@ -19,6 +19,7 @@ namespace Spotnet.Mac.Tests;
 /// NNTPSegment.MaxRetries + DefaultTimeout, Settings.Default.ConnectionTimeout and
 /// DataReceivingTimeout, and IsCachingEnabled/DownloaderCacheSizeMb.
 /// </summary>
+[Collection("Shared speed limiter")]
 public sealed class DownloadSpeedLimitTests : IDisposable
 {
     private readonly string _dir;

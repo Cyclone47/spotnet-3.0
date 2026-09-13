@@ -7,7 +7,7 @@ APP_DIR="$REPO_ROOT/artifacts/Spotnet.app"
 CONTENTS="$APP_DIR/Contents"
 MACOS_DIR="$CONTENTS/MacOS"
 RESOURCES_DIR="$CONTENTS/Resources"
-BUNDLE_VERSION="${BUNDLE_VERSION:-3.0.0.4}"
+BUNDLE_VERSION="${BUNDLE_VERSION:-3.0.0.5}"
 
 echo "=== Building Spotnet 3.0 macOS App Bundle ==="
 
