@@ -372,16 +372,22 @@ public class VirtualList<T> : IDisposable, IList, ICollection, IEnumerable, ILis
 			cancellationTokenSource = _ctsNew;
 			_ctsNew = newCts;
 		}
+		// Raised the moment this load is over. The timer below runs on the thread pool
+		// and reaches the UI thread by queueing, so without this flag a callback that had
+		// already passed its checks could switch the indicator back on after the finally
+		// block had switched it off - and nothing would switch it off again. That is the
+		// spinner that stayed on the overview until the user picked another filter.
+		int loadFinished = 0;
 		Timer timer = null;
 		try
 		{
 			timer = new Timer(delegate
 			{
-				if (!newCts.Token.IsCancellationRequested && !Sys.IsShutdownRequested && (minRowId == -1 ? _cts == newCts : _ctsNew == newCts))
+				if (Volatile.Read(ref loadFinished) == 0 && !newCts.Token.IsCancellationRequested && !Sys.IsShutdownRequested && (minRowId == -1 ? _cts == newCts : _ctsNew == newCts))
 				{
 					DispatcherHelper.CheckBeginInvokeOnUI(delegate
 					{
-						if (!newCts.Token.IsCancellationRequested && !Sys.IsShutdownRequested && (minRowId == -1 ? _cts == newCts : _ctsNew == newCts))
+						if (Volatile.Read(ref loadFinished) == 0 && !newCts.Token.IsCancellationRequested && !Sys.IsShutdownRequested && (minRowId == -1 ? _cts == newCts : _ctsNew == newCts))
 						{
 							SpotsListVm.IsSpotsListLoading = true;
 						}
@@ -437,6 +443,9 @@ public class VirtualList<T> : IDisposable, IList, ICollection, IEnumerable, ILis
 		}
 		finally
 		{
+			// Before the timer is disposed: disposing it does not recall a callback that is
+			// already running or already queued to the dispatcher.
+			Volatile.Write(ref loadFinished, 1);
 			if (timer != null)
 			{
 				timer.Dispose();

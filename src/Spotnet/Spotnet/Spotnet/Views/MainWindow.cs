@@ -2089,24 +2089,32 @@ public partial class MainWindow : MetroWindow
 
     private void RunAfterStartActions()
     {
+        // The spots list is the window the user is looking at, so it is filled first and
+        // on its own. Everything that follows - release notes, promo tabs, migrations -
+        // is secondary, and none of it may leave the overview empty by throwing or by
+        // taking its time.
+        try
+        {
+            SpotsListVm.SpotsContainer.LoadContentForTheFirstTime();
+        }
+        catch (Exception ex)
+        {
+            Log.Exception(ex);
+        }
+
         try
         {
             if (VersionHelper.CheckAndAcknowledgeUpdate() || SquirrelStuff.IsNewVersion)
             {
-                try
-                {
-                    OpenPage(PageTypeEnum.ReleaseNotes).Wait();
-                }
-                catch (Exception ex)
-                {
-                    Log.Warn("Failed to open release notes on update: {0}", ex.Message);
-                }
+                // Opening a browser-backed tab is not something startup waits for: the
+                // WebView2 runtime can take seconds to come up, and a Wait() here held
+                // the rest of this method - the spots list included - behind it.
+                OpenPage(PageTypeEnum.ReleaseNotes).Forget();
             }
 
             PromotionHelper.OpenTabsAsync();
             Favorites.MigrateFromFileToDatabase();
             MainWindowVm.CheckShowTrustedOnlyModeShouldBeTemporaryDisabled();
-            SpotsListVm.SpotsContainer.LoadContentForTheFirstTime();
             SystemStateChecker.NntpServerCheck(tryToSwitchToOtherPorts: true);
             SystemStateChecker.Start();
             ResetNewSpotsCount();

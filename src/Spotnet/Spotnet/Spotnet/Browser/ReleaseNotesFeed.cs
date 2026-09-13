@@ -9,7 +9,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using NLog;
 using Newtonsoft.Json.Linq;
+using Spotnet.Extensions;
 using Spotnet.Helpers;
+using Spotnet.Mvvm.Threading;
 
 namespace Spotnet.Browser;
 
@@ -66,9 +68,21 @@ internal static class ReleaseNotesFeed
             changelog = ReadUsableCache();
             if (changelog == null)
             {
-                Task<string> fetch = Task.Run(() => FetchAsync(CancellationToken.None));
-                if (fetch.Wait(FetchBudget)) changelog = fetch.Result;
-                else Log.Debug("GitHub releases did not answer within {0}; using what is on hand.", FetchBudget);
+                // The page is built on the UI thread, and waiting there for GitHub froze
+                // the window - the spinner included - for as long as the network took.
+                // Off the UI thread the wait is harmless and keeps the notes current;
+                // on it, the cache is refreshed in the background for the next open.
+                if (IsOnUiThread())
+                {
+                    Task.Run(() => FetchAsync(CancellationToken.None)).Forget();
+                    Log.Debug("Building the release notes on the UI thread; fetching from GitHub in the background.");
+                }
+                else
+                {
+                    Task<string> fetch = Task.Run(() => FetchAsync(CancellationToken.None));
+                    if (fetch.Wait(FetchBudget)) changelog = fetch.Result;
+                    else Log.Debug("GitHub releases did not answer within {0}; using what is on hand.", FetchBudget);
+                }
             }
             // A stale cache still beats nothing when the network is slow or gone.
             changelog ??= ReadCache();
@@ -96,6 +110,19 @@ internal static class ReleaseNotesFeed
 
         // Everything older than the releases on GitHub, kept but out of the way.
         return changelog + BuildArchive(bundledFallback);
+    }
+
+    private static bool IsOnUiThread()
+    {
+        try
+        {
+            return DispatcherHelper.UIDispatcher?.CheckAccess() ?? false;
+        }
+        catch (Exception ex)
+        {
+            Log.Debug("Could not determine the calling thread: {0}", ex.Message);
+            return false;
+        }
     }
 
     private static string ReadUsableCache()

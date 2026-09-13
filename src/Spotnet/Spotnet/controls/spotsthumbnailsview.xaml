@@ -259,11 +259,14 @@
     </DockPanel>
     <Grid>
       <FrameworkElement.Style>
+        <!-- Hidden unless the view model says a load is running, the same way the list
+             view's overlay works. Defaulting to Visible and relying on a trigger to take
+             it away left the spinner on screen whenever that trigger did not fire. -->
         <Style TargetType="{x:Type Grid}">
-          <Setter Property="Visibility" Value="Visible" />
+          <Setter Property="Visibility" Value="Collapsed" />
           <Style.Triggers>
-            <DataTrigger Value="False" Binding="{Binding IsSpotsListLoading}">
-              <Setter Property="Visibility" Value="Collapsed" />
+            <DataTrigger Value="True" Binding="{Binding IsSpotsListLoading}">
+              <Setter Property="Visibility" Value="Visible" />
             </DataTrigger>
           </Style.Triggers>
         </Style>

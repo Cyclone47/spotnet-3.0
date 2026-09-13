@@ -1,5 +1,14 @@
 <section class="notes-section gh-release">
-<h3>Spotnet 3.0.15.0 <span class="gh-tag">New</span><span class="gh-date">Current version</span></h3>
+<h3>Spotnet 3.0.16.0 <span class="gh-tag">New</span><span class="gh-date">Current version</span></h3>
+<div class="gh-body"><ul class="section-items tagged">
+<li><strong>The overview fills straight away again:</strong> The spot list is loaded before anything else at startup, so a slow release notes tab, promotion fetch or migration can no longer leave you looking at an empty overview or a spinner that never stops. Picking a filter is no longer needed to make the spots appear.</li>
+<li><strong>No more frozen window on the first start after an update:</strong> The release notes tab no longer holds up startup, and its changelog is fetched in the background instead of on the interface thread.</li>
+<li><strong>Loading indicator cannot get stuck:</strong> A timing problem could leave the spinner switched on after a load had already finished. Both spot views now hide the indicator unless a load is genuinely running.</li>
+</ul></div>
+</section>
+
+<section class="notes-section gh-release">
+<h3>Spotnet 3.0.15.0 <span class="gh-date">8 September 2026</span></h3>
 <div class="gh-body"><ul class="section-items tagged">
 <li><strong>Startup loading fixed:</strong> The spot list no longer stays stuck behind a loading spinner after launch. The overlay now only appears when data is genuinely still loading, and clears automatically when the initial load completes.</li>
 <li><strong>Release notes on update:</strong> The Release Notes tab opens automatically the first time Spotnet starts after an update, so you always see what changed.</li>
