@@ -149,6 +149,50 @@ internal static class SquirrelStuff
 		}
 	}
 
+	/// <summary>
+	/// Adds or removes the Startup-folder shortcut behind the "Automatisch opstarten" setting.
+	/// </summary>
+	/// <remarks>
+	/// Squirrel owns this rather than a <c>HKCU\...\Run</c> value because the exe sits in a
+	/// versioned folder that is replaced on every update; a Run value would point at a folder
+	/// that no longer exists after the first upgrade. Routing it through the same call that
+	/// creates the Start Menu and Desktop shortcuts keeps it in step with them.
+	/// </remarks>
+	internal static bool SetStartupShortcut(bool enabled)
+	{
+		// An Inno install owns its own layout, so Squirrel has no shortcuts to manage there.
+		if (InstalledProfile.Enabled) return false;
+		string fileName = System.IO.Path.GetFileName(Assembly.GetExecutingAssembly().Location);
+		if (enabled)
+		{
+			UpdateManager.CreateShortcutsForExecutable(fileName, ShortcutLocation.Startup, updateOnly: false);
+		}
+		else
+		{
+			UpdateManager.RemoveShortcutsForExecutable(fileName, ShortcutLocation.Startup);
+		}
+		Log.Debug("Run at startup {0}", enabled ? "enabled" : "disabled");
+		return true;
+	}
+
+	/// <summary>
+	/// Re-points the Startup shortcut at the version that is now installed. Called on the first
+	/// launch after an update, next to the refresh of the other shortcuts. Does nothing when
+	/// autostart is off, so the user's Startup folder is never touched unasked.
+	/// </summary>
+	internal static void RefreshStartupShortcut()
+	{
+		if (InstalledProfile.Enabled || !Settings.Default.RunAtStartup) return;
+		try
+		{
+			SetStartupShortcut(true);
+		}
+		catch (Exception ex)
+		{
+			Log.Error("Failed to refresh the startup shortcut: " + ex.Message);
+		}
+	}
+
 	internal static void RestartApplication()
 	{
 		if (InstalledProfile.Enabled)
@@ -1052,6 +1096,8 @@ internal static class SquirrelStuff
 				RestoreAppSettings();
 				string fileName = System.IO.Path.GetFileName(Assembly.GetExecutingAssembly().Location);
 				UpdateManager.CreateShortcutsForExecutable(fileName, ShortcutLocation.StartMenu | ShortcutLocation.Desktop, updateOnly: true);
+				// The versioned folder the previous Startup shortcut pointed at is gone by now.
+				RefreshStartupShortcut();
 			}
 		}
 		catch (Exception ex4)

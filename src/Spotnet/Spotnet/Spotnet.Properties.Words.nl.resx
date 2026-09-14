@@ -898,4 +898,10 @@ Schrijf de reden waarom u deze wilt verwijderen:</value></data>
   <data name="TranslateAll" xml:space="preserve"><value>Vertaal alles</value></data>
   <data name="MenuVisibleControlsViewModeButtons" xml:space="preserve"><value>Weergaveknoppen</value></data>
   <data name="MenuShowViewModeButtons" xml:space="preserve"><value>Knoppen voor lijstweergave in hoofdvenster tonen</value></data>
+  <data name="StartupBehaviour" xml:space="preserve"><value>Opstartgedrag</value></data>
+  <data name="RunAtStartup" xml:space="preserve"><value>Spotnet automatisch opstarten met Windows</value></data>
+  <data name="DefaultStartScreen" xml:space="preserve"><value>Standaard startscherm</value></data>
+  <data name="DefaultFilter" xml:space="preserve"><value>Standaard filter</value></data>
+  <data name="DefaultFilterNone" xml:space="preserve"><value>Geen filter (standaard)</value></data>
+  <data name="RunAtStartupFailed" xml:space="preserve"><value>Automatisch opstarten kon niet worden gewijzigd.</value></data>
 </root>

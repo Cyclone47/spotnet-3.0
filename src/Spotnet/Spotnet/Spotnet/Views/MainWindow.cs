@@ -1070,6 +1070,39 @@ public partial class MainWindow : MetroWindow
             Settings.Default.Save();
         }
         OnWindowPrepared?.Invoke();
+        SelectStartScreen();
+    }
+
+    /// <summary>
+    /// Opens the tab the user picked as the default start screen. Falls back to Overzicht when
+    /// Downloads was chosen but is not there to show, which happens when an external downloader
+    /// owns downloads and <see cref="ShowDownloads" /> collapsed the tab.
+    /// </summary>
+    /// <remarks>
+    /// Runs last in <see cref="PrepareWindow" />: the left panel selects the default filter while
+    /// the window is prepared, and the tree's selection handler pulls the spots tab to the front,
+    /// so anything that could still change the selection has already happened.
+    /// </remarks>
+    private void SelectStartScreen()
+    {
+        if (!StartScreen.IsDownloads(Settings.Default.DefaultStartScreen))
+        {
+            TabControl1.SelectedIndex = 0;
+            return;
+        }
+
+        // Downloads is collapsed whenever an external downloader owns the downloads, so the
+        // setting degrades to Overzicht rather than selecting a hidden tab.
+        int index = TabControl1.Items.IndexOf(DownloadsTab);
+        if (index > 0 && DownloadsTab.Visibility == Visibility.Visible)
+        {
+            Log.Debug("Starting on the downloads screen.");
+            TabControl1.SelectedIndex = index;
+            return;
+        }
+
+        Log.Debug("Downloads start screen requested but the tab is unavailable.");
+        TabControl1.SelectedIndex = 0;
     }
 
     private void ReopenTabs()
@@ -2047,8 +2080,68 @@ public partial class MainWindow : MetroWindow
         // Step 5: Verifying database
         Views.SplashWindow.SetProgress(5);
         SpotSaver.InitializeCommentsDb();
-        SpotProvider.QueryName = "cat < 9";
-        SpotProvider.RowFilter = "cat < 9";
+        ApplyStartupFilter();
+    }
+
+    /// <summary>
+    /// Points the spots list at the filter chosen as the default start filter, or at the
+    /// unfiltered overview when there is none. Done here rather than once the window is up, so
+    /// the list is filled a single time with the right query instead of loading the overview and
+    /// then reloading it.
+    /// </summary>
+    private void ApplyStartupFilter()
+    {
+        FilterViewModel filter = ResolveDefaultFilter();
+        if (filter == null)
+        {
+            SpotProvider.QueryName = "cat < 9";
+            SpotProvider.RowFilter = "cat < 9";
+            return;
+        }
+
+        Log.Debug("Startup filter: {0}", filter.FullPathString);
+        SpotProvider.QueryName = filter.Name;
+        SpotProvider.RowFilter = filter.Query;
+    }
+
+    /// <summary>
+    /// The stored default filter, or <see langword="null" /> when it does not apply: not set, the
+    /// start screen is Downloads, or the filter has since been renamed, deleted or belongs to a
+    /// filter set the user no longer uses. A stale path therefore degrades to the historical
+    /// overview rather than failing startup.
+    /// </summary>
+    internal static FilterViewModel ResolveDefaultFilter()
+    {
+        try
+        {
+            // The setting only describes the Overzicht screen; on Downloads it is left alone so
+            // switching back restores the choice instead of losing it.
+            if (StartScreen.IsDownloads(Settings.Default.DefaultStartScreen))
+            {
+                return null;
+            }
+
+            string path = Settings.Default.DefaultFilterPath;
+            if (path.IsNullOrWhiteSpace())
+            {
+                return null;
+            }
+
+            FilterViewModel filter = MainWindowVm.FiltersDb?.GetFilterByName(path);
+            // A group with no query of its own cannot be applied; the left panel refuses those too.
+            if (filter == null || filter.Name.IsNullOrWhiteSpace() || filter.Query.IsNullOrWhiteSpace())
+            {
+                Log.Debug("Default filter '{0}' is not applicable; starting on the overview.", path);
+                return null;
+            }
+
+            return filter;
+        }
+        catch (Exception ex)
+        {
+            Log.Exception(ex);
+            return null;
+        }
     }
 
     private void ProcessExternalArgs()
@@ -2127,6 +2220,10 @@ public partial class MainWindow : MetroWindow
             SquirrelStuff.StartNewVersionCheckTimer();
             StartAutoUpdates();
             CheckFreeSpaceOnTheDisk();
+            // Keeps an Inno install's run-at-startup entry pointing at the exe that is actually
+            // here. The Squirrel equivalent re-points its Startup shortcut after an update in
+            // SquirrelStuff.VerifyAndRestoreSettings.
+            StartupHelper.SyncRunValue();
         }
         catch (Exception ex)
         {

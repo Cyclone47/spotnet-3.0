@@ -2046,4 +2046,57 @@ internal sealed class Settings : ApplicationSettingsBase
 			this["AppTheme"] = value;
 		}
 	}
+
+	/// <summary>Launch Spotnet when Windows starts. Off by default: the user opts in.</summary>
+	[UserScopedSetting]
+	[DebuggerNonUserCode]
+	[DefaultSettingValue("False")]
+	public bool RunAtStartup
+	{
+		get
+		{
+			return (bool)(this["RunAtStartup"] ?? false);
+		}
+		set
+		{
+			this["RunAtStartup"] = value;
+		}
+	}
+
+	/// <summary>Main-window tab shown first: "Spots" (Overzicht) or "Downloads".</summary>
+	[UserScopedSetting]
+	[DebuggerNonUserCode]
+	[DefaultSettingValue("Spots")]
+	public string DefaultStartScreen
+	{
+		get
+		{
+			return (string)(this["DefaultStartScreen"] ?? "Spots");
+		}
+		set
+		{
+			this["DefaultStartScreen"] = value;
+		}
+	}
+
+	/// <summary>
+	/// <see cref="ViewModel.FilterViewModel.FullPathString" /> of the filter to pre-select when the
+	/// Overzicht screen starts, leading spaces included. Empty means no default filter, which keeps
+	/// the historical "cat &lt; 9" list. Only meaningful together with <see cref="DefaultStartScreen" />
+	/// set to "Spots".
+	/// </summary>
+	[UserScopedSetting]
+	[DebuggerNonUserCode]
+	[DefaultSettingValue("")]
+	public string DefaultFilterPath
+	{
+		get
+		{
+			return (string)(this["DefaultFilterPath"] ?? "");
+		}
+		set
+		{
+			this["DefaultFilterPath"] = value;
+		}
+	}
 }

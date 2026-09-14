@@ -1798,4 +1798,16 @@ public class Words
 	public static string TranslationAutomatedLabel => ResourceManager.GetString("TranslationAutomatedLabel", resourceCulture);
 
 	public static string TranslationDisclaimer => ResourceManager.GetString("TranslationDisclaimer", resourceCulture);
+
+	public static string StartupBehaviour => ResourceManager.GetString("StartupBehaviour", resourceCulture);
+
+	public static string RunAtStartup => ResourceManager.GetString("RunAtStartup", resourceCulture);
+
+	public static string DefaultStartScreen => ResourceManager.GetString("DefaultStartScreen", resourceCulture);
+
+	public static string DefaultFilter => ResourceManager.GetString("DefaultFilter", resourceCulture);
+
+	public static string DefaultFilterNone => ResourceManager.GetString("DefaultFilterNone", resourceCulture);
+
+	public static string RunAtStartupFailed => ResourceManager.GetString("RunAtStartupFailed", resourceCulture);
 }

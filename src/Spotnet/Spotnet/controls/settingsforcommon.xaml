@@ -14,6 +14,20 @@
       <Button Name="TestNotificationButton" Content="{loc:Loc MenuTestNotification}" Margin="12,0,0,0" Padding="8,1" Click="TestNotificationButton_OnClick" />
     </StackPanel>
     <CheckBox Name="UseSocks5Proxy" Visibility="Collapsed" Content="{loc:Loc UseSocks5Proxy}" Margin="0,7,0,0" />
+    <Separator Margin="12" />
+    <TextBlock Text="{loc:Loc StartupBehaviour}" FontWeight="SemiBold" />
+    <CheckBox Name="RunAtStartupCheck" Content="{loc:Loc RunAtStartup}" Margin="0,7,0,0" />
+    <StackPanel Orientation="Vertical" Margin="0,10,0,0">
+      <TextBlock Text="{loc:Loc DefaultStartScreen}" />
+      <ComboBox Name="StartScreenCombo" SelectionChanged="StartScreenCombo_OnSelectionChanged">
+        <ComboBoxItem Tag="Spots" Content="{loc:Loc TabSpots}" />
+        <ComboBoxItem Tag="Downloads" Content="{loc:Loc TabDownloads}" />
+      </ComboBox>
+    </StackPanel>
+    <StackPanel Name="DefaultFilterPanel" Orientation="Vertical" Margin="0,10,0,0">
+      <TextBlock Text="{loc:Loc DefaultFilter}" />
+      <ComboBox Name="DefaultFilterCombo" />
+    </StackPanel>
     <Separator Margin="0,14,0,0" />
     <TextBlock Text="{loc:Loc VPNAdvice}" TextWrapping="Wrap" Margin="0,10,0,0" Opacity="0.75" />
   </StackPanel>

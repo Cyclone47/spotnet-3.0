@@ -29,9 +29,11 @@ public partial class AdvancedSettings : MetroWindow, INotifyPropertyChanged
             {
                 List<KeyValuePair<string, UserControl>> obj = new List<KeyValuePair<string, UserControl>>
                 {
+                    // This order is positional: UpdateContentGrid maps each index to its page,
+                    // and the two downloader pages are singled out by index there too.
+                    new KeyValuePair<string, UserControl>(Words.MenuAdvCommon, null),
                     new KeyValuePair<string, UserControl>(Words.MenuAdvDownloads, null),
                     new KeyValuePair<string, UserControl>(Words.MenuAdvDownloadsAdvanced, null),
-                    new KeyValuePair<string, UserControl>(Words.MenuAdvCommon, null),
                     new KeyValuePair<string, UserControl>(Words.MenuAdvSpotsList, null),
                     new KeyValuePair<string, UserControl>(Words.MenuAdvTabs, null),
                     new KeyValuePair<string, UserControl>(Words.MenuAdvDatabase, null),
@@ -85,6 +87,9 @@ public partial class AdvancedSettings : MetroWindow, INotifyPropertyChanged
             switch (selectedIndex)
             {
                 case 0:
+                    userControl = new SettingsForCommon();
+                    break;
+                case 1:
                 {
                     Action<string> onDownloadFolderChanged = delegate (string dir)
                     {
@@ -94,15 +99,12 @@ public partial class AdvancedSettings : MetroWindow, INotifyPropertyChanged
                     break;
                 }
 
-                case 1:
+                case 2:
                     userControl = new SettingsForAdvancedDownload();
                     DownloadFolderChanged += delegate (string s)
                     {
                         ((SettingsForAdvancedDownload)userControl).DownloadFolderChanged?.Invoke(s);
                     };
-                    break;
-                case 2:
-                    userControl = new SettingsForCommon();
                     break;
                 case 3:
                     userControl = new SettingsForSpotsList();
@@ -133,7 +135,10 @@ public partial class AdvancedSettings : MetroWindow, INotifyPropertyChanged
 
         if (userControl != null)
         {
-            ContentGrid.IsEnabled = IsDownloaderSettingsEnabled || selectedIndex > 1;
+            // An external downloader owns the download settings, so only its two pages go
+            // read-only. Everything else - Common included - stays editable.
+            bool isDownloaderPage = selectedIndex == 1 || selectedIndex == 2;
+            ContentGrid.IsEnabled = IsDownloaderSettingsEnabled || !isDownloaderPage;
             ContentGrid.Children.Add(userControl);
         }
     }

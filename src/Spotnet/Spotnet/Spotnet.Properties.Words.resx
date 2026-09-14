@@ -893,4 +893,10 @@ Please write the reason why you want to remove it:</value></data>
   <data name="TranslateAll" xml:space="preserve"><value>Translate all</value></data>
   <data name="MenuVisibleControlsViewModeButtons" xml:space="preserve"><value>View buttons</value></data>
   <data name="MenuShowViewModeButtons" xml:space="preserve"><value>Show spot list view buttons in main window</value></data>
+  <data name="StartupBehaviour" xml:space="preserve"><value>Startup behaviour</value></data>
+  <data name="RunAtStartup" xml:space="preserve"><value>Start Spotnet automatically with Windows</value></data>
+  <data name="DefaultStartScreen" xml:space="preserve"><value>Default start screen</value></data>
+  <data name="DefaultFilter" xml:space="preserve"><value>Default filter</value></data>
+  <data name="DefaultFilterNone" xml:space="preserve"><value>No filter (default)</value></data>
+  <data name="RunAtStartupFailed" xml:space="preserve"><value>Could not change the start-with-Windows setting.</value></data>
 </root>

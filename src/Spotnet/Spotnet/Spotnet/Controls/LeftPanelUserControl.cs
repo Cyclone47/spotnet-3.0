@@ -80,6 +80,7 @@ public partial class LeftPanelUserControl : UserControl
     {
         UseFilterCheckBox.Visibility = Visibility.Hidden;
         UpdateUseFilterCheckbox();
+        SelectDefaultFilter();
         if (Settings.Default.GoogleSuggest)
         {
             _historyDb.LoadHistory();
@@ -106,6 +107,45 @@ public partial class LeftPanelUserControl : UserControl
             UseFilterCheckBox.Content = filterViewModel.Name;
             UseFilterCheckBox.Tag = filterViewModel.Id;
             UseFilterCheckBox.Visibility = Visibility.Visible;
+        }
+    }
+
+    /// <summary>
+    /// Marks the configured default filter selected in the tree, so the panel agrees with the
+    /// spots list <see cref="MainWindow" /> already filled with that query. Does nothing when no
+    /// default filter applies.
+    /// </summary>
+    /// <remarks>
+    /// This mirrors the state <see cref="HasFilter" /> leaves behind after a click rather than
+    /// going through it: the query is already in place, so there is nothing to load, and the
+    /// selection handler would only repeat work. Expanding first matters because the item
+    /// containers of a folded branch do not exist yet, so a selection would never reach the tree.
+    /// </remarks>
+    private void SelectDefaultFilter()
+    {
+        try
+        {
+            FilterViewModel filter = MainWindow.ResolveDefaultFilter();
+            if (filter == null)
+            {
+                return;
+            }
+
+            // Setting IsExpanded walks up to the root on its own.
+            filter.IsExpanded = true;
+            filter.IsSelected = true;
+            _lastSelectedFilter = filter.Id;
+            // Offer this filter to the search box instead of the first one in the tree.
+            UseFilterCheckBox.Content = filter.Name;
+            UseFilterCheckBox.Tag = filter.Id;
+            UseFilterCheckBox.Visibility = Visibility.Visible;
+            Log.Debug("Default filter selected: {0}", filter.FullPathString);
+        }
+        catch (Exception ex)
+        {
+            // The list itself is already filtered, so a tree that fails to highlight it is
+            // cosmetic and must not stop the window from opening.
+            Log.Warn(ex, "Failed to select the default filter");
         }
     }
 

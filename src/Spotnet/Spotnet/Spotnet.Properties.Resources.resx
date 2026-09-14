@@ -50,7 +50,16 @@
   </data>
   <data name="whatsnew" xml:space="preserve">
     <value>&lt;section class="notes-section gh-release"&gt;
-&lt;h3&gt;Spotnet 3.0.16.0 &lt;span class="gh-tag"&gt;New&lt;/span&gt;&lt;span class="gh-date"&gt;Current version&lt;/span&gt;&lt;/h3&gt;
+&lt;h3&gt;Spotnet 3.0.17.0 &lt;span class="gh-tag"&gt;New&lt;/span&gt;&lt;span class="gh-date"&gt;Current version&lt;/span&gt;&lt;/h3&gt;
+&lt;div class="gh-body"&gt;&lt;ul class="section-items tagged"&gt;
+&lt;li&gt;&lt;strong&gt;Settings now opens on Common:&lt;/strong&gt; The settings window starts on the Common section instead of Downloads, so the most-used options are on screen straight away.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;New Startup behaviour section:&lt;/strong&gt; Common now controls how Spotnet starts. &lt;em&gt;Start automatically with Windows&lt;/em&gt; launches Spotnet at logon and is off by default. The registration refreshes itself after an update or a moved install, so starting with Windows cannot silently stop working. &lt;em&gt;Default start screen&lt;/em&gt; chooses whether Spotnet opens on the spots overview, as before, or goes straight to Downloads.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Start on a filter of your own:&lt;/strong&gt; With the overview as the start screen you can point at a default filter that is already selected on launch, for example Movies, 3D Films within it, or New. The list shows your entire filter tree, indented the way the left panel shows it. Leave it on "No filter" and everything behaves exactly as it did.&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section class="notes-section gh-release"&gt;
+&lt;h3&gt;Spotnet 3.0.16.0 &lt;span class="gh-date"&gt;13 September 2026&lt;/span&gt;&lt;/h3&gt;
 &lt;div class="gh-body"&gt;&lt;ul class="section-items tagged"&gt;
 &lt;li&gt;&lt;strong&gt;The overview fills straight away again:&lt;/strong&gt; The spot list is loaded before anything else at startup, so a slow release notes tab, promotion fetch or migration can no longer leave you looking at an empty overview or a spinner that never stops. Picking a filter is no longer needed to make the spots appear.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;No more frozen window on the first start after an update:&lt;/strong&gt; The release notes tab no longer holds up startup, and its changelog is fetched in the background instead of on the interface thread.&lt;/li&gt;
@@ -8167,7 +8176,16 @@ if (browserok) {
   </data>
   <data name="whatsnew_nl" xml:space="preserve">
     <value>&lt;section class="notes-section gh-release"&gt;
-&lt;h3&gt;Spotnet 3.0.16.0 &lt;span class="gh-tag"&gt;Nieuw&lt;/span&gt;&lt;span class="gh-date"&gt;Huidige versie&lt;/span&gt;&lt;/h3&gt;
+&lt;h3&gt;Spotnet 3.0.17.0 &lt;span class="gh-tag"&gt;Nieuw&lt;/span&gt;&lt;span class="gh-date"&gt;Huidige versie&lt;/span&gt;&lt;/h3&gt;
+&lt;div class="gh-body"&gt;&lt;ul class="section-items tagged"&gt;
+&lt;li&gt;&lt;strong&gt;Instellingen openen nu op Algemeen:&lt;/strong&gt; Het venster Instellingen begint voortaan bij het onderdeel Algemeen in plaats van bij Downloads, zodat de meest gebruikte opties meteen in beeld staan.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Nieuw onderdeel Opstartgedrag:&lt;/strong&gt; Op Algemeen bepaalt u nu hoe Spotnet opstart. Met &lt;em&gt;Automatisch opstarten&lt;/em&gt; start Spotnet samen met Windows; dit staat standaard uit. De verwijzing wordt vanzelf bijgewerkt na een update of een verplaatste installatie, zodat automatisch opstarten niet stil ophoudt te werken. Met &lt;em&gt;Standaard startscherm&lt;/em&gt; kiest u of Spotnet opent op Overzicht, zoals u gewend bent, of meteen op Downloads.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Direct beginnen met uw eigen filter:&lt;/strong&gt; Bij startscherm Overzicht wijst u een standaard filter aan dat bij het opstarten al geselecteerd is, bijvoorbeeld Beeld, 3D Films daarbinnen, of Nieuw. De lijst toont uw volledige filterboom, ingesprongen zoals het linkerpaneel die toont. Laat de keuze op "Geen filter" en alles blijft precies zoals het was.&lt;/li&gt;
+&lt;/ul&gt;&lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section class="notes-section gh-release"&gt;
+&lt;h3&gt;Spotnet 3.0.16.0 &lt;span class="gh-date"&gt;13 september 2026&lt;/span&gt;&lt;/h3&gt;
 &lt;div class="gh-body"&gt;&lt;ul class="section-items tagged"&gt;
 &lt;li&gt;&lt;strong&gt;Het overzicht vult zich weer meteen:&lt;/strong&gt; De spotlijst wordt bij het opstarten als eerste geladen, zodat een traag tabblad met releasenotes, een promotie-ophaalactie of een migratie niet langer een leeg overzicht of een eindeloos draaiend rondje achterlaat. U hoeft geen filter meer aan te klikken om de spots te zien.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;Geen vastgelopen venster meer bij de eerste start na een update:&lt;/strong&gt; Het tabblad Releasenotes houdt het opstarten niet meer op en haalt de changelog op de achtergrond op in plaats van op de interfacethread.&lt;/li&gt;
